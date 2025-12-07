@@ -21,7 +21,8 @@ dist/
 *~
 .DS_Store
 
-auth-svc
+**/auth-svc
+!/**/auth-svc/
 
 local/
 *.log
