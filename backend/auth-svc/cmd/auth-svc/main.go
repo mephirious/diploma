@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/diploma/auth-svc/internal/adapters/inbound/grpc/handler"
 	"github.com/diploma/auth-svc/internal/adapters/outbound/database/repository"
@@ -18,7 +16,6 @@ import (
 	authservice "github.com/diploma/auth-svc/internal/domain/auth/service"
 	userservice "github.com/diploma/auth-svc/internal/domain/user/service"
 	"github.com/diploma/auth-svc/pkg/middleware"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
@@ -29,6 +26,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -44,15 +43,18 @@ func main() {
 		}
 	}
 
-	dbPool, err := pgxpool.New(context.Background(), cfg.Database.URL)
+	db, err := gorm.Open(postgres.Open(cfg.Database.URL), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer dbPool.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := dbPool.Ping(ctx); err != nil {
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get database instance: %v", err)
+	}
+	defer sqlDB.Close()
+
+	if err := sqlDB.Ping(); err != nil {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
@@ -63,8 +65,8 @@ func main() {
 		defer natsConn.Close()
 	}
 
-	userRepo := repository.NewUserRepositoryImpl(dbPool)
-	authRepo := repository.NewAuthRepositoryImpl(dbPool)
+	userRepo := repository.NewUserRepository(db)
+	authRepo := repository.NewAuthRepository(db)
 
 	userService := userservice.NewUserService(userRepo)
 	authService := authservice.NewAuthService(authRepo, cfg)
@@ -74,9 +76,11 @@ func main() {
 
 	registerUserUseCase := usecase.NewRegisterUserUseCase(userService)
 	loginUserUseCase := usecase.NewLoginUserUseCase(userService, authService)
+	getUserProfileUseCase := usecase.NewGetUserProfileUseCase(userService)
+	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(authService, userService)
 
-	userHandler := handler.NewUserGRPCHandler(registerUserUseCase)
-	authHandler := handler.NewAuthGRPCHandler(loginUserUseCase, authService)
+	userHandler := handler.NewUserGRPCHandler(registerUserUseCase, getUserProfileUseCase)
+	authHandler := handler.NewAuthGRPCHandler(loginUserUseCase, refreshTokenUseCase, authService)
 
 	authInterceptor := middleware.NewAuthInterceptor(authService)
 

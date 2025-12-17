@@ -2,11 +2,12 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"github.com/diploma/auth-svc/internal/application/user/dto"
 	authservice "github.com/diploma/auth-svc/internal/domain/auth/service"
 	userservice "github.com/diploma/auth-svc/internal/domain/user/service"
+	pkgerrors "github.com/diploma/auth-svc/pkg/errors"
 )
 
 type LoginUserUseCase struct {
@@ -21,25 +22,14 @@ func NewLoginUserUseCase(userService *userservice.UserService, authService *auth
 	}
 }
 
-type LoginUserInput struct {
-	Email    string
-	Password string
-}
-
-type LoginUserOutput struct {
-	AccessToken  string
-	RefreshToken string
-}
-
-func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (*LoginUserOutput, error) {
-
+func (uc *LoginUserUseCase) Execute(ctx context.Context, input dto.LoginUserInput) (*dto.LoginUserOutput, error) {
 	user, err := uc.userService.GetByEmail(ctx, input.Email)
 	if err != nil {
-		return nil, errors.New("invalid email or password")
+		return nil, pkgerrors.NewUnauthenticatedError("invalid email or password")
 	}
 
 	if err := uc.userService.ValidatePassword(ctx, user, input.Password); err != nil {
-		return nil, errors.New("invalid email or password")
+		return nil, pkgerrors.NewUnauthenticatedError("invalid email or password")
 	}
 
 	accessToken, err := uc.authService.GenerateToken(user.ID.String(), user.Email)
@@ -56,8 +46,9 @@ func (uc *LoginUserUseCase) Execute(ctx context.Context, input LoginUserInput) (
 		return nil, fmt.Errorf("failed to save refresh token: %w", err)
 	}
 
-	return &LoginUserOutput{
+	return &dto.LoginUserOutput{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		UserID:       user.ID.String(),
 	}, nil
 }

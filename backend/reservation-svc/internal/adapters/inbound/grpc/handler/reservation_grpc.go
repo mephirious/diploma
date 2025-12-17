@@ -7,6 +7,7 @@ import (
 	"github.com/diploma/reservation-svc/api/v1"
 	"github.com/diploma/reservation-svc/internal/application/reservation/dto"
 	"github.com/diploma/reservation-svc/internal/application/reservation/usecase"
+	pkgerrors "github.com/diploma/reservation-svc/pkg/errors"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -68,7 +69,7 @@ func (h *ReservationGRPCHandler) CreateReservation(ctx context.Context, req *res
 
 	output, err := h.createReservationUseCase.Execute(ctx, input)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create reservation: %v", err)
+		return nil, mapErrorToGRPCStatus(err)
 	}
 
 	return &reservationv1.CreateReservationResponse{
@@ -92,10 +93,7 @@ func (h *ReservationGRPCHandler) ConfirmReservation(ctx context.Context, req *re
 
 	output, err := h.confirmReservationUseCase.Execute(ctx, input)
 	if err != nil {
-		if err.Error() == "cannot confirm reservation with status CANCELLED" || err.Error() == "cannot confirm reservation with status CONFIRMED" {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-		}
-		return nil, status.Errorf(codes.Internal, "failed to confirm reservation: %v", err)
+		return nil, mapErrorToGRPCStatus(err)
 	}
 
 	return &reservationv1.ConfirmReservationResponse{
@@ -119,10 +117,7 @@ func (h *ReservationGRPCHandler) CancelReservation(ctx context.Context, req *res
 
 	output, err := h.cancelReservationUseCase.Execute(ctx, input)
 	if err != nil {
-		if err.Error() == "cannot cancel reservation with status CANCELLED" {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-		}
-		return nil, status.Errorf(codes.Internal, "failed to cancel reservation: %v", err)
+		return nil, mapErrorToGRPCStatus(err)
 	}
 
 	return &reservationv1.CancelReservationResponse{
@@ -146,10 +141,7 @@ func (h *ReservationGRPCHandler) GetReservation(ctx context.Context, req *reserv
 
 	output, err := h.getReservationUseCase.Execute(ctx, input)
 	if err != nil {
-		if err.Error() == "reservation not found" {
-			return nil, status.Errorf(codes.NotFound, "reservation not found")
-		}
-		return nil, status.Errorf(codes.Internal, "failed to get reservation: %v", err)
+		return nil, mapErrorToGRPCStatus(err)
 	}
 
 	response := &reservationv1.GetReservationResponse{
@@ -186,7 +178,7 @@ func (h *ReservationGRPCHandler) ListReservationsByUser(ctx context.Context, req
 
 	output, err := h.listReservationsByUserUseCase.Execute(ctx, input)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to list reservations: %v", err)
+		return nil, mapErrorToGRPCStatus(err)
 	}
 
 	items := make([]*reservationv1.GetReservationResponse, 0, len(output.Items))
@@ -212,5 +204,33 @@ func (h *ReservationGRPCHandler) ListReservationsByUser(ctx context.Context, req
 	return &reservationv1.ListReservationsByUserResponse{
 		Items: items,
 	}, nil
+}
+
+func mapErrorToGRPCStatus(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if pkgerrors.IsDomainError(err) {
+		code := pkgerrors.GetErrorCode(err)
+		msg := err.Error()
+
+		switch code {
+		case pkgerrors.CodeNotFound:
+			return status.Errorf(codes.NotFound, msg)
+		case pkgerrors.CodeAlreadyExists:
+			return status.Errorf(codes.AlreadyExists, msg)
+		case pkgerrors.CodeInvalidArgument:
+			return status.Errorf(codes.InvalidArgument, msg)
+		case pkgerrors.CodeFailedPrecondition:
+			return status.Errorf(codes.FailedPrecondition, msg)
+		case pkgerrors.CodeConflict:
+			return status.Errorf(codes.AlreadyExists, msg) // Map conflict to AlreadyExists
+		default:
+			return status.Errorf(codes.Internal, "internal server error")
+		}
+	}
+
+	return status.Errorf(codes.Internal, "internal server error")
 }
 

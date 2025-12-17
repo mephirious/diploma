@@ -2,97 +2,60 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/diploma/auth-svc/internal/domain/auth/entity"
 	"github.com/diploma/auth-svc/internal/domain/auth/port"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
 type AuthRepositoryImpl struct {
-	pool *pgxpool.Pool
+	db *gorm.DB
 }
 
-func NewAuthRepositoryImpl(pool *pgxpool.Pool) port.AuthRepository {
+func NewAuthRepository(db *gorm.DB) port.AuthRepository {
 	return &AuthRepositoryImpl{
-		pool: pool,
+		db: db,
 	}
 }
 
 func (r *AuthRepositoryImpl) SaveRefreshToken(ctx context.Context, token *entity.Token) error {
-	query := `
-		INSERT INTO user_tokens (id, user_id, refresh_token, created_at)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, created_at
-	`
-
-	var id uuid.UUID
-	var createdAt time.Time
-
 	if token.ID == uuid.Nil {
 		token.ID = uuid.New()
 	}
 
-	err := r.pool.QueryRow(
-		ctx,
-		query,
-		token.ID,
-		token.UserID,
-		token.RefreshToken,
-		time.Now(),
-	).Scan(&id, &createdAt)
-
-	if err != nil {
-		return fmt.Errorf("failed to save refresh token: %w", err)
+	result := r.db.WithContext(ctx).Create(token)
+	if result.Error != nil {
+		return fmt.Errorf("failed to save refresh token: %w", result.Error)
 	}
 
-	token.ID = id
-	token.CreatedAt = createdAt
 	return nil
 }
 
 func (r *AuthRepositoryImpl) GetRefreshToken(ctx context.Context, refreshToken string) (*entity.Token, error) {
-	query := `
-		SELECT id, user_id, refresh_token, created_at
-		FROM user_tokens
-		WHERE refresh_token = $1
-	`
+	var token entity.Token
+	result := r.db.WithContext(ctx).Where("refresh_token = ?", refreshToken).First(&token)
 
-	token := &entity.Token{}
-	err := r.pool.QueryRow(ctx, query, refreshToken).Scan(
-		&token.ID,
-		&token.UserID,
-		&token.RefreshToken,
-		&token.CreatedAt,
-	)
-
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) || errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("refresh token not found: %w", err)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("refresh token not found: %w", result.Error)
 		}
-		return nil, fmt.Errorf("failed to get refresh token: %w", err)
+		return nil, fmt.Errorf("failed to get refresh token: %w", result.Error)
 	}
 
-	return token, nil
+	return &token, nil
 }
 
 func (r *AuthRepositoryImpl) DeleteRefreshToken(ctx context.Context, refreshToken string) error {
-	query := `
-		DELETE FROM user_tokens
-		WHERE refresh_token = $1
-	`
+	result := r.db.WithContext(ctx).Where("refresh_token = ?", refreshToken).Delete(&entity.Token{})
 
-	result, err := r.pool.Exec(ctx, query, refreshToken)
-	if err != nil {
-		return fmt.Errorf("failed to delete refresh token: %w", err)
+	if result.Error != nil {
+		return fmt.Errorf("failed to delete refresh token: %w", result.Error)
 	}
 
-	if result.RowsAffected() == 0 {
+	if result.RowsAffected == 0 {
 		return fmt.Errorf("refresh token not found")
 	}
 

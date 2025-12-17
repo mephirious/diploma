@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/diploma/auth-svc/internal/application/user/dto"
 	"github.com/diploma/auth-svc/internal/domain/user/service"
 )
 
@@ -17,24 +18,13 @@ func NewRegisterUserUseCase(userService *service.UserService) *RegisterUserUseCa
 	}
 }
 
-type RegisterUserInput struct {
-	FullName string
-	Email    string
-	Phone    string
-	Password string
-}
-
-type RegisterUserOutput struct {
-	UserID string
-}
-
-func (uc *RegisterUserUseCase) Execute(ctx context.Context, input RegisterUserInput) (*RegisterUserOutput, error) {
+func (uc *RegisterUserUseCase) Execute(ctx context.Context, input dto.RegisterUserInput) (*dto.RegisterUserOutput, error) {
 	user, err := uc.userService.CreateUser(ctx, input.FullName, input.Email, input.Phone, input.Password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register user: %w", err)
 	}
 
-	return &RegisterUserOutput{
+	return &dto.RegisterUserOutput{
 		UserID: user.ID.String(),
 	}, nil
 }

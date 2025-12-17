@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	reservationv1 "github.com/diploma/reservation-svc/api/v1"
 	"github.com/diploma/reservation-svc/internal/adapters/inbound/grpc/handler"
@@ -17,7 +15,6 @@ import (
 	"github.com/diploma/reservation-svc/internal/application/reservation/usecase"
 	"github.com/diploma/reservation-svc/internal/config"
 	"github.com/diploma/reservation-svc/internal/domain/reservation/service"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
@@ -28,6 +25,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -42,15 +41,18 @@ func main() {
 		}
 	}
 
-	dbPool, err := pgxpool.New(context.Background(), cfg.Database.URL)
+	db, err := gorm.Open(postgres.Open(cfg.Database.URL), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer dbPool.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := dbPool.Ping(ctx); err != nil {
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get database instance: %v", err)
+	}
+	defer sqlDB.Close()
+
+	if err := sqlDB.Ping(); err != nil {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
@@ -60,7 +62,7 @@ func main() {
 	}
 	defer natsConn.Close()
 
-	reservationRepo := repository.NewReservationRepositoryImpl(dbPool)
+	reservationRepo := repository.NewReservationRepository(db)
 	reservationService := service.NewReservationService(reservationRepo)
 
 	eventPublisher := events.NewNATSPublisher(natsConn)
@@ -141,4 +143,3 @@ func initTracing(jaegerURL string) error {
 
 	return nil
 }
-

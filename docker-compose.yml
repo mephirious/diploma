@@ -1,15 +1,15 @@
 services:
   postgres:
     image: postgres:16
-    container_name: auth-postgres
+    container_name: diploma-postgres
     environment:
-      POSTGRES_DB: auth
+      POSTGRES_DB: diploma
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
     volumes:
-      - ./local/postgres/data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -18,9 +18,11 @@ services:
 
   redis:
     image: redis:7
-    container_name: auth-redis
+    container_name: diploma-redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -29,7 +31,7 @@ services:
 
   nats:
     image: nats:2.10
-    container_name: auth-nats
+    container_name: diploma-nats
     ports:
       - "4222:4222"
       - "8222:8222"
@@ -43,7 +45,7 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:1.57
-    container_name: auth-jaeger
+    container_name: diploma-jaeger
     ports:
       - "16686:16686"
       - "14268:14268"
@@ -68,20 +70,15 @@ services:
       nats:
         condition: service_started
     ports:
-      - "9091:9091"
+      - "50051:50051"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/auth?sslmode=disable
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/diploma?sslmode=disable
       REDIS_ADDR: redis:6379
       NATS_URL: nats://nats:4222
       JAEGER_URL: http://jaeger:14268/api/traces
-      JWT_SECRET: supersecret_placeholder
-      GRPC_PORT: 9091
-    healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:9091"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      JWT_SECRET: supersecret_change_in_production
+      GRPC_PORT: 50051
+    restart: unless-stopped
 
   reservation-svc:
     build:
@@ -94,16 +91,129 @@ services:
       nats:
         condition: service_started
     ports:
-      - "9092:9092"
+      - "50052:50052"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/auth?sslmode=disable
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/diploma?sslmode=disable
       NATS_URL: nats://nats:4222
       JAEGER_URL: http://jaeger:14268/api/traces
-      GRPC_PORT: 9092
-    healthcheck:
-      test: ["CMD-SHELL", "exec 6<>/dev/tcp/localhost/9092 && exit 0 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      GRPC_PORT: 50052
+    restart: unless-stopped
 
+  venue-svc:
+    build:
+      context: ./backend/venue-svc
+      dockerfile: Dockerfile
+    container_name: venue-svc
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50053:50053"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: diploma
+      DB_SSL_MODE: disable
+      GRPC_PORT: 50053
+    restart: unless-stopped
+
+  session-svc:
+    build:
+      context: ./backend/session-svc
+      dockerfile: Dockerfile
+    container_name: session-svc
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    ports:
+      - "50054:50054"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: diploma
+      DB_SSL_MODE: disable
+      NATS_URL: nats://nats:4222
+      GRPC_PORT: 50054
+    restart: unless-stopped
+
+  payment-svc:
+    build:
+      context: ./backend/payment-svc
+      dockerfile: Dockerfile
+    container_name: payment-svc
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    ports:
+      - "50055:50055"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/diploma?sslmode=disable
+      NATS_URL: nats://nats:4222
+      STRIPE_API_KEY: sk_test_your_stripe_key_here
+      GRPC_PORT: 50055
+    restart: unless-stopped
+
+  notification-svc:
+    build:
+      context: ./backend/notification-svc
+      dockerfile: Dockerfile
+    container_name: notification-svc
+    depends_on:
+      nats:
+        condition: service_started
+    ports:
+      - "50056:50056"
+    environment:
+      NATS_URL: nats://nats:4222
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: your_email@gmail.com
+      SMTP_PASSWORD: your_app_password
+      GRPC_PORT: 50056
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - auth-svc
+      - reservation-svc
+      - venue-svc
+      - session-svc
+      - payment-svc
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      AUTH_SERVICE_URL: auth-svc:50051
+      VENUE_SERVICE_URL: venue-svc:50053
+      RESERVATION_SERVICE_URL: reservation-svc:50052
+      SESSION_SERVICE_URL: session-svc:50054
+      PAYMENT_SERVICE_URL: payment-svc:50055
+      NOTIFICATION_SERVICE_URL: notification-svc:50056
+    restart: unless-stopped
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: swagger-ui
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: /api/swagger.yaml
+    volumes:
+      - ./backend/api-gateway/api:/api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

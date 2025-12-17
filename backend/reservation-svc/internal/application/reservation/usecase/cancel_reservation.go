@@ -24,11 +24,12 @@ func NewCancelReservationUseCase(
 }
 
 func (uc *CancelReservationUseCase) Execute(ctx context.Context, input dto.CancelReservationInput) (*dto.CancelReservationOutput, error) {
-	if err := uc.reservationService.CancelReservation(ctx, input.ReservationID); err != nil {
+	reservation, err := uc.reservationService.CancelReservation(ctx, input.ReservationID)
+	if err != nil {
 		return nil, fmt.Errorf("failed to cancel reservation: %w", err)
 	}
 
-	if err := uc.eventPublisher.PublishReservationCancelled(ctx, input.ReservationID.String()); err != nil {
+	if err := uc.eventPublisher.PublishReservationCancelled(ctx, reservation.ID.String()); err != nil {
 		fmt.Printf("Warning: Failed to publish RESERVATION.CANCELLED event: %v\n", err)
 	}
 

@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+package session.v1;
+
+option go_package = "github.com/diploma/api-gateway/api/proto/session/v1;sessionv1";
+
+service SessionService {
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+  rpc ListOpenSessions(ListOpenSessionsRequest) returns (ListOpenSessionsResponse);
+  rpc ListUserSessions(ListUserSessionsRequest) returns (ListUserSessionsResponse);
+  rpc CancelSession(CancelSessionRequest) returns (CancelSessionResponse);
+  
+  rpc JoinSession(JoinSessionRequest) returns (JoinSessionResponse);
+  rpc LeaveSession(LeaveSessionRequest) returns (LeaveSessionResponse);
+  rpc ListSessionParticipants(ListSessionParticipantsRequest) returns (ListSessionParticipantsResponse);
+}
+
+enum SessionStatus {
+  SESSION_STATUS_UNSPECIFIED = 0;
+  SESSION_STATUS_OPEN = 1;        // Accepting participants
+  SESSION_STATUS_FULL = 2;        // Max capacity reached
+  SESSION_STATUS_IN_PROGRESS = 3; // Game started
+  SESSION_STATUS_COMPLETED = 4;   // Game finished
+  SESSION_STATUS_CANCELLED = 5;   // Cancelled by host
+}
+
+enum SessionVisibility {
+  SESSION_VISIBILITY_UNSPECIFIED = 0;
+  SESSION_VISIBILITY_PUBLIC = 1;   // Anyone can see and join
+  SESSION_VISIBILITY_PRIVATE = 2;  // Invite-only
+}
+
+enum ParticipantRole {
+  PARTICIPANT_ROLE_UNSPECIFIED = 0;
+  PARTICIPANT_ROLE_HOST = 1;
+  PARTICIPANT_ROLE_PLAYER = 2;
+}
+
+enum ParticipantStatus {
+  PARTICIPANT_STATUS_UNSPECIFIED = 0;
+  PARTICIPANT_STATUS_JOINED = 1;
+  PARTICIPANT_STATUS_LEFT = 2;
+  PARTICIPANT_STATUS_REMOVED = 3;
+}
+
+message CreateSessionRequest {
+  string reservation_id = 1;
+  string host_id = 2;
+  string sport_type = 3;
+  string skill_level = 4;         // beginner, intermediate, advanced
+  int32 max_participants = 5;
+  int32 min_participants = 6;
+  double price_per_participant = 7;
+  SessionVisibility visibility = 8;
+  string description = 9;
+}
+
+message CreateSessionResponse {
+  string session_id = 1;
+}
+
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message GetSessionResponse {
+  string id = 1;
+  string reservation_id = 2;
+  string host_id = 3;
+  string sport_type = 4;
+  string skill_level = 5;
+  int32 max_participants = 6;
+  int32 min_participants = 7;
+  int32 current_participants = 8;
+  double price_per_participant = 9;
+  SessionVisibility visibility = 10;
+  SessionStatus status = 11;
+  string description = 12;
+  string created_at = 13;
+  string updated_at = 14;
+}
+
+message ListOpenSessionsRequest {
+  string sport_type = 1;         // Filter by sport (optional)
+  string skill_level = 2;        // Filter by skill level (optional)
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListOpenSessionsResponse {
+  repeated GetSessionResponse items = 1;
+  int32 total_count = 2;
+}
+
+message ListUserSessionsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message ListUserSessionsResponse {
+  repeated GetSessionResponse items = 1;
+  int32 total_count = 2;
+}
+
+message CancelSessionRequest {
+  string session_id = 1;
+  string user_id = 2;  // Must be host
+}
+
+message CancelSessionResponse {
+  bool success = 1;
+}
+
+message JoinSessionRequest {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message JoinSessionResponse {
+  bool success = 1;
+  string participant_id = 2;
+}
+
+message LeaveSessionRequest {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message LeaveSessionResponse {
+  bool success = 1;
+}
+
+message ListSessionParticipantsRequest {
+  string session_id = 1;
+}
+
+message Participant {
+  string id = 1;
+  string user_id = 2;
+  ParticipantRole role = 3;
+  ParticipantStatus status = 4;
+  string joined_at = 5;
+}
+
+message ListSessionParticipantsResponse {
+  repeated Participant participants = 1;
+}
+

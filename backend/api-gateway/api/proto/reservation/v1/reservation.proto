@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package reservation.v1;
+
+option go_package = "github.com/diploma/api-gateway/api/proto/reservation/v1;reservationv1";
+
+service ReservationService {
+  rpc CreateReservation(CreateReservationRequest) returns (CreateReservationResponse);
+  rpc ConfirmReservation(ConfirmReservationRequest) returns (ConfirmReservationResponse);
+  rpc CancelReservation(CancelReservationRequest) returns (CancelReservationResponse);
+  rpc GetReservation(GetReservationRequest) returns (GetReservationResponse);
+  rpc ListReservationsByUser(ListReservationsByUserRequest) returns (ListReservationsByUserResponse);
+}
+
+message CreateReservationRequest {
+  string user_id = 1;
+  string apartment_id = 2;
+  string comment = 3;
+}
+
+message CreateReservationResponse {
+  string reservation_id = 1;
+}
+
+message ConfirmReservationRequest {
+  string reservation_id = 1;
+}
+
+message ConfirmReservationResponse {
+  bool success = 1;
+}
+
+message CancelReservationRequest {
+  string reservation_id = 1;
+}
+
+message CancelReservationResponse {
+  bool success = 1;
+}
+
+message GetReservationRequest {
+  string reservation_id = 1;
+}
+
+message GetReservationResponse {
+  string id = 1;
+  string user_id = 2;
+  string apartment_id = 3;
+  string status = 4;
+  string reserved_at = 5;
+  string expires_at = 6;
+  string comment = 7;
+}
+
+message ListReservationsByUserRequest {
+  string user_id = 1;
+}
+
+message ListReservationsByUserResponse {
+  repeated GetReservationResponse items = 1;
+}
+

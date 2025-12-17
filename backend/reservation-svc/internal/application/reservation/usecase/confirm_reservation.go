@@ -24,11 +24,12 @@ func NewConfirmReservationUseCase(
 }
 
 func (uc *ConfirmReservationUseCase) Execute(ctx context.Context, input dto.ConfirmReservationInput) (*dto.ConfirmReservationOutput, error) {
-	if err := uc.reservationService.ConfirmReservation(ctx, input.ReservationID); err != nil {
+	reservation, err := uc.reservationService.ConfirmReservation(ctx, input.ReservationID)
+	if err != nil {
 		return nil, fmt.Errorf("failed to confirm reservation: %w", err)
 	}
 
-	if err := uc.eventPublisher.PublishReservationConfirmed(ctx, input.ReservationID.String()); err != nil {
+	if err := uc.eventPublisher.PublishReservationConfirmed(ctx, reservation.ID.String()); err != nil {
 		fmt.Printf("Warning: Failed to publish RESERVATION.CONFIRMED event: %v\n", err)
 	}
 

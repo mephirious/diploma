@@ -32,6 +32,14 @@ func (s *CombinedAuthService) ValidateToken(ctx context.Context, req *authv1.Val
 	return s.authHandler.ValidateToken(ctx, req)
 }
 
+func (s *CombinedAuthService) GetUserProfile(ctx context.Context, req *authv1.GetUserProfileRequest) (*authv1.GetUserProfileResponse, error) {
+	return s.userHandler.GetUserProfile(ctx, req)
+}
+
+func (s *CombinedAuthService) RefreshToken(ctx context.Context, req *authv1.RefreshTokenRequest) (*authv1.RefreshTokenResponse, error) {
+	return s.authHandler.RefreshToken(ctx, req)
+}
+
 func RegisterAuthService(server *grpc.Server, userHandler *UserGRPCHandler, authHandler *AuthGRPCHandler) {
 	combinedService := NewCombinedAuthService(userHandler, authHandler)
 	authv1.RegisterAuthServiceServer(server, combinedService)

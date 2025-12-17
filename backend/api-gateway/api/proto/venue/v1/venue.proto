@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package venue.v1;
+
+option go_package = "github.com/diploma/api-gateway/api/proto/venue/v1;venuev1";
+
+service VenueService {
+  rpc CreateVenue(CreateVenueRequest) returns (CreateVenueResponse);
+  rpc GetVenue(GetVenueRequest) returns (GetVenueResponse);
+  rpc ListVenues(ListVenuesRequest) returns (ListVenuesResponse);
+  rpc UpdateVenue(UpdateVenueRequest) returns (UpdateVenueResponse);
+  rpc DeleteVenue(DeleteVenueRequest) returns (DeleteVenueResponse);
+  
+  rpc CreateResource(CreateResourceRequest) returns (CreateResourceResponse);
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse);
+  rpc ListResourcesByVenue(ListResourcesByVenueRequest) returns (ListResourcesByVenueResponse);
+  rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceResponse);
+  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceResponse);
+  
+  rpc SetResourceSchedule(SetResourceScheduleRequest) returns (SetResourceScheduleResponse);
+  rpc GetResourceSchedule(GetResourceScheduleRequest) returns (GetResourceScheduleResponse);
+}
+
+message CreateVenueRequest {
+  string owner_id = 1;
+  string name = 2;
+  string description = 3;
+  string city = 4;
+  string address = 5;
+  double latitude = 6;
+  double longitude = 7;
+}
+
+message CreateVenueResponse {
+  string venue_id = 1;
+}
+
+message GetVenueRequest {
+  string venue_id = 1;
+}
+
+message GetVenueResponse {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  string description = 4;
+  string city = 5;
+  string address = 6;
+  double latitude = 7;
+  double longitude = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message ListVenuesRequest {
+  string city = 1;           // Filter by city (optional)
+  int32 page = 2;            // Page number (1-based)
+  int32 page_size = 3;       // Items per page
+}
+
+message ListVenuesResponse {
+  repeated GetVenueResponse items = 1;
+  int32 total_count = 2;
+}
+
+message UpdateVenueRequest {
+  string venue_id = 1;
+  string name = 2;
+  string description = 3;
+  string city = 4;
+  string address = 5;
+  double latitude = 6;
+  double longitude = 7;
+}
+
+message UpdateVenueResponse {
+  bool success = 1;
+}
+
+message DeleteVenueRequest {
+  string venue_id = 1;
+}
+
+message DeleteVenueResponse {
+  bool success = 1;
+}
+
+message CreateResourceRequest {
+  string venue_id = 1;
+  string name = 2;
+  string sport_type = 3;     // tennis, football, basketball, etc.
+  int32 capacity = 4;
+  string surface_type = 5;   // grass, clay, hardcourt, etc.
+  bool is_active = 6;
+}
+
+message CreateResourceResponse {
+  string resource_id = 1;
+}
+
+message GetResourceRequest {
+  string resource_id = 1;
+}
+
+message GetResourceResponse {
+  string id = 1;
+  string venue_id = 2;
+  string name = 3;
+  string sport_type = 4;
+  int32 capacity = 5;
+  string surface_type = 6;
+  bool is_active = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message ListResourcesByVenueRequest {
+  string venue_id = 1;
+  bool active_only = 2;      // Filter to only active resources
+}
+
+message ListResourcesByVenueResponse {
+  repeated GetResourceResponse items = 1;
+}
+
+message UpdateResourceRequest {
+  string resource_id = 1;
+  string name = 2;
+  string sport_type = 3;
+  int32 capacity = 4;
+  string surface_type = 5;
+  bool is_active = 6;
+}
+
+message UpdateResourceResponse {
+  bool success = 1;
+}
+
+message DeleteResourceRequest {
+  string resource_id = 1;
+}
+
+message DeleteResourceResponse {
+  bool success = 1;
+}
+
+message ScheduleSlot {
+  int32 day_of_week = 1;     // 0=Sunday, 6=Saturday
+  string start_time = 2;     // HH:MM format
+  string end_time = 3;       // HH:MM format
+  double base_price = 4;
+}
+
+message SetResourceScheduleRequest {
+  string resource_id = 1;
+  repeated ScheduleSlot slots = 2;
+}
+
+message SetResourceScheduleResponse {
+  bool success = 1;
+}
+
+message GetResourceScheduleRequest {
+  string resource_id = 1;
+}
+
+message GetResourceScheduleResponse {
+  repeated ScheduleSlot slots = 1;
+}
+

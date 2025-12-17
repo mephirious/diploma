@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	pkgerrors "github.com/diploma/reservation-svc/pkg/errors"
 	"github.com/google/uuid"
 )
 
@@ -39,7 +40,9 @@ func (r *Reservation) CanCancel() bool {
 
 func (r *Reservation) Confirm() error {
 	if !r.CanConfirm() {
-		return fmt.Errorf("cannot confirm reservation with status %s", r.Status)
+		return pkgerrors.NewFailedPreconditionError(
+			fmt.Sprintf("cannot confirm reservation with status %s", r.Status),
+		)
 	}
 	r.Status = StatusConfirmed
 	return nil
@@ -47,9 +50,18 @@ func (r *Reservation) Confirm() error {
 
 func (r *Reservation) Cancel() error {
 	if !r.CanCancel() {
-		return fmt.Errorf("cannot cancel reservation with status %s", r.Status)
+		return pkgerrors.NewFailedPreconditionError(
+			fmt.Sprintf("cannot cancel reservation with status %s", r.Status),
+		)
 	}
 	r.Status = StatusCancelled
 	return nil
+}
+
+func (r *Reservation) IsExpired() bool {
+	if r.ExpiresAt == nil {
+		return false
+	}
+	return time.Now().After(*r.ExpiresAt)
 }
 

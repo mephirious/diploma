@@ -1,0 +1,779 @@
+openapi: 3.0.3
+info:
+  title: Sports Venue Booking & Session Platform API
+  description: REST API for managing sports venue bookings, game sessions, and payments
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@sportsbooking.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.sportsbooking.com/api/v1
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and registration
+  - name: Users
+    description: User profile management
+  - name: Venues
+    description: Sports venue management
+  - name: Reservations
+    description: Booking management
+  - name: Sessions
+    description: Game session management
+  - name: Payments
+    description: Payment processing
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid credentials"
+
+    RegisterRequest:
+      type: object
+      required:
+        - full_name
+        - email
+        - phone
+        - password
+      properties:
+        full_name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        phone:
+          type: string
+          example: "+1234567890"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "SecurePass123"
+
+    RegisterResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          format: password
+          example: "SecurePass123"
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    UserProfile:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Venue:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Downtown Sports Complex"
+        description:
+          type: string
+          example: "Modern sports facility with multiple courts"
+        city:
+          type: string
+          example: "New York"
+        address:
+          type: string
+          example: "123 Main St"
+        latitude:
+          type: number
+          format: double
+          example: 40.7128
+        longitude:
+          type: number
+          format: double
+          example: -74.0060
+
+    VenueList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Venue'
+        total_count:
+          type: integer
+          example: 25
+
+    Resource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Tennis Court 1"
+        sport_type:
+          type: string
+          example: "tennis"
+        capacity:
+          type: integer
+          example: 4
+        surface_type:
+          type: string
+          example: "hard court"
+        is_active:
+          type: boolean
+          example: true
+
+    ResourceList:
+      type: object
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+
+    CreateReservationRequest:
+      type: object
+      required:
+        - apartment_id
+        - reserved_at
+      properties:
+        apartment_id:
+          type: string
+          format: uuid
+        reserved_at:
+          type: string
+          format: date-time
+          example: "2025-12-20T14:00:00Z"
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        apartment_id:
+          type: string
+          format: uuid
+        reserved_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
+          example: "CONFIRMED"
+        created_at:
+          type: string
+          format: date-time
+
+    ReservationList:
+      type: object
+      properties:
+        reservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+
+    CreateSessionRequest:
+      type: object
+      required:
+        - reservation_id
+        - sport_type
+        - max_participants
+        - price_per_participant
+      properties:
+        reservation_id:
+          type: string
+          format: uuid
+        sport_type:
+          type: string
+          example: "tennis"
+        skill_level:
+          type: string
+          example: "intermediate"
+        max_participants:
+          type: integer
+          example: 4
+        min_participants:
+          type: integer
+          example: 2
+        price_per_participant:
+          type: number
+          format: double
+          example: 15.00
+        description:
+          type: string
+          example: "Friendly doubles match, all levels welcome"
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reservation_id:
+          type: string
+          format: uuid
+        host_id:
+          type: string
+          format: uuid
+        sport_type:
+          type: string
+        skill_level:
+          type: string
+        max_participants:
+          type: integer
+        current_participants:
+          type: integer
+        price_per_participant:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [OPEN, FULL, ACTIVE, COMPLETED, CANCELLED]
+        description:
+          type: string
+
+    SessionList:
+      type: object
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+        total_count:
+          type: integer
+
+    PaymentResponse:
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        client_secret:
+          type: string
+          example: "pi_xxx_secret_yyy"
+        amount:
+          type: number
+          format: double
+          example: 15.00
+        currency:
+          type: string
+          example: "USD"
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+        stripe_payment_intent_id:
+          type: string
+        status:
+          type: string
+          enum: [CREATED, PENDING, SUCCEEDED, FAILED, REFUNDED]
+
+    PaymentList:
+      type: object
+      properties:
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profile:
+    get:
+      tags:
+        - Users
+      summary: Get user profile
+      operationId: getUserProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /venues:
+    get:
+      tags:
+        - Venues
+      summary: List all venues
+      operationId: listVenues
+      parameters:
+        - name: city
+          in: query
+          description: Filter by city
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of venues
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueList'
+
+  /venues/{id}:
+    get:
+      tags:
+        - Venues
+      summary: Get venue by ID
+      operationId: getVenue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Venue details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Venue'
+        '404':
+          description: Venue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /venues/{id}/resources:
+    get:
+      tags:
+        - Venues
+      summary: List resources for a venue
+      operationId: listResources
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceList'
+
+  /reservations:
+    post:
+      tags:
+        - Reservations
+      summary: Create a new reservation
+      operationId: createReservation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reservation_id:
+                    type: string
+                    format: uuid
+        '409':
+          description: Time slot already booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Reservations
+      summary: List user's reservations
+      operationId: listMyReservations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of reservations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationList'
+
+  /reservations/{id}:
+    get:
+      tags:
+        - Reservations
+      summary: Get reservation by ID
+      operationId: getReservation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Reservations
+      summary: Cancel reservation
+      operationId: cancelReservation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reservation cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /sessions:
+    post:
+      tags:
+        - Sessions
+      summary: Create a new game session
+      operationId: createSession
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+
+  /sessions/open:
+    get:
+      tags:
+        - Sessions
+      summary: List open sessions
+      operationId: listOpenSessions
+      parameters:
+        - name: sport_type
+          in: query
+          schema:
+            type: string
+        - name: skill_level
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of open sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+
+  /sessions/{id}/join:
+    post:
+      tags:
+        - Sessions
+      summary: Join a game session
+      operationId: joinSession
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successfully joined session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  participant_id:
+                    type: string
+                    format: uuid
+        '409':
+          description: Session is full
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sessions/{id}:
+    delete:
+      tags:
+        - Sessions
+      summary: Cancel a game session
+      operationId: cancelSession
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /sessions/{id}/pay:
+    post:
+      tags:
+        - Payments
+      summary: Start payment for session
+      operationId: startPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payment intent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+  /sessions/{id}/payments:
+    get:
+      tags:
+        - Payments
+      summary: Get payments for session
+      operationId: getPaymentsBySession
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentList'
+

@@ -114,3 +114,7 @@ func (s *AuthService) ValidateRefreshToken(ctx context.Context, refreshToken str
 
 	return token.UserID.String(), nil
 }
+
+func (s *AuthService) DeleteRefreshToken(ctx context.Context, refreshToken string) error {
+	return s.authRepo.DeleteRefreshToken(ctx, refreshToken)
+}

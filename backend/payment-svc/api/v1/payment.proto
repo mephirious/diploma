@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package payment.v1;
+
+option go_package = "github.com/diploma/payment-svc/api/v1;paymentv1";
+
+service PaymentService {
+  rpc StartPaymentForSession(StartPaymentForSessionRequest) returns (StartPaymentForSessionResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  rpc GetPaymentsBySession(GetPaymentsBySessionRequest) returns (GetPaymentsBySessionResponse);
+  rpc GetPaymentsByUser(GetPaymentsByUserRequest) returns (GetPaymentsByUserResponse);
+  rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse);
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_CREATED = 1;
+  PAYMENT_STATUS_PENDING = 2;
+  PAYMENT_STATUS_PROCESSING = 3;
+  PAYMENT_STATUS_SUCCEEDED = 4;
+  PAYMENT_STATUS_FAILED = 5;
+  PAYMENT_STATUS_REFUNDED = 6;
+}
+
+message StartPaymentForSessionRequest {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message StartPaymentForSessionResponse {
+  string payment_id = 1;
+  string client_secret = 2;
+  double amount = 3;
+  string currency = 4;
+}
+
+message GetPaymentRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentResponse {
+  string id = 1;
+  string session_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string currency = 5;
+  string stripe_payment_intent_id = 6;
+  PaymentStatus status = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message GetPaymentsBySessionRequest {
+  string session_id = 1;
+}
+
+message GetPaymentsBySessionResponse {
+  repeated GetPaymentResponse payments = 1;
+}
+
+message GetPaymentsByUserRequest {
+  string user_id = 1;
+}
+
+message GetPaymentsByUserResponse {
+  repeated GetPaymentResponse payments = 1;
+}
+
+message RefundPaymentRequest {
+  string payment_id = 1;
+  string reason = 2;
+}
+
+message RefundPaymentResponse {
+  bool success = 1;
+  string refund_id = 2;
+}
+

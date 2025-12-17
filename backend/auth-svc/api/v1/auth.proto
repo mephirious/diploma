@@ -10,6 +10,10 @@ service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse);
 }
 
 message RegisterRequest {
@@ -31,6 +35,7 @@ message LoginRequest {
 message LoginResponse {
   string access_token = 1;
   string refresh_token = 2;
+  string user_id = 3;
 }
 
 message ValidateTokenRequest {
@@ -40,5 +45,26 @@ message ValidateTokenRequest {
 message ValidateTokenResponse {
   string user_id = 1;
   bool is_valid = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message GetUserProfileRequest {
+  string user_id = 1;
+}
+
+message GetUserProfileResponse {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+  string phone = 4;
+  string created_at = 5;
 }
 
