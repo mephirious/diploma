@@ -11,6 +11,8 @@ export type ModalProps = {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Max height of the dialog panel (viewport-relative). Body scrolls inside. Default 85vh. */
+  maxHeight?: string;
 };
 
 const sizeClasses: Record<NonNullable<ModalProps['size']>, string> = {
@@ -28,6 +30,7 @@ export function Modal({
   children,
   footer,
   size = 'md',
+  maxHeight = '85vh',
 }: ModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -46,23 +49,25 @@ export function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center sm:py-8 animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
         className={cn(
-          'relative w-full rounded-xl bg-surface-light dark:bg-surface-dark shadow-card-hover',
+          'relative z-10 flex w-full min-h-0 flex-col overflow-hidden rounded-xl',
+          'bg-surface-light dark:bg-surface-dark shadow-card-hover',
           'border border-black/5 dark:border-white/10 animate-scale-in',
           sizeClasses[size],
         )}
+        style={{ maxHeight }}
       >
-        <div className="flex items-start justify-between gap-3 p-5 pb-3">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-black/5 px-5 pb-3 pt-5 dark:border-white/10">
           <div className="min-w-0">
             {title ? (
               <h2 className="text-lg font-bold text-text-light dark:text-text-dark">
@@ -70,7 +75,7 @@ export function Modal({
               </h2>
             ) : null}
             {description ? (
-              <p className="mt-1 text-sm text-muted-light dark:text-muted-dark">
+              <p className="mt-1 break-all text-sm text-muted-light dark:text-muted-dark">
                 {description}
               </p>
             ) : null}
@@ -79,16 +84,16 @@ export function Modal({
             onClick={onClose}
             type="button"
             aria-label="Close"
-            className="ml-2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-light hover:bg-black/5 dark:text-muted-dark dark:hover:bg-white/10 focus-ring"
+            className="ml-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-light hover:bg-black/5 dark:text-muted-dark dark:hover:bg-white/10 focus-ring"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="px-5 pb-5">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
 
         {footer ? (
-          <div className="flex items-center justify-end gap-2 border-t border-black/5 dark:border-white/10 p-4">
+          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-black/5 px-4 py-3 dark:border-white/10">
             {footer}
           </div>
         ) : null}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -22,7 +22,9 @@ import { getScheduleResult } from '@/mock/scheduleResults';
 import { SPORT_KEYS, type Venue } from '@/types/venue';
 import { buildAddress } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { useMyVenues } from '@/hooks/useVenues';
+import { useCreateVenue, useMyVenues } from '@/hooks/useVenues';
+import { Modal } from '@/components/ui/Modal';
+import { Textarea } from '@/components/ui/Input';
 
 type StatusFilter = 'all' | 'active' | 'draft' | 'suspended';
 type SportFilter = 'all' | (typeof SPORT_KEYS)[number];
@@ -34,8 +36,10 @@ export function FacilitiesPage() {
   const [status, setStatus] = useState<StatusFilter>('all');
   const [sport, setSport] = useState<SportFilter>('all');
   const [view, setView] = useState<View>('grid');
+  const [createOpen, setCreateOpen] = useState(false);
 
   const { data: venueData } = useMyVenues();
+  const createVenue = useCreateVenue();
   const apiVenues: Venue[] = (venueData?.results ?? []).map((v: any) => ({
     id: v.id,
     name: v.name,
@@ -56,7 +60,7 @@ export function FacilitiesPage() {
   }));
   const venues: Venue[] = apiVenues.length > 0 ? apiVenues : MOCK_VENUES;
 
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     const q = query.trim().toLowerCase();
     return venues.filter((v) => {
       if (status !== 'all' && v.status !== status) return false;
@@ -75,7 +79,7 @@ export function FacilitiesPage() {
         .toLowerCase();
       return hay.includes(q);
     });
-  }, [query, status, sport]);
+  })();
 
   return (
     <div>
@@ -83,7 +87,7 @@ export function FacilitiesPage() {
         title={t('facilities.title')}
         subtitle={t('facilities.subtitle')}
         actions={
-          <Button leftIcon={<Plus size={16} />}>
+          <Button leftIcon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
             {t('facilities.newFacility')}
           </Button>
         }
@@ -148,7 +152,7 @@ export function FacilitiesPage() {
           title={t('facilities.emptyTitle')}
           description={t('facilities.emptyHint')}
           action={
-            <Button leftIcon={<Plus size={16} />}>
+            <Button leftIcon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
               {t('facilities.newFacility')}
             </Button>
           }
@@ -170,7 +174,104 @@ export function FacilitiesPage() {
           </CardBody>
         </Card>
       )}
+
+      <CreateFacilityModal
+        open={createOpen}
+        saving={createVenue.isPending}
+        onClose={() => setCreateOpen(false)}
+        onCreate={async (payload) => {
+          await createVenue.mutateAsync(payload);
+          setCreateOpen(false);
+        }}
+      />
     </div>
+  );
+}
+
+function CreateFacilityModal({
+  open,
+  saving,
+  onClose,
+  onCreate,
+}: {
+  open: boolean;
+  saving: boolean;
+  onClose: () => void;
+  onCreate: (payload: {
+    name: string;
+    description?: string;
+    city?: string;
+    country?: string;
+    status?: string;
+    address_line1?: string;
+  }) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('Kazakhstan');
+  const [status, setStatus] = useState('active');
+  const [addressLine1, setAddressLine1] = useState('');
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t('facilities.newFacility')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            loading={saving}
+            disabled={!name.trim()}
+            onClick={() => {
+              void onCreate({
+                name: name.trim(),
+                description: description.trim() || undefined,
+                city: city.trim() || undefined,
+                country: country.trim() || undefined,
+                status,
+                address_line1: addressLine1.trim() || undefined,
+              });
+            }}
+          >
+            {t('common.create')}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input label={t('resource.name')} value={name} onChange={(e) => setName(e.currentTarget.value)} />
+        <Select
+          label={t('resource.status')}
+          value={status}
+          onChange={(e) => setStatus(e.currentTarget.value)}
+          options={[
+            { value: 'active', label: t('common.active') },
+            { value: 'draft', label: t('facilities.draftBadge') },
+            { value: 'suspended', label: t('facilities.suspendedBadge') },
+          ]}
+        />
+        <Input label="City" value={city} onChange={(e) => setCity(e.currentTarget.value)} />
+        <Input label="Country" value={country} onChange={(e) => setCountry(e.currentTarget.value)} />
+        <Input
+          className="md:col-span-2"
+          label="Address"
+          value={addressLine1}
+          onChange={(e) => setAddressLine1(e.currentTarget.value)}
+        />
+        <Textarea
+          className="md:col-span-2"
+          label={t('facilityDetail.description')}
+          value={description}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+          rows={3}
+        />
+      </div>
+    </Modal>
   );
 }
 

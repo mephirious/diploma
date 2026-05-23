@@ -13,18 +13,38 @@ export function BlackoutEditor({
   resourceId,
   blackouts,
   onChange,
+  onCreate,
+  onUpdate,
+  onDelete,
+  busy = false,
 }: {
   resourceId: string;
   blackouts: Blackout[];
   onChange: (next: Blackout[]) => void;
+  onCreate?: (b: Blackout) => Promise<void>;
+  onUpdate?: (b: Blackout) => Promise<void>;
+  onDelete?: (b: Blackout) => Promise<void>;
+  busy?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<Blackout | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Blackout | null>(null);
 
-  function handleSave(b: Blackout) {
+  async function handleSave(b: Blackout) {
     const exists = blackouts.some((x) => x.id === b.id);
+    if (exists && onUpdate) {
+      await onUpdate(b);
+      setEditorOpen(false);
+      setEditing(null);
+      return;
+    }
+    if (!exists && onCreate) {
+      await onCreate(b);
+      setEditorOpen(false);
+      setEditing(null);
+      return;
+    }
     onChange(
       exists ? blackouts.map((x) => (x.id === b.id ? b : x)) : [...blackouts, b],
     );
@@ -32,7 +52,12 @@ export function BlackoutEditor({
     setEditing(null);
   }
 
-  function handleDelete(b: Blackout) {
+  async function handleDelete(b: Blackout) {
+    if (onDelete) {
+      await onDelete(b);
+      setConfirmDelete(null);
+      return;
+    }
     onChange(blackouts.filter((x) => x.id !== b.id));
   }
 
@@ -51,6 +76,8 @@ export function BlackoutEditor({
           <Button
             size="sm"
             leftIcon={<Plus size={14} />}
+            loading={busy}
+            disabled={busy}
             onClick={() => {
               setEditing(null);
               setEditorOpen(true);
@@ -69,6 +96,8 @@ export function BlackoutEditor({
               <Button
                 size="sm"
                 leftIcon={<Plus size={14} />}
+                loading={busy}
+                disabled={busy}
                 onClick={() => setEditorOpen(true)}
               >
                 {t('resource.addBlackout')}
@@ -134,14 +163,18 @@ export function BlackoutEditor({
             setEditorOpen(false);
             setEditing(null);
           }}
-          onSave={handleSave}
+          onSave={(item) => {
+            void handleSave(item);
+          }}
         />
       ) : null}
 
       <ConfirmDialog
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+        onConfirm={() => {
+          if (confirmDelete) void handleDelete(confirmDelete);
+        }}
         title={t('resource.deleteBlackoutConfirm')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}

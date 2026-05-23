@@ -23,6 +23,30 @@ class SecureStorage {
     return await _storage.read(key: AppConstants.refreshTokenKey);
   }
 
+  Future<void> saveAccessTokenExpiresAt(int unixSeconds) async {
+    await _storage.write(
+      key: AppConstants.accessTokenExpiresAtKey,
+      value: unixSeconds.toString(),
+    );
+  }
+
+  Future<int?> getAccessTokenExpiresAt() async {
+    final raw = await _storage.read(key: AppConstants.accessTokenExpiresAtKey);
+    return raw == null ? null : int.tryParse(raw);
+  }
+
+  Future<void> saveRefreshTokenExpiresAt(int unixSeconds) async {
+    await _storage.write(
+      key: AppConstants.refreshTokenExpiresAtKey,
+      value: unixSeconds.toString(),
+    );
+  }
+
+  Future<int?> getRefreshTokenExpiresAt() async {
+    final raw = await _storage.read(key: AppConstants.refreshTokenExpiresAtKey);
+    return raw == null ? null : int.tryParse(raw);
+  }
+
   Future<void> saveUserId(String userId) async {
     await _storage.write(key: AppConstants.userIdKey, value: userId);
   }

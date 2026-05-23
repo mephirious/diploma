@@ -27,11 +27,19 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { IconButton } from '@/components/ui/IconButton';
 
-import { MOCK_VENUES } from '@/mock/venues';
-import { getScheduleResult } from '@/mock/scheduleResults';
 import { buildAddress, shortTime } from '@/lib/format';
 import type { Venue, VenueContact } from '@/types/venue';
 import type { Resource } from '@/types/resource';
+import type { VenueScheduleResult } from '@/types/schedule';
+import { Modal } from '@/components/ui/Modal';
+import { Input, Select, Textarea } from '@/components/ui/Input';
+import {
+  useCreateResource,
+  useDeleteVenue,
+  useScheduleResult,
+  useVenue,
+  useVenueResources,
+} from '@/hooks/useVenues';
 
 const RESOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
   court: <span className="text-lg">🎾</span>,
@@ -51,15 +59,66 @@ export function FacilityDetailPage() {
   const [tab, setTab] = useState<Tab>('overview');
   const [activeImage, setActiveImage] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [createResourceOpen, setCreateResourceOpen] = useState(false);
 
-  const venue = useMemo<Venue | undefined>(
-    () => MOCK_VENUES.find((v) => v.id === facilityId),
-    [facilityId],
-  );
-  const result = useMemo(
-    () => (venue ? getScheduleResult(venue.id) : null),
-    [venue],
-  );
+  const { data: venueData, isLoading: venueLoading } = useVenue(facilityId);
+  const { data: resourcesData } = useVenueResources(facilityId);
+  const { data: scheduleResultData } = useScheduleResult(facilityId);
+  const deleteVenue = useDeleteVenue();
+  const createResource = useCreateResource(facilityId);
+
+  const venue = useMemo<Venue | undefined>(() => {
+    if (!venueData) return undefined;
+
+    return {
+      id: venueData.id,
+      name: venueData.name,
+      description: venueData.description ?? '',
+      status: venueData.status ?? 'active',
+      address_line1: venueData.address_line1 ?? '',
+      address_line2: venueData.address_line2,
+      city: venueData.city ?? '',
+      region: venueData.region ?? '',
+      country: venueData.country ?? '',
+      postal_code: venueData.postal_code ?? '',
+      location: venueData.location ?? null,
+      contacts: venueData.contacts ?? [],
+      sports: venueData.sports ?? [],
+      images: venueData.images ?? [],
+      resources: [],
+      owner_id: venueData.owner_id ?? null,
+      timezone: 'Asia/Almaty',
+    };
+  }, [venueData]);
+
+  const result = useMemo<VenueScheduleResult | null>(() => {
+    if (scheduleResultData) {
+      return scheduleResultData;
+    }
+    if (!facilityId) return null;
+
+    const resources = (resourcesData?.results ?? []) as Resource[];
+    return {
+      venue_id: facilityId,
+      groups: resources.map((resource) => ({
+        resource_id: resource.id,
+        resource,
+        schedules: [],
+        pricing: [],
+        blackouts: [],
+      })),
+    };
+  }, [scheduleResultData, facilityId, resourcesData]);
+
+  if (venueLoading) {
+    return (
+      <EmptyState
+        icon={<MapPin size={22} />}
+        title="Loading facility"
+        description="Fetching venue details..."
+      />
+    );
+  }
 
   if (!venue || !result) {
     return (
@@ -168,7 +227,16 @@ export function FacilityDetailPage() {
             className="mt-6"
           />
 
-          {tab === 'overview' ? <OverviewTab venue={venue} /> : <ResourcesTab venue={venue} />}
+          {tab === 'overview' ? (
+            <OverviewTab venue={venue} />
+          ) : (
+            <ResourcesTab
+              venue={venue}
+              result={result}
+              onAddResource={() => setCreateResourceOpen(true)}
+              adding={createResource.isPending}
+            />
+          )}
         </div>
 
         <aside className="space-y-6 lg:sticky lg:top-20 self-start">
@@ -233,12 +301,26 @@ export function FacilityDetailPage() {
       <ConfirmDialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        onConfirm={() => navigate('/facilities', { replace: true })}
+        onConfirm={() => {
+          void deleteVenue.mutateAsync(venue.id).then(() => {
+            navigate('/facilities', { replace: true });
+          });
+        }}
         title={t('facilityDetail.deleteConfirm')}
         description={t('facilityDetail.deleteHint')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         tone="danger"
+      />
+
+      <CreateResourceModal
+        open={createResourceOpen}
+        onClose={() => setCreateResourceOpen(false)}
+        saving={createResource.isPending}
+        onCreate={async (payload) => {
+          await createResource.mutateAsync(payload);
+          setCreateResourceOpen(false);
+        }}
       />
     </div>
   );
@@ -268,9 +350,18 @@ function OverviewTab({ venue }: { venue: Venue }) {
   );
 }
 
-function ResourcesTab({ venue }: { venue: Venue }) {
+function ResourcesTab({
+  venue,
+  result,
+  onAddResource,
+  adding,
+}: {
+  venue: Venue;
+  result: VenueScheduleResult;
+  onAddResource: () => void;
+  adding: boolean;
+}) {
   const { t } = useTranslation();
-  const result = getScheduleResult(venue.id);
 
   if (result.groups.length === 0) {
     return (
@@ -279,7 +370,7 @@ function ResourcesTab({ venue }: { venue: Venue }) {
         title={t('facilityDetail.noResources')}
         description={t('facilityDetail.manageResources')}
         action={
-          <Button leftIcon={<Plus size={16} />}>
+          <Button leftIcon={<Plus size={16} />} onClick={onAddResource} loading={adding} disabled={adding}>
             {t('facilityDetail.addResource')}
           </Button>
         }
@@ -294,7 +385,7 @@ function ResourcesTab({ venue }: { venue: Venue }) {
           <h3 className="text-base font-extrabold">
             {t('facilityDetail.manageResources')}
           </h3>
-          <Button size="sm" leftIcon={<Plus size={14} />}>
+          <Button size="sm" leftIcon={<Plus size={14} />} onClick={onAddResource} loading={adding} disabled={adding}>
             {t('facilityDetail.addResource')}
           </Button>
         </div>
@@ -311,6 +402,118 @@ function ResourcesTab({ venue }: { venue: Venue }) {
         ))}
       </CardBody>
     </Card>
+  );
+}
+
+function CreateResourceModal({
+  open,
+  onClose,
+  saving,
+  onCreate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  saving: boolean;
+  onCreate: (payload: {
+    name: string;
+    type: string;
+    sport: string;
+    capacity: number;
+    status: string;
+    description?: string;
+    surface?: string;
+    images?: string[];
+  }) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [name, setName] = useState('');
+  const [type, setType] = useState('court');
+  const [sport, setSport] = useState('football');
+  const [capacity, setCapacity] = useState('2');
+  const [status, setStatus] = useState('active');
+  const [description, setDescription] = useState('');
+  const [surface, setSurface] = useState('');
+  const [image, setImage] = useState('');
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t('facilityDetail.addResource')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            loading={saving}
+            disabled={!name.trim()}
+            onClick={() => {
+              void onCreate({
+                name: name.trim(),
+                type,
+                sport,
+                capacity: Number(capacity) || 1,
+                status,
+                description: description.trim() || undefined,
+                surface: surface.trim() || undefined,
+                images: image.trim() ? [image.trim()] : undefined,
+              });
+            }}
+          >
+            {t('common.create')}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input label={t('resource.name')} value={name} onChange={(e) => setName(e.currentTarget.value)} />
+        <Input
+          label={t('resource.capacity')}
+          type="number"
+          value={capacity}
+          onChange={(e) => setCapacity(e.currentTarget.value)}
+        />
+        <Select
+          label={t('resource.type')}
+          value={type}
+          onChange={(e) => setType(e.currentTarget.value)}
+          options={[
+            { value: 'court', label: 'court' },
+            { value: 'field', label: 'field' },
+            { value: 'lane', label: 'lane' },
+            { value: 'table', label: 'table' },
+            { value: 'hall', label: 'hall' },
+            { value: 'other', label: 'other' },
+          ]}
+        />
+        <Input label={t('resource.sport')} value={sport} onChange={(e) => setSport(e.currentTarget.value)} />
+        <Select
+          label={t('resource.status')}
+          value={status}
+          onChange={(e) => setStatus(e.currentTarget.value)}
+          options={[
+            { value: 'active', label: t('common.active') },
+            { value: 'inactive', label: t('common.inactive') },
+            { value: 'maintenance', label: 'maintenance' },
+          ]}
+        />
+        <Input label={t('resource.surface')} value={surface} onChange={(e) => setSurface(e.currentTarget.value)} />
+        <Input
+          className="md:col-span-2"
+          label="Cover image URL"
+          value={image}
+          onChange={(e) => setImage(e.currentTarget.value)}
+        />
+        <Textarea
+          className="md:col-span-2"
+          label={t('facilityDetail.description')}
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+        />
+      </div>
+    </Modal>
   );
 }
 
@@ -470,7 +673,7 @@ function MetaCard({ label, children }: { label: string; children: React.ReactNod
 }
 
 function summarizeWeeklyHours(
-  groups: ReturnType<typeof getScheduleResult>['groups'],
+  groups: VenueScheduleResult['groups'],
 ): string {
   const starts: number[] = [];
   const ends: number[] = [];

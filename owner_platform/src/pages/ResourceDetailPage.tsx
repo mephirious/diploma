@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -24,12 +24,28 @@ import { WeeklyScheduleEditor } from '@/components/resource/WeeklyScheduleEditor
 import { PricingEditor } from '@/components/resource/PricingEditor';
 import { BlackoutEditor } from '@/components/resource/BlackoutEditor';
 import { SlotPreview } from '@/components/resource/SlotPreview';
+import { Modal } from '@/components/ui/Modal';
+import { Input, Select, Textarea } from '@/components/ui/Input';
 
-import { getScheduleGroup } from '@/mock/scheduleResults';
-import { MOCK_VENUES } from '@/mock/venues';
 import { formatPriceString } from '@/lib/format';
 import type { PricingRule } from '@/types/pricing';
 import type { Blackout, ResourceScheduleEntry } from '@/types/schedule';
+import type { Resource } from '@/types/resource';
+import {
+  useCreateBlackout,
+  useCreatePricing,
+  useCreateSchedule,
+  useDeleteBlackout,
+  useDeletePricing,
+  useDeleteSchedule,
+  useUpdateBlackout,
+  useUpdatePricing,
+  useUpdateResource,
+  useUpdateSchedule,
+  useVenue,
+  useVenueResources,
+  useScheduleResult,
+} from '@/hooks/useVenues';
 
 type Tab = 'overview' | 'schedules' | 'pricing' | 'blackouts';
 
@@ -37,14 +53,60 @@ export function ResourceDetailPage() {
   const { t } = useTranslation();
   const { facilityId = '', resourceId = '' } = useParams();
 
-  const venue = useMemo(
-    () => MOCK_VENUES.find((v) => v.id === facilityId),
-    [facilityId],
-  );
-  const initial = useMemo(
-    () => getScheduleGroup(facilityId, resourceId),
-    [facilityId, resourceId],
-  );
+  const [editResourceOpen, setEditResourceOpen] = useState(false);
+  const { data: venueData, isLoading: venueLoading } = useVenue(facilityId);
+  const { data: resourcesData, isLoading: resourcesLoading } = useVenueResources(facilityId);
+  const { data: scheduleResultData, isLoading: scheduleLoading } = useScheduleResult(facilityId);
+
+  const updateResource = useUpdateResource(facilityId);
+  const createSchedule = useCreateSchedule(facilityId);
+  const updateSchedule = useUpdateSchedule(facilityId);
+  const deleteSchedule = useDeleteSchedule(facilityId);
+  const createPricing = useCreatePricing(facilityId);
+  const updatePricing = useUpdatePricing(facilityId);
+  const deletePricing = useDeletePricing(facilityId);
+  const createBlackout = useCreateBlackout(facilityId);
+  const updateBlackout = useUpdateBlackout(facilityId);
+  const deleteBlackout = useDeleteBlackout(facilityId);
+
+  const venue = useMemo(() => {
+    if (!venueData) return null;
+    return {
+      id: venueData.id,
+      name: venueData.name,
+      description: venueData.description ?? '',
+      sports: venueData.sports ?? [],
+      address_line1: venueData.address_line1 ?? '',
+      address_line2: venueData.address_line2,
+      city: venueData.city ?? '',
+      region: venueData.region ?? '',
+      country: venueData.country ?? '',
+      postal_code: venueData.postal_code ?? '',
+      location: venueData.location ?? null,
+      images: venueData.images ?? [],
+      contacts: venueData.contacts ?? [],
+      status: venueData.status ?? 'active',
+      owner_id: venueData.owner_id ?? null,
+    };
+  }, [venueData]);
+
+  const resource = useMemo<Resource | null>(() => {
+    const rows = (resourcesData?.results ?? []) as Resource[];
+    return rows.find((r) => r.id === resourceId) ?? null;
+  }, [resourcesData, resourceId]);
+
+  const initial = useMemo(() => {
+    const group = scheduleResultData?.groups?.find((g: any) => g.resource_id === resourceId);
+    if (group) return group;
+    if (!resource) return null;
+    return {
+      resource_id: resource.id,
+      resource,
+      schedules: [],
+      pricing: [],
+      blackouts: [],
+    };
+  }, [scheduleResultData, resourceId, resource]);
 
   const [tab, setTab] = useState<Tab>('overview');
   const [schedules, setSchedules] = useState<ResourceScheduleEntry[]>(
@@ -55,7 +117,34 @@ export function ResourceDetailPage() {
     initial?.blackouts ?? [],
   );
 
-  if (!venue || !initial) {
+  useEffect(() => {
+    setSchedules(initial?.schedules ?? []);
+    setPricing(initial?.pricing ?? []);
+    setBlackouts(initial?.blackouts ?? []);
+  }, [initial]);
+
+  const isBusy =
+    createSchedule.isPending ||
+    updateSchedule.isPending ||
+    deleteSchedule.isPending ||
+    createPricing.isPending ||
+    updatePricing.isPending ||
+    deletePricing.isPending ||
+    createBlackout.isPending ||
+    updateBlackout.isPending ||
+    deleteBlackout.isPending;
+
+  if (venueLoading || resourcesLoading || scheduleLoading) {
+    return (
+      <EmptyState
+        icon={<LayoutDashboard size={22} />}
+        title="Loading resource"
+        description="Fetching latest data..."
+      />
+    );
+  }
+
+  if (!venue || !initial || !resource) {
     return (
       <EmptyState
         icon={<LayoutDashboard size={22} />}
@@ -72,7 +161,6 @@ export function ResourceDetailPage() {
     );
   }
 
-  const resource = initial.resource;
   const displayName = resource.name ?? `Resource ${resource.id}`;
   const basePrice = pricing
     .filter((p) => p.status === 'active' && p.priority === 0)
@@ -123,7 +211,12 @@ export function ResourceDetailPage() {
               <StatusChip status={(resource.status ?? 'active') as 'active' | 'inactive' | 'maintenance'} />
             </div>
             <div className="absolute top-4 right-4">
-              <Button variant="secondary" size="sm" leftIcon={<Pencil size={14} />}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  leftIcon={<Pencil size={14} />}
+                  onClick={() => setEditResourceOpen(true)}
+                >
                 {t('facilityDetail.editResource')}
               </Button>
             </div>
@@ -291,6 +384,33 @@ export function ResourceDetailPage() {
             resourceId={resourceId}
             entries={schedules}
             onChange={setSchedules}
+            busy={isBusy}
+            onCreate={async (entry) => {
+              await createSchedule.mutateAsync({
+                venue_id: facilityId,
+                resource_id: resourceId,
+                day_of_week: entry.day_of_week,
+                start_time: entry.start_time,
+                end_time: entry.end_time,
+                timezone: entry.timezone ?? 'Asia/Almaty',
+                status: entry.status,
+              });
+            }}
+            onUpdate={async (entry) => {
+              await updateSchedule.mutateAsync({
+                id: entry.id,
+                data: {
+                  day_of_week: entry.day_of_week,
+                  start_time: entry.start_time,
+                  end_time: entry.end_time,
+                  timezone: entry.timezone ?? 'Asia/Almaty',
+                  status: entry.status,
+                },
+              });
+            }}
+            onDelete={async (entry) => {
+              await deleteSchedule.mutateAsync(entry.id);
+            }}
           />
           <SlotPreview
             schedules={schedules}
@@ -305,6 +425,41 @@ export function ResourceDetailPage() {
             resourceId={resourceId}
             rules={pricing}
             onChange={setPricing}
+            busy={isBusy}
+            onCreate={async (rule) => {
+              await createPricing.mutateAsync({
+                venue_id: facilityId,
+                resource_id: resourceId,
+                price: Number(rule.price),
+                currency: rule.currency,
+                day_of_week: rule.day_of_week ?? undefined,
+                start_time: rule.start_time ?? undefined,
+                end_time: rule.end_time ?? undefined,
+                effective_from: rule.effective_from ?? undefined,
+                effective_to: rule.effective_to ?? undefined,
+                priority: rule.priority,
+                status: rule.status,
+              });
+            }}
+            onUpdate={async (rule) => {
+              await updatePricing.mutateAsync({
+                id: rule.id,
+                data: {
+                  price: Number(rule.price),
+                  currency: rule.currency,
+                  day_of_week: rule.day_of_week ?? undefined,
+                  start_time: rule.start_time ?? undefined,
+                  end_time: rule.end_time ?? undefined,
+                  effective_from: rule.effective_from ?? undefined,
+                  effective_to: rule.effective_to ?? undefined,
+                  priority: rule.priority,
+                  status: rule.status,
+                },
+              });
+            }}
+            onDelete={async (rule) => {
+              await deletePricing.mutateAsync(rule.id);
+            }}
           />
           <SlotPreview
             schedules={schedules}
@@ -318,6 +473,31 @@ export function ResourceDetailPage() {
             resourceId={resourceId}
             blackouts={blackouts}
             onChange={setBlackouts}
+            busy={isBusy}
+            onCreate={async (item) => {
+              await createBlackout.mutateAsync({
+                venue_id: facilityId,
+                resource_id: resourceId,
+                start_at: item.start_at,
+                end_at: item.end_at,
+                reason: item.reason,
+                status: item.status,
+              });
+            }}
+            onUpdate={async (item) => {
+              await updateBlackout.mutateAsync({
+                id: item.id,
+                data: {
+                  start_at: item.start_at,
+                  end_at: item.end_at,
+                  reason: item.reason,
+                  status: item.status,
+                },
+              });
+            }}
+            onDelete={async (item) => {
+              await deleteBlackout.mutateAsync(item.id);
+            }}
           />
           <SlotPreview
             schedules={schedules}
@@ -326,7 +506,133 @@ export function ResourceDetailPage() {
           />
         </div>
       )}
+
+      <EditResourceModal
+        open={editResourceOpen}
+        onClose={() => setEditResourceOpen(false)}
+        resource={resource}
+        saving={updateResource.isPending}
+        onSave={async (payload) => {
+          await updateResource.mutateAsync({ id: resource.id, data: payload });
+          setEditResourceOpen(false);
+        }}
+      />
     </div>
+  );
+}
+
+function EditResourceModal({
+  open,
+  onClose,
+  resource,
+  saving,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  resource: Resource;
+  saving: boolean;
+  onSave: (payload: {
+    name?: string;
+    description?: string;
+    type?: string;
+    sport?: string;
+    capacity?: number;
+    status?: string;
+    surface?: string;
+  }) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [name, setName] = useState(resource.name ?? '');
+  const [description, setDescription] = useState(resource.description ?? '');
+  const [type, setType] = useState(resource.type ?? 'other');
+  const [sport, setSport] = useState(resource.sport ?? '');
+  const [capacity, setCapacity] = useState(String(resource.capacity ?? ''));
+  const [status, setStatus] = useState(resource.status ?? 'active');
+  const [surface, setSurface] = useState(resource.surface ?? '');
+
+  useEffect(() => {
+    if (!open) return;
+    setName(resource.name ?? '');
+    setDescription(resource.description ?? '');
+    setType(resource.type ?? 'other');
+    setSport(resource.sport ?? '');
+    setCapacity(String(resource.capacity ?? ''));
+    setStatus(resource.status ?? 'active');
+    setSurface(resource.surface ?? '');
+  }, [open, resource]);
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t('facilityDetail.editResource')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            loading={saving}
+            onClick={() => {
+              void onSave({
+                name,
+                description,
+                type,
+                sport,
+                capacity: Number(capacity) || 0,
+                status,
+                surface,
+              });
+            }}
+          >
+            {t('common.save')}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input label={t('resource.name')} value={name} onChange={(e) => setName(e.currentTarget.value)} />
+        <Input
+          label={t('resource.capacity')}
+          type="number"
+          value={capacity}
+          onChange={(e) => setCapacity(e.currentTarget.value)}
+        />
+        <Input label={t('resource.sport')} value={sport} onChange={(e) => setSport(e.currentTarget.value)} />
+        <Input label={t('resource.surface')} value={surface} onChange={(e) => setSurface(e.currentTarget.value)} />
+        <Select
+          label={t('resource.type')}
+          value={type}
+          onChange={(e) => setType(e.currentTarget.value)}
+          options={[
+            { value: 'court', label: 'court' },
+            { value: 'field', label: 'field' },
+            { value: 'lane', label: 'lane' },
+            { value: 'table', label: 'table' },
+            { value: 'hall', label: 'hall' },
+            { value: 'other', label: 'other' },
+          ]}
+        />
+        <Select
+          label={t('resource.status')}
+          value={status ?? 'active'}
+          onChange={(e) => setStatus(e.currentTarget.value as 'active' | 'inactive' | 'maintenance')}
+          options={[
+            { value: 'active', label: t('common.active') },
+            { value: 'inactive', label: t('common.inactive') },
+            { value: 'maintenance', label: 'maintenance' },
+          ]}
+        />
+        <Textarea
+          className="md:col-span-2"
+          label={t('facilityDetail.description')}
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+        />
+      </div>
+    </Modal>
   );
 }
 

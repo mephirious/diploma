@@ -52,3 +52,32 @@ export type WeekdayKey = (typeof WEEKDAY_KEYS)[number];
 export function apiDayOfWeek(date: Date): number {
   return date.getDay();
 }
+
+/** Format an ISO instant in an IANA timezone (falls back if invalid TZ). */
+export function formatInTimezone(
+  iso: string | null | undefined,
+  timezone: string | null | undefined,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const tz = timezone?.trim() || 'UTC';
+  try {
+    return new Intl.DateTimeFormat(locale, { ...options, timeZone: tz }).format(d);
+  } catch {
+    return new Intl.DateTimeFormat(locale, options).format(d);
+  }
+}
+
+/** "YYYY-MM-DD" (UTC calendar day) → short weekday in locale. */
+export function formatShortDayFromIsoDate(isoDay: string, locale: string): string {
+  const parts = isoDay.split('-').map((x) => Number.parseInt(x, 10));
+  const y = parts[0];
+  const m = parts[1];
+  const d = parts[2];
+  if (!y || !m || !d) return isoDay;
+  return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(Date.UTC(y, m - 1, d)));
+}
+

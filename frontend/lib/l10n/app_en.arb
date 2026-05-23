@@ -1,0 +1,419 @@
+{
+  "@@locale": "en",
+  "appTitle": "ZhamSpace",
+  
+  "home": "Home",
+  "explore": "Explore",
+  "favorites": "Favorites",
+  "reservations": "My Bookings",
+  "profile": "Profile",
+  "sessions": "Sessions",
+  "chats": "Chats",
+  "facilitiesTab": "Facilities",
+  "bookingsTab": "Bookings",
+  
+  "searchFacilities": "Search for activities, parks, or clubs",
+  "allCategories": "All Categories",
+  "football": "Football",
+  "basketball": "Basketball",
+  "tennis": "Tennis",
+  "swimming": "Swimming",
+  "gym": "Gym",
+  "volleyball": "Volleyball",
+  "badminton": "Badminton",
+  "tabletennis": "Table Tennis",
+  
+  "popularVenues": "Popular Venues",
+  "nearYou": "Near You",
+  "topRated": "Top Rated",
+  "seeAll": "See All",
+  
+  "perHour": "per hour",
+  "rating": "Rating",
+  "reviews": "{count} reviews",
+  "@reviews": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "bookNow": "Book Now",
+  "viewDetails": "View Details",
+  "openNow": "Open Now",
+  "closed": "Closed",
+  "availableToday": "Available today",
+  "fromPrice": "From {price}₸",
+  "@fromPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "kmAway": "{km} km",
+  "@kmAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "about": "About",
+  "venueDescriptionTab": "Description",
+  "venueContactInfoTab": "Contact info",
+  "venueNoContacts": "No contact information",
+  "facilities": "Facilities",
+  "availability": "Availability",
+  "location": "Location",
+  "reviewsTitle": "Reviews",
+  
+  "selectDate": "Select Date",
+  "selectTime": "Select Time",
+  "duration": "Duration",
+  "hours": "hours",
+  "hour": "hour",
+  
+  "available": "Available",
+  "booked": "Booked",
+  "unavailable": "Unavailable",
+  "facilityUnavailableNoSchedule": "No opening hours",
+  "facilityUnavailableHint": "This facility cannot be booked.",
+  "selectStartTimeLabel": "Start time",
+  "selectEndTimeLabel": "End time",
+  "loginToBookDescription": "Please log in to book this facility.",
+  "noSlotsThisDay": "No time slots are available for this date.",
+  "bookingTotalLabel": "Total",
+  "payNowLabel": "Pay now",
+  "unableToLoadFacilities": "Unable to load facilities",
+  "noFacilitiesListed": "No facilities listed",
+  "facilityMetaSportType": "{sport} · {type}",
+  "@facilityMetaSportType": {
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "bookingDetails": "Booking Details",
+  "bookingNotFound": "Booking not found",
+  "facility": "Facility",
+  "date": "Date",
+  "time": "Time",
+  "totalPrice": "Total Price",
+  "proceedToPayment": "Proceed to Payment",
+  
+  "payment": "Payment",
+  "paymentMethod": "Payment Method",
+  "creditCard": "Credit Card",
+  "debitCard": "Debit Card",
+  "cash": "Cash on Arrival",
+  "cardNumber": "Card Number",
+  "expiryDate": "Expiry Date",
+  "cvv": "CVV",
+  "confirmPayment": "Confirm Payment",
+  "processingPayment": "Processing payment...",
+  "processingPaymentHint": "Please wait while we confirm your payment.",
+  "paymentFailedTitle": "Payment failed",
+  "paymentFailedMessage": "We could not complete your payment. Check My Bookings for details.",
+  "applePay": "Apple Pay",
+  "googlePay": "Google Pay",
+  "kaspi": "Kaspi",
+  "halyk": "Halyk Bank",
+  "savedCards": "Saved Cards",
+  "addNewCard": "Add New Card",
+  "otherBankCards": "Bank Card",
+  "selectCard": "Select a card",
+  
+  "bookingConfirmed": "Booking Confirmed!",
+  "bookingSuccess": "Your booking has been confirmed. Check your email for details.",
+  "viewBooking": "View Booking",
+  "backToHome": "Back to Home",
+  
+  "upcomingBookings": "Upcoming",
+  "pastBookings": "Past",
+  "noBookings": "No bookings yet",
+  "startBooking": "Start exploring and book your first facility!",
+  
+  "cancelBooking": "Cancel Booking",
+  "confirmCancel": "Are you sure you want to cancel this booking?",
+  "yes": "Yes",
+  "no": "No",
+  "bookingCancelled": "Booking cancelled successfully",
+  
+  "myProfile": "My Profile",
+  "editProfile": "Edit Profile",
+  "settings": "Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "systemDefault": "System Default",
+  
+  "english": "English",
+  "russian": "Русский",
+  "kazakh": "Қазақша",
+  
+  "myFavorites": "My Favorites",
+  "noFavorites": "No favorites yet",
+  "addFavorites": "Add facilities to your favorites to see them here",
+  "myBookings": "My Bookings",
+  
+  "personalInfo": "Personal Information",
+  "fullName": "Full Name",
+  "email": "Email",
+  "phone": "Phone Number",
+  "save": "Save",
+  "cancel": "Cancel",
+  
+  "logout": "Logout",
+  "confirmLogout": "Are you sure you want to logout?",
+  
+  "login": "Login",
+  "register": "Register",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "forgotPassword": "Forgot Password?",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "signUp": "Sign Up",
+  "signIn": "Sign In",
+  "authRequiredHint": "You need an account to access this feature.",
+  
+  "notifications": "Notifications",
+  "notificationsEnabled": "Push Notifications",
+  "emailNotifications": "Email Notifications",
+  
+  "helpSupport": "Help & Support",
+  "termsConditions": "Terms & Conditions",
+  "privacyPolicy": "Privacy Policy",
+  "aboutUs": "About Us",
+  
+  "version": "Version",
+  
+  "filterByPrice": "Filter by Price",
+  "priceRange": "Price Range",
+  "applyFilters": "Apply Filters",
+  "clearFilters": "Clear Filters",
+  
+  "sortBy": "Sort By",
+  "priceLowest": "Price: Low to High",
+  "priceHighest": "Price: High to Low",
+  "ratingHighest": "Highest Rated",
+  "nearest": "Nearest to Me",
+  
+  "openingHours": "Opening Hours",
+  "amenities": "Amenities",
+  "parking": "Parking",
+  "changingRooms": "Changing Rooms",
+  "showers": "Showers",
+  "equipment": "Equipment Rental",
+  "wifi": "Free WiFi",
+  "cafeteria": "Cafeteria",
+  
+  "getDirections": "Get Directions",
+  "call": "Call",
+  "share": "Share",
+
+  "now": "Now",
+  "today": "Today",
+  "pickDate": "Date",
+  "filters": "Filters",
+  "level": "Level",
+  "allLevels": "All Levels",
+  "beginner": "Beginner",
+  "intermediate": "Intermediate",
+  "advanced": "Advanced",
+  "spotsLeft": "{count} spots left",
+  "@spotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playersJoined": "{count} players joined",
+  "@playersJoined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "joinSession": "Join Session",
+  "sessionDetails": "Session Details",
+  "host": "Host",
+  "participants": "Participants",
+  "skillLevel": "Skill Level",
+  "pricePerPerson": "Price per person",
+  "spotsAvailable": "Spots Available",
+  "joinedSuccessfully": "You have joined the session!",
+  "leaveSession": "Leave Session",
+  "noSessions": "No sessions available",
+  "findSessions": "Check back later for open sessions near you",
+  "live": "LIVE",
+  "playersCount": "{current}/{max}",
+  "@playersCount": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+
+  "allChats": "All",
+  "venueChats": "Venues",
+  "sessionGroups": "Sessions",
+  "direct": "Direct",
+  "typeMessage": "Type a message...",
+  "noChats": "No conversations yet",
+  "startChatting": "When you message a venue owner, your threads show up here.",
+  "messageOwner": "Message owner",
+  "chatEmptyThread": "No messages yet",
+  "searchChats": "Search conversations...",
+  "online": "Online",
+  "membersCount": "{count} members",
+  "@membersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "justNow": "Just now",
+  "minutesAgo": "{count}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "reserveOrBook": "Reserve or Book",
+  "newFacilities": "New Facilities",
+  "news": "News",
+  "promo": "Promo",
+  "placeYourFacility": "Place Your Facility",
+  "guide": "Guide",
+
+  "price": "Price",
+  "distance": "Distance",
+  "book": "Book",
+  "confirmed": "Confirmed",
+  "completed": "Completed",
+  "cancelled": "Cancelled",
+
+  "manageTab": "Manage",
+  "dashboardTab": "Dashboard",
+  "analyticsTab": "Revenue",
+
+  "ownerHubTitle": "Owner Hub",
+  "ownerHubSubtitle": "Manage your facilities, bookings, and growth",
+  "ownerFacilityHint": "Keep your schedule current and your templates polished to maximize occupancy.",
+  "addEditFacility": "Add / Edit Facility",
+  "availabilitySchedule": "Availability & Schedule",
+  "sessionTemplates": "Session Templates",
+  "myFacilities": "My Facilities",
+  "statusActive": "Active",
+  "statusDraft": "Draft",
+  "statusSuspended": "Suspended",
+  "profileCompletion": "Profile completion",
+  "occupancyRate": "Occupancy rate",
+
+  "bookingsDashboard": "Bookings Dashboard",
+  "incomingRequests": "Incoming",
+  "upcomingSessionsTitle": "Upcoming",
+  "pastSessionsTitle": "Past",
+  "cancellationsTitle": "Cancellations",
+
+  "revenueAnalytics": "Revenue & Analytics",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "payouts": "Payouts",
+  "occupancyByFacility": "Occupancy by Facility",
+  "popularSlotsHeatmap": "Popular Time Slots Heatmap",
+
+  "bookingChats": "Bookers",
+  "ownerPublicProfile": "Public Owner Profile",
+  "hostReviews": "Host reviews",
+  "responseRate": "Response rate",
+  "memberSince": "Member since",
+
+  "roleTestSwitch": "Role test switch",
+  "roleCustomer": "Customer",
+  "roleFacilityOwner": "Facility owner",
+  "switchToOwnerPrompt": "Switch to Facility Owner mode and preview owner-only screens?",
+  "switchToCustomerPrompt": "Switch back to Customer mode and restore marketplace user screens?",
+
+  "retry": "Retry",
+  "reservationsAuthDescription": "Login or register to manage your bookings.",
+  "bookingFallbackTitle": "Booking",
+  "venueIdFallback": "Venue {venueId}",
+  "@venueIdFallback": {
+    "placeholders": {
+      "venueId": {
+        "type": "String"
+      }
+    }
+  },
+  "resourcePickerFallback": "Resource",
+  "addressLabel": "Address",
+  "bookingContactInfoTitle": "Contact info",
+  "bookingContactInfoSubtitle": "Phone, email & website",
+  "contactsSectionTitle": "Contacts",
+  "paymentRowLabel": "Payment",
+  "holdExpiresLabel": "Hold expires",
+  "sessionSectionTitle": "Session",
+  "sessionIdLabel": "Session ID",
+  "cancellationReasonLabel": "Cancellation reason",
+  "bookingIdLine": "Booking ID · {id}",
+  "@bookingIdLine": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "contactTypePhoneDefault": "Phone",
+  "contactTypeEmailDefault": "Email",
+  "contactTypeWebsiteDefault": "Website",
+  "notLoggedInError": "Not logged in",
+  "bookingFailedMessage": "Booking failed: {error}",
+  "@bookingFailedMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "bankCardBrandLabel": "Bank / Brand",
+  "bankCardBrandHint": "Visa, Mastercard…",
+  "paymentMyCards": "My Cards",
+  "paymentNoSavedCards": "No saved cards",
+  "paymentPayButton": "Pay",
+  "bookingStatusCreated": "Awaiting payment",
+  "bookingStatusPending": "Pending",
+  "bookingStatusHold": "Hold",
+  "bookingStatusActive": "Active",
+  "cancelReasonPaymentTimeout": "Payment was not completed in time",
+  "cancelReasonUserCancelled": "Cancelled by you",
+  "cancelReasonHoldExpired": "Reservation hold expired",
+  "cancelReasonAdminCancelled": "Cancelled by the venue",
+  "cancelReasonRefunded": "Cancelled due to refund",
+  "paymentStatusPaid": "Paid",
+  "paymentStatusPending": "Pending",
+  "paymentStatusHold": "On hold",
+  "paymentStatusFailed": "Failed",
+  "paymentStatusRefunded": "Refunded"
+}

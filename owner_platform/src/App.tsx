@@ -7,6 +7,9 @@ import { FacilitiesPage } from '@/pages/FacilitiesPage';
 import { FacilityDetailPage } from '@/pages/FacilityDetailPage';
 import { ResourceDetailPage } from '@/pages/ResourceDetailPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { BookingsPage } from '@/pages/BookingsPage';
+import { RevenuePage } from '@/pages/RevenuePage';
+import { ChatsPage } from '@/pages/ChatsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { useApplyTheme } from '@/store/theme';
 import { useAuth } from '@/store/auth';
@@ -38,9 +41,10 @@ export function App() {
               path="/facilities/:facilityId/resources/:resourceId"
               element={<ResourceDetailPage />}
             />
-            <Route path="/bookings" element={<ComingSoonPage titleKey="nav.bookings" />} />
-            <Route path="/analytics" element={<ComingSoonPage titleKey="nav.analytics" />} />
+            <Route path="/bookings" element={<BookingsPage />} />
+            <Route path="/analytics" element={<RevenuePage />} />
             <Route path="/settings" element={<ComingSoonPage titleKey="nav.settings" />} />
+            <Route path="/chats" element={<ChatsPage />} />
             <Route path="/support" element={<ComingSoonPage titleKey="nav.support" />} />
           </Route>
         </Route>

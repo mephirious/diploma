@@ -15,10 +15,18 @@ export function WeeklyScheduleEditor({
   resourceId,
   entries,
   onChange,
+  onCreate,
+  onUpdate,
+  onDelete,
+  busy = false,
 }: {
   resourceId: string;
   entries: ResourceScheduleEntry[];
   onChange: (next: ResourceScheduleEntry[]) => void;
+  onCreate?: (entry: ResourceScheduleEntry) => Promise<void>;
+  onUpdate?: (entry: ResourceScheduleEntry) => Promise<void>;
+  onDelete?: (entry: ResourceScheduleEntry) => Promise<void>;
+  busy?: boolean;
 }) {
   const { t } = useTranslation();
   const [editorOpen, setEditorOpen] = useState(false);
@@ -32,8 +40,20 @@ export function WeeklyScheduleEditor({
     byDay.get(e.day_of_week)?.push(e);
   }
 
-  function handleSave(entry: ResourceScheduleEntry) {
+  async function handleSave(entry: ResourceScheduleEntry) {
     const exists = entries.some((e) => e.id === entry.id);
+    if (exists && onUpdate) {
+      await onUpdate(entry);
+      setEditorOpen(false);
+      setEditing(null);
+      return;
+    }
+    if (!exists && onCreate) {
+      await onCreate(entry);
+      setEditorOpen(false);
+      setEditing(null);
+      return;
+    }
     const next = exists
       ? entries.map((e) => (e.id === entry.id ? entry : e))
       : [...entries, entry];
@@ -42,7 +62,12 @@ export function WeeklyScheduleEditor({
     setEditing(null);
   }
 
-  function handleDelete(entry: ResourceScheduleEntry) {
+  async function handleDelete(entry: ResourceScheduleEntry) {
+    if (onDelete) {
+      await onDelete(entry);
+      setConfirmDelete(null);
+      return;
+    }
     onChange(entries.filter((e) => e.id !== entry.id));
   }
 
@@ -61,6 +86,8 @@ export function WeeklyScheduleEditor({
           <Button
             size="sm"
             leftIcon={<Plus size={14} />}
+            loading={busy}
+            disabled={busy}
             onClick={() => {
               setEditing(null);
               setEditorOpen(true);
@@ -79,6 +106,8 @@ export function WeeklyScheduleEditor({
               <Button
                 size="sm"
                 leftIcon={<Plus size={14} />}
+                loading={busy}
+                disabled={busy}
                 onClick={() => setEditorOpen(true)}
               >
                 {t('resource.addSchedule')}
@@ -142,7 +171,9 @@ export function WeeklyScheduleEditor({
             setEditorOpen(false);
             setEditing(null);
           }}
-          onSave={handleSave}
+          onSave={(entry) => {
+            void handleSave(entry);
+          }}
           onDelete={
             editing
               ? () => {
@@ -157,7 +188,9 @@ export function WeeklyScheduleEditor({
       <ConfirmDialog
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+        onConfirm={() => {
+          if (confirmDelete) void handleDelete(confirmDelete);
+        }}
         title={t('resource.deleteScheduleConfirm')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}

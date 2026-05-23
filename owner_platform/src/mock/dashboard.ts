@@ -1,5 +1,3 @@
-import type { OwnerBooking } from '@/types/booking';
-
 export const MOCK_DASHBOARD_STATS = {
   bookingsToday: 28,
   bookingsTodayDelta: 0.12, // +12% vs yesterday
@@ -40,59 +38,4 @@ export const MOCK_OCCUPANCY_HEATMAP: Array<{
   { day: 'Fri', morning: 0.32, noon: 0.56, afternoon: 0.78, evening: 0.94, night: 0.62 },
   { day: 'Sat', morning: 0.38, noon: 0.66, afternoon: 0.86, evening: 0.96, night: 0.70 },
   { day: 'Sun', morning: 0.30, noon: 0.58, afternoon: 0.74, evening: 0.90, night: 0.64 },
-];
-
-export const MOCK_INCOMING_BOOKINGS: OwnerBooking[] = [
-  {
-    id: 'b-1',
-    facility_id: 'v-almaty-arena',
-    facility_name: 'Almaty Arena',
-    resource_name: 'Field A — Main Pitch',
-    customer_name: 'Sanzhar Team',
-    start_at: '2026-05-01T13:00:00Z',
-    end_at: '2026-05-01T15:00:00Z',
-    attendees: 10,
-    price: 48000,
-    currency: 'KZT',
-    status: 'pending',
-  },
-  {
-    id: 'b-2',
-    facility_id: 'v-skyline-court',
-    facility_name: 'Skyline Court Center',
-    resource_name: 'Court A',
-    customer_name: 'Aigerim K.',
-    start_at: '2026-05-02T03:00:00Z',
-    end_at: '2026-05-02T04:00:00Z',
-    attendees: 4,
-    price: 8000,
-    currency: 'KZT',
-    status: 'pending',
-  },
-  {
-    id: 'b-3',
-    facility_id: 'v-tennis-park',
-    facility_name: 'Tennis Park Esentai',
-    resource_name: 'Court 1 — Indoor',
-    customer_name: 'Baurzhan N.',
-    start_at: '2026-05-03T15:00:00Z',
-    end_at: '2026-05-03T16:00:00Z',
-    attendees: 2,
-    price: 9500,
-    currency: 'KZT',
-    status: 'confirmed',
-  },
-  {
-    id: 'b-4',
-    facility_id: 'v-almaty-arena',
-    facility_name: 'Almaty Arena',
-    resource_name: 'Indoor Court 1',
-    customer_name: 'Corporate League',
-    start_at: '2026-05-04T14:00:00Z',
-    end_at: '2026-05-04T17:00:00Z',
-    attendees: 12,
-    price: 27000,
-    currency: 'KZT',
-    status: 'confirmed',
-  },
 ];

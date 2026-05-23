@@ -1,6 +1,7 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { ChatBootstrap } from '@/components/chat/ChatBootstrap';
 import { useAuth } from '@/store/auth';
 
 export function AppShell() {
@@ -13,6 +14,7 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen bg-bg-light dark:bg-bg-dark text-text-light dark:text-text-dark">
+      <ChatBootstrap />
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />

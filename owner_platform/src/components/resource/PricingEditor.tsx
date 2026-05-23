@@ -16,19 +16,39 @@ export function PricingEditor({
   resourceId,
   rules,
   onChange,
+  onCreate,
+  onUpdate,
+  onDelete,
+  busy = false,
 }: {
   venueId: string;
   resourceId: string;
   rules: PricingRule[];
   onChange: (next: PricingRule[]) => void;
+  onCreate?: (rule: PricingRule) => Promise<void>;
+  onUpdate?: (rule: PricingRule) => Promise<void>;
+  onDelete?: (rule: PricingRule) => Promise<void>;
+  busy?: boolean;
 }) {
   const { t } = useTranslation();
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<PricingRule | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<PricingRule | null>(null);
 
-  function handleSave(rule: PricingRule) {
+  async function handleSave(rule: PricingRule) {
     const exists = rules.some((r) => r.id === rule.id);
+    if (exists && onUpdate) {
+      await onUpdate(rule);
+      setEditorOpen(false);
+      setEditing(null);
+      return;
+    }
+    if (!exists && onCreate) {
+      await onCreate(rule);
+      setEditorOpen(false);
+      setEditing(null);
+      return;
+    }
     const next = exists
       ? rules.map((r) => (r.id === rule.id ? rule : r))
       : [...rules, rule];
@@ -36,7 +56,12 @@ export function PricingEditor({
     setEditorOpen(false);
     setEditing(null);
   }
-  function handleDelete(rule: PricingRule) {
+  async function handleDelete(rule: PricingRule) {
+    if (onDelete) {
+      await onDelete(rule);
+      setConfirmDelete(null);
+      return;
+    }
     onChange(rules.filter((r) => r.id !== rule.id));
   }
 
@@ -57,6 +82,8 @@ export function PricingEditor({
           <Button
             size="sm"
             leftIcon={<Plus size={14} />}
+            loading={busy}
+            disabled={busy}
             onClick={() => {
               setEditing(null);
               setEditorOpen(true);
@@ -75,6 +102,8 @@ export function PricingEditor({
               <Button
                 size="sm"
                 leftIcon={<Plus size={14} />}
+                loading={busy}
+                disabled={busy}
                 onClick={() => setEditorOpen(true)}
               >
                 {t('resource.addPricing')}
@@ -107,14 +136,18 @@ export function PricingEditor({
             setEditorOpen(false);
             setEditing(null);
           }}
-          onSave={handleSave}
+          onSave={(rule) => {
+            void handleSave(rule);
+          }}
         />
       ) : null}
 
       <ConfirmDialog
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
+        onConfirm={() => {
+          if (confirmDelete) void handleDelete(confirmDelete);
+        }}
         title={t('resource.deletePricingConfirm')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}

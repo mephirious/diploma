@@ -1,0 +1,255 @@
+Analyzing frontend...                                           
+
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:41:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:92:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:161:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:166:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:198:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:209:45 • deprecated_member_use
+   info • Missing a required trailing comma • lib/core/theme/app_theme.dart:229:59 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/core/theme/app_theme.dart:236:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/login_page.dart:57:53 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/login_page.dart:95:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/login_page.dart:169:34 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:121:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:132:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:160:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/profile_page.dart:164:54 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:168:65 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:171:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:173:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:185:76 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:188:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/profile_page.dart:192:51 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:196:62 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:199:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:201:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:252:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:266:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:269:58 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:271:75 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:297:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:302:76 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:304:53 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:309:76 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:311:51 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:316:76 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:318:74 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:414:62 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:420:69 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:426:62 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:456:65 • require_trailing_commas
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:469:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:470:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:480:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:481:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:491:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:492:15 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:506:65 • require_trailing_commas
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:519:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:520:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:530:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:531:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:541:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/auth/presentation/pages/profile_page.dart:542:15 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:556:65 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:576:58 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:630:74 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:633:69 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:648:72 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/auth/presentation/pages/profile_page.dart:648:73 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/register_page.dart:70:53 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/register_page.dart:101:34 • deprecated_member_use
+   info • Unnecessary use of double quotes • lib/features/auth/presentation/pages/register_page.dart:208:27 • prefer_single_quotes
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/auth/presentation/pages/register_page.dart:213:34 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/auth/presentation/providers/user_provider.dart:17:10 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:51:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:52:35 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:66:64 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:91:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:91:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:98:70 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:104:68 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:109:41 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:111:48 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:121:42 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:132:41 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/chats/presentation/pages/chat_detail_page.dart:142:31 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:198:20 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:204:51 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:204:52 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:214:40 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:235:63 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:235:64 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:241:38 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:241:39 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chat_detail_page.dart:248:44 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chat_detail_page.dart:249:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:39:62 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chats_page.dart:48:38 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:56:33 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:65:43 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:90:57 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chats_page.dart:95:50 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:107:60 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:107:61 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:122:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:128:70 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:137:57 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:138:54 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:139:22 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:139:23 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chats_page.dart:148:46 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:149:49 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:164:77 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:164:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:164:79 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:167:58 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chats_page.dart:172:57 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/chats/presentation/pages/chats_page.dart:175:40 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:182:43 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:198:55 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:198:56 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:198:57 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:198:58 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:199:28 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:205:47 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:207:62 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:220:60 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:222:66 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:222:67 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:234:68 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:234:69 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:239:69 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:243:72 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:248:74 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:248:75 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:248:76 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:250:32 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/chats/presentation/pages/chats_page.dart:252:24 • require_trailing_commas
+warning • The value of the local variable 'selectedTab' isn't used • lib/features/reservations/presentation/pages/reservations_page.dart:14:11 • unused_local_variable
+   info • Parameter 'initialState' could be a super parameter • lib/features/reservations/presentation/providers/reservations_provider.dart:18:3 • use_super_parameters
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:33:7 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:40:7 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:111:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:114:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:119:46 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:138:74 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:140:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:143:63 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:145:78 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:193:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:326:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:332:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:431:50 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:433:56 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:443:40 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:458:60 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:513:56 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:515:54 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/features/sessions/presentation/pages/sessions_list_page.dart:520:34 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:530:56 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:533:62 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:554:78 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/sessions/presentation/pages/sessions_list_page.dart:569:32 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:593:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:598:44 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:614:73 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:647:57 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:649:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:652:58 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:652:74 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/sessions/presentation/pages/sessions_list_page.dart:656:34 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:671:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/pages/sessions_list_page.dart:672:52 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/pages/sessions_list_page.dart:731:79 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:71:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:75:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:91:41 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/widgets/session_card.dart:93:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:106:40 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/widgets/session_card.dart:127:58 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/sessions/presentation/widgets/session_card.dart:149:54 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/sessions/presentation/widgets/session_card.dart:223:32 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/sessions/presentation/widgets/session_card.dart:240:56 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:242:54 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:245:56 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/features/sessions/presentation/widgets/session_card.dart:250:34 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/sessions/presentation/widgets/session_card.dart:277:53 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/sessions/presentation/widgets/session_card.dart:299:71 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/sessions/presentation/widgets/session_card.dart:310:32 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/booking_page.dart:340:61 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/venues/presentation/pages/booking_page.dart:373:23 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:27:7 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:35:7 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:40:7 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:45:7 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:72:65 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:72:66 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:78:78 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/home_page.dart:85:48 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:93:79 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/home_page.dart:111:40 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:119:35 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:129:45 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/home_page.dart:145:54 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance • lib/features/venues/presentation/pages/home_page.dart:148:32 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:149:65 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:175:74 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/home_page.dart:185:42 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:190:66 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:212:68 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/venues/presentation/pages/home_page.dart:216:34 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:219:43 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:219:44 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:245:71 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:245:72 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:264:68 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance • lib/features/venues/presentation/pages/home_page.dart:268:34 • prefer_const_constructors
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:271:43 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:271:44 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:290:55 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:299:63 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:299:64 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:317:70 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:317:71 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/home_page.dart:317:72 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venue_detail_page.dart:105:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venue_detail_page.dart:129:48 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/venue_detail_page.dart:337:70 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/venue_detail_page.dart:413:70 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/venue_detail_page.dart:462:63 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/pages/venue_detail_page.dart:504:38 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venues_list_page.dart:38:28 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venues_list_page.dart:67:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venues_list_page.dart:103:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venues_list_page.dart:128:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/pages/venues_list_page.dart:140:48 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:39:78 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/widgets/venue_card.dart:52:40 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:53:25 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/widgets/venue_card.dart:63:41 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:92:54 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:101:58 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:101:59 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:111:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/widgets/venue_card.dart:113:45 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:120:60 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:126:62 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:126:63 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:145:54 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:151:78 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:161:59 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:163:60 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:173:55 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/venues/presentation/widgets/venue_card.dart:175:47 • deprecated_member_use
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:182:62 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:188:56 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:188:57 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:198:53 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:198:54 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:211:49 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:219:55 • require_trailing_commas
+   info • Missing a required trailing comma • lib/features/venues/presentation/widgets/venue_card.dart:221:26 • require_trailing_commas
+
+251 issues found. (ran in 0.8s)

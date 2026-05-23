@@ -82,7 +82,7 @@ function buildListParams(params: VenueListParams) {
   if (params.city) p['city'] = params.city;
   if (params.country) p['country'] = params.country;
   if (params.sport) p['sport'] = params.sport;
-  p['list_params.page'] = params.page ?? 1;
+  p['list_params.page'] = params.page ?? 0;
   p['list_params.page_size'] = params.page_size ?? 50;
   return p;
 }

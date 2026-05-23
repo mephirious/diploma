@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import '../auth_page_route.dart';
 import '../providers/auth_provider.dart';
+import 'register_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -11,35 +12,23 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _login() {
     if (_formKey.currentState!.validate()) {
-      final success = await ref.read(authProvider.notifier).login(
-            _emailController.text,
+      ref.read(authProvider.notifier).login(
+            _usernameController.text.trim(),
             _passwordController.text,
           );
-
-      if (success && mounted) {
-        context.go('/venues');
-      } else {
-        final error = ref.read(authProvider).error;
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error ?? 'Login failed')),
-          );
-        }
-      }
     }
   }
 
@@ -47,93 +36,163 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
+    // Listen for errors
+    ref.listen(authProvider, (previous, next) {
+      if (next.status == AuthStatus.authenticated) {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+      if (next.status == AuthStatus.error && next.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Icon(
-                    Icons.sports_tennis,
-                    size: 80,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Sport Booking',
-                    style: Theme.of(context).textTheme.headlineLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.surface,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Logo or Icon
+                    Icon(
+                      Icons.sports_basketball,
+                      size: 80,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                    const SizedBox(height: 24),
+                    Text(
+                      'Welcome Back',
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sign in to continue booking your favorite venues',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Username Field
+                    TextFormField(
+                      controller: _usernameController,
+                      keyboardType: TextInputType.text,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        prefixIcon: Icon(Icons.person_outline),
+                        hintText: 'Enter your username',
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your username';
+                        }
+                        return null;
+                      },
                     ),
-                    obscureText: _obscurePassword,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: authState.isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    const SizedBox(height: 16),
+
+                    // Password Field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock_outline),
+                        hintText: 'Enter your password',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
                     ),
-                    child: authState.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Login'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/register'),
-                    child: const Text('Don\'t have an account? Register'),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+
+                    // Login Button
+                    ElevatedButton(
+                      onPressed: authState.status == AuthStatus.authenticating
+                          ? null
+                          : _login,
+                      child: authState.status == AuthStatus.authenticating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Sign In'),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Register Link
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Don't have an account? ",
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              authPageRoute(context, const RegisterPage()),
+                            );
+                          },
+                          child: const Text('Register'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -142,4 +201,3 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 }
-

@@ -8,21 +8,33 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { useTheme } from '@/store/theme';
-import { MOCK_REVENUE_TREND } from '@/mock/dashboard';
 import { formatPrice } from '@/lib/format';
 
-export function RevenueChart() {
-  // Re-render on theme changes so colors update cleanly.
+export type RevenueChartPoint = {
+  label: string;
+  revenue: number;
+  bookings: number;
+};
+
+export function RevenueChart({ data }: { data: RevenueChartPoint[] }) {
   useTheme((s) => s.mode);
   const isDark = document.documentElement.classList.contains('dark');
 
   const axisColor = isDark ? '#94A3B8' : '#6B7280';
   const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
 
+  if (!data.length) {
+    return (
+      <div className="flex h-64 items-center justify-center text-sm font-semibold text-muted-light dark:text-muted-dark">
+        —
+      </div>
+    );
+  }
+
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={MOCK_REVENUE_TREND} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+        <AreaChart data={data} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
           <defs>
             <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#00BFA5" stopOpacity={0.42} />
@@ -58,6 +70,7 @@ export function RevenueChart() {
             labelStyle={{ color: isDark ? '#94A3B8' : '#6B7280', fontWeight: 600 }}
             formatter={(val: number, name) => {
               if (name === 'revenue') return [formatPrice(val), 'Revenue'];
+              if (name === 'bookings') return [val, 'Payments'];
               return [val, name as string];
             }}
           />

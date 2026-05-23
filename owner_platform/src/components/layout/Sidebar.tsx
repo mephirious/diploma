@@ -5,9 +5,11 @@ import {
   Building2,
   CalendarClock,
   BarChart3,
+  MessageCircle,
   MessageCircleQuestion,
   LogOut,
 } from 'lucide-react';
+import { useChatStore } from '@/store/chat';
 import { useTranslation } from 'react-i18next';
 
 import { Logo } from '@/components/common/Logo';
@@ -20,11 +22,12 @@ type Item = { to: string; labelKey: string; icon: typeof LayoutDashboard; coming
 const primaryItems: Item[] = [
   { to: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
   { to: '/facilities', labelKey: 'nav.facilities', icon: Building2 },
-  { to: '/bookings', labelKey: 'nav.bookings', icon: CalendarClock, comingSoon: true },
-  { to: '/analytics', labelKey: 'nav.analytics', icon: BarChart3, comingSoon: true },
+  { to: '/bookings', labelKey: 'nav.bookings', icon: CalendarClock },
+  { to: '/analytics', labelKey: 'nav.analytics', icon: BarChart3 },
 ];
 
 const secondaryItems: Item[] = [
+  { to: '/chats', labelKey: 'nav.chats', icon: MessageCircle },
   { to: '/support', labelKey: 'nav.support', icon: MessageCircleQuestion, comingSoon: true },
 ];
 
@@ -34,6 +37,9 @@ export function Sidebar() {
   const logout = useAuth((s) => s.logout);
   const user = useAuth((s) => s.user);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const chatUnread = useChatStore((s) =>
+    s.conversations.reduce((sum, c) => sum + c.unreadCount, 0),
+  );
 
   function handleLogout() {
     logout();
@@ -54,7 +60,12 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 py-3 space-y-6 overflow-y-auto">
         <SidebarSection items={primaryItems} />
-        <SidebarSection items={secondaryItems} titleKey="common.more" optional />
+        <SidebarSection
+          items={secondaryItems}
+          titleKey="common.more"
+          optional
+          badgeByPath={{ '/chats': chatUnread }}
+        />
       </nav>
 
       <div className="border-t border-black/5 dark:border-white/10 p-4">
@@ -103,10 +114,12 @@ function SidebarSection({
   items,
   titleKey,
   optional,
+  badgeByPath,
 }: {
   items: Item[];
   titleKey?: string;
   optional?: boolean;
+  badgeByPath?: Record<string, number>;
 }) {
   const { t } = useTranslation();
   return (
@@ -148,6 +161,10 @@ function SidebarSection({
                     {item.comingSoon ? (
                       <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-bold uppercase text-muted-light dark:bg-white/10 dark:text-muted-dark">
                         {t('common.comingSoon')}
+                      </span>
+                    ) : (badgeByPath?.[item.to] ?? 0) > 0 ? (
+                      <span className="min-w-[1.25rem] rounded-full bg-brand-500 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">
+                        {badgeByPath![item.to]! > 99 ? '99+' : badgeByPath![item.to]}
                       </span>
                     ) : null}
                   </>

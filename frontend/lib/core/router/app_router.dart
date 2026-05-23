@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
@@ -8,6 +8,7 @@ import '../../features/venues/presentation/pages/venues_list_page.dart';
 import '../../features/venues/presentation/pages/venue_detail_page.dart';
 import '../../features/sessions/presentation/pages/sessions_list_page.dart';
 import '../../features/reservations/presentation/pages/reservations_list_page.dart';
+import '../../features/reservations/presentation/pages/booking_detail_page.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -15,7 +16,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/login',
     redirect: (context, state) {
-      final isAuthenticated = authState.isAuthenticated;
+      final isAuthenticated = authState.status == AuthStatus.authenticated;
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
 
@@ -39,6 +40,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
         path: '/venues',
         builder: (context, state) => const VenuesListPage(),
       ),
@@ -51,13 +56,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/sessions',
-        builder: (context, state) => const SessionsListPage(),
+        builder: (context, state) => const SessionsPage(),
       ),
       GoRoute(
         path: '/reservations',
         builder: (context, state) => const ReservationsListPage(),
       ),
+      GoRoute(
+        path: '/reservations/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return BookingDetailPage(bookingId: id);
+        },
+      ),
     ],
   );
 });
-
