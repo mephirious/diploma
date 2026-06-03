@@ -162,6 +162,7 @@
   "signUp": "Зарегистрироваться",
   "signIn": "Войти",
   "authRequiredHint": "Войдите или зарегистрируйтесь, чтобы получить доступ.",
+  "authErrorTryAgain": "Что-то пошло не так. Попробуйте ещё раз.",
   "notifications": "Уведомления",
   "notificationsEnabled": "Push-уведомления",
   "emailNotifications": "Email уведомления",

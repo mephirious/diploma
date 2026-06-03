@@ -200,12 +200,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _persistAuthToShared(authUser);
       _scheduleTokenExpiryLogout(authUser);
       _startValidityTicker();
-    } catch (e) {
+    } catch (_) {
       _cancelTimers();
       await _clearSharedAuth();
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString(),
+        errorMessage: '',
         clearUser: true,
         clearAuthUser: true,
       );
@@ -223,12 +223,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _repository.register(request);
       await login(request.username, request.password);
-    } catch (e) {
+    } catch (_) {
       _cancelTimers();
       await _clearSharedAuth();
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString(),
+        errorMessage: '',
         clearUser: true,
         clearAuthUser: true,
       );

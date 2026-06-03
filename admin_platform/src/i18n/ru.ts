@@ -38,6 +38,8 @@ const ru: typeof en = {
     suspended: 'Приостановлено',
     maintenance: 'Обслуживание',
     back: 'Вернуться на панель',
+    openMenu: 'Открыть меню',
+    closeMenu: 'Закрыть меню',
   },
   auth: {
     title: 'Вход администратора',
@@ -47,6 +49,8 @@ const ru: typeof en = {
     signIn: 'Войти',
     signingIn: 'Входим...',
     invalidCredentials: 'Неверные данные или нет доступа администратора',
+    demoLogin: 'Логин',
+    demoPassword: 'Пароль',
   },
   dashboard: {
     title: 'Операционная панель',

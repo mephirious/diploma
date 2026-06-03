@@ -162,6 +162,7 @@
   "signUp": "Тіркелу",
   "signIn": "Кіру",
   "authRequiredHint": "Осы мүмкіндікті пайдалану үшін тіркеліңіз немесе кіріңіз.",
+  "authErrorTryAgain": "Бірдеңе дұрыс болмады. Қайта көріңіз.",
   "notifications": "Хабарландырулар",
   "notificationsEnabled": "Push-хабарландырулар",
   "emailNotifications": "Email хабарландырулар",

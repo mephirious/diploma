@@ -113,6 +113,15 @@ export function LoginPage() {
             >
               {loading ? t('auth.signingIn') : t('auth.signIn')}
             </Button>
+
+            <div className="space-y-0.5 rounded-lg border border-dashed border-admin-500/30 bg-admin-500/5 px-3 py-2 text-xs text-admin-700 dark:text-admin-300">
+              <div>
+                <span className="font-semibold">{t('auth.demoLogin')}:</span> Admin
+              </div>
+              <div>
+                <span className="font-semibold">{t('auth.demoPassword')}:</span> 2006DaniaL
+              </div>
+            </div>
           </form>
         </section>
       </main>

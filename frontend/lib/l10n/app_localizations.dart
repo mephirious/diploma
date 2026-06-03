@@ -1012,6 +1012,12 @@ abstract class AppLocalizations {
   /// **'You need an account to access this feature.'**
   String get authRequiredHint;
 
+  /// No description provided for @authErrorTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get authErrorTryAgain;
+
   /// No description provided for @notifications.
   ///
   /// In en, this message translates to:

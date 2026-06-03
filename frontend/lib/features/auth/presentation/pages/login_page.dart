@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../auth_page_route.dart';
 import '../providers/auth_provider.dart';
 import 'register_page.dart';
@@ -44,10 +45,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         }
         return;
       }
-      if (next.status == AuthStatus.error && next.errorMessage != null) {
+      if (next.status == AuthStatus.error) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.errorMessage!),
+            content: Text(l10n.authErrorTryAgain),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

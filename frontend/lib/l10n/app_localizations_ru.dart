@@ -480,6 +480,9 @@ class AppLocalizationsRu extends AppLocalizations {
       'Войдите или зарегистрируйтесь, чтобы получить доступ.';
 
   @override
+  String get authErrorTryAgain => 'Что-то пошло не так. Попробуйте ещё раз.';
+
+  @override
   String get notifications => 'Уведомления';
 
   @override

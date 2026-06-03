@@ -44,6 +44,8 @@ const en = {
     suspended: 'Suspended',
     maintenance: 'Maintenance',
     back: 'Back to dashboard',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
   auth: {
     title: 'Admin sign in',
@@ -53,6 +55,8 @@ const en = {
     signIn: 'Sign in',
     signingIn: 'Signing in...',
     invalidCredentials: 'Invalid credentials or no admin access',
+    demoLogin: 'Login',
+    demoPassword: 'Password',
   },
   dashboard: {
     title: 'Operations dashboard',

@@ -477,6 +477,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authRequiredHint => 'You need an account to access this feature.';
 
   @override
+  String get authErrorTryAgain => 'Something went wrong. Please try again.';
+
+  @override
   String get notifications => 'Notifications';
 
   @override

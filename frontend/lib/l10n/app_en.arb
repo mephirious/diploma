@@ -183,6 +183,7 @@
   "signUp": "Sign Up",
   "signIn": "Sign In",
   "authRequiredHint": "You need an account to access this feature.",
+  "authErrorTryAgain": "Something went wrong. Please try again.",
   "notifications": "Notifications",
   "notificationsEnabled": "Push Notifications",
   "emailNotifications": "Email Notifications",

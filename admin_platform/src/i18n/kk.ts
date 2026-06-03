@@ -38,6 +38,8 @@ const kk: typeof en = {
     suspended: 'Тоқтатылған',
     maintenance: 'Қызмет көрсету',
     back: 'Панельге қайту',
+    openMenu: 'Менюді ашу',
+    closeMenu: 'Менюді жабу',
   },
   auth: {
     title: 'Әкімші ретінде кіру',
@@ -47,6 +49,8 @@ const kk: typeof en = {
     signIn: 'Кіру',
     signingIn: 'Кіру...',
     invalidCredentials: 'Деректер қате немесе әкімші рұқсаты жоқ',
+    demoLogin: 'Логин',
+    demoPassword: 'Құпиясөз',
   },
   dashboard: {
     title: 'Операциялық панель',

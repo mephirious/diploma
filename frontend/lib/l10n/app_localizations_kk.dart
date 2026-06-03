@@ -479,6 +479,9 @@ class AppLocalizationsKk extends AppLocalizations {
       'Осы мүмкіндікті пайдалану үшін тіркеліңіз немесе кіріңіз.';
 
   @override
+  String get authErrorTryAgain => 'Бірдеңе дұрыс болмады. Қайта көріңіз.';
+
+  @override
   String get notifications => 'Хабарландырулар';
 
   @override

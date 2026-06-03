@@ -27,7 +27,15 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>dgis</string>
+		<string>https</string>
+		<string>http</string>
+		<string>tel</string>
+		<string>mailto</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>ZhamSpace may use the camera when you attach photos to a facility request.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ZhamSpace needs access to your photo library so you can attach images to facility requests.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
