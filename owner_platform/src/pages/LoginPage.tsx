@@ -6,22 +6,25 @@ import {
   Mail,
   Eye,
   EyeOff,
-  CheckCircle2,
   Sparkles,
   Building2,
   LineChart,
   CalendarClock,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
-import { Input, Select, Textarea } from '@/components/ui/Input';
+import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Logo } from '@/components/common/Logo';
 import { LanguageMenu } from '@/components/common/LanguageMenu';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useAuth } from '@/store/auth';
-import { FILTER_SPORT_KEYS, sortedSportOptions } from '@/lib/sports';
 import { cn } from '@/lib/cn';
+
+const APP_STORE_URL = import.meta.env.VITE_APP_STORE_URL as string | undefined;
+const PLAY_STORE_URL = import.meta.env.VITE_PLAY_STORE_URL as string | undefined;
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -35,7 +38,7 @@ export function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [contactOpen, setContactOpen] = useState(false);
+  const [listFacilityOpen, setListFacilityOpen] = useState(false);
 
   if (isAuthenticated) {
     const from =
@@ -52,7 +55,7 @@ export function LoginPage() {
       await login({ username: email.trim(), password });
       navigate('/dashboard', { replace: true });
     } catch {
-      setLoginError(t('auth.invalidCredentials') || 'Invalid credentials');
+      setLoginError(t('auth.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -122,7 +125,7 @@ export function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                label={t('auth.usernameOrEmail') || 'Username'}
+                label={t('auth.usernameOrEmail')}
                 type="text"
                 leftIcon={<Mail size={16} />}
                 value={email}
@@ -142,7 +145,9 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPwd((s) => !s)}
-                    aria-label={showPwd ? 'Hide password' : 'Show password'}
+                    aria-label={
+                      showPwd ? t('auth.hidePassword') : t('auth.showPassword')
+                    }
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md hover:bg-black/5 dark:hover:bg-white/10"
                   >
                     {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -159,7 +164,7 @@ export function LoginPage() {
                     defaultChecked
                     className="h-4 w-4 accent-brand-500"
                   />
-                  Remember me
+                  {t('auth.rememberMe')}
                 </label>
                 <button
                   type="button"
@@ -172,10 +177,6 @@ export function LoginPage() {
               <Button type="submit" fullWidth size="lg" loading={loading}>
                 {loading ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
-
-              <div className="rounded-lg border border-dashed border-brand-500/30 bg-brand-500/5 px-3 py-2 text-xs text-brand-700 dark:text-brand-300">
-                {t('auth.demoHint')}
-              </div>
             </form>
 
             <div className="my-6 flex items-center gap-3 text-xs text-muted-light dark:text-muted-dark">
@@ -188,7 +189,7 @@ export function LoginPage() {
               variant="outline"
               fullWidth
               size="lg"
-              onClick={() => setContactOpen(true)}
+              onClick={() => setListFacilityOpen(true)}
               leftIcon={<Building2 size={18} />}
             >
               {t('auth.listFacility')}
@@ -197,7 +198,10 @@ export function LoginPage() {
         </section>
       </main>
 
-      <ContactUsModal open={contactOpen} onClose={() => setContactOpen(false)} />
+      <ListFacilityModal
+        open={listFacilityOpen}
+        onClose={() => setListFacilityOpen(false)}
+      />
     </div>
   );
 }
@@ -238,129 +242,69 @@ function BackgroundBlobs() {
   );
 }
 
-function ContactUsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { t, i18n } = useTranslation();
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    business: '',
-    sport: 'football',
-    city: 'Almaty',
-    message: '',
-  });
+function ListFacilityModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
 
-  function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
-    setForm((f) => ({ ...f, [key]: value }));
-  }
-
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setSubmitted(true);
-  }
-
-  function handleClose() {
-    onClose();
-    window.setTimeout(() => {
-      setSubmitted(false);
-      setForm({
-        name: '',
-        email: '',
-        phone: '',
-        business: '',
-        sport: 'football',
-        city: 'Almaty',
-        message: '',
-      });
-    }, 250);
-  }
+  const steps = [
+    t('auth.listFacilityStep1'),
+    t('auth.listFacilityStep2'),
+    t('auth.listFacilityStep3'),
+  ];
 
   return (
     <Modal
       open={open}
-      onClose={handleClose}
+      onClose={onClose}
       title={t('auth.listFacilityTitle')}
       description={t('auth.listFacilitySubtitle')}
-      size="lg"
-      footer={
-        submitted ? (
-          <Button onClick={handleClose}>{t('common.close')}</Button>
-        ) : (
-          <>
-            <Button variant="ghost" onClick={handleClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button form="listing-form" type="submit">
-              {t('auth.submit')}
-            </Button>
-          </>
-        )
-      }
+      size="md"
+      footer={<Button onClick={onClose}>{t('common.close')}</Button>}
     >
-      {submitted ? (
-        <div className="flex flex-col items-center text-center py-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success mb-3">
-            <CheckCircle2 size={26} />
+      <div className="flex flex-col gap-5 py-2">
+        <div className="flex items-center justify-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-500/15 text-brand-700 dark:text-brand-300">
+            <Smartphone size={32} />
           </div>
-          <p className="text-base font-semibold text-text-light dark:text-text-dark">
-            {t('auth.submitted')}
-          </p>
         </div>
-      ) : (
-        <form id="listing-form" onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-          <Input
-            label={t('auth.contactName')}
-            placeholder="Danial B."
-            required
-            value={form.name}
-            onChange={(e) => update('name', e.currentTarget.value)}
-          />
-          <Input
-            label={t('auth.businessName')}
-            placeholder="Arena Pro Group"
-            required
-            value={form.business}
-            onChange={(e) => update('business', e.currentTarget.value)}
-          />
-          <Input
-            label={t('auth.contactEmail')}
-            type="email"
-            placeholder="you@venue.kz"
-            required
-            value={form.email}
-            onChange={(e) => update('email', e.currentTarget.value)}
-          />
-          <Input
-            label={t('auth.contactPhone')}
-            type="tel"
-            placeholder="+7 777 000 00 00"
-            required
-            value={form.phone}
-            onChange={(e) => update('phone', e.currentTarget.value)}
-          />
-          <Select
-            label={t('auth.sport')}
-            value={form.sport}
-            onChange={(e) => update('sport', e.currentTarget.value)}
-            options={sortedSportOptions(t, i18n.language, FILTER_SPORT_KEYS)}
-          />
-          <Input
-            label={t('auth.city')}
-            placeholder="Almaty"
-            value={form.city}
-            onChange={(e) => update('city', e.currentTarget.value)}
-          />
-          <Textarea
-            label={t('auth.message')}
-            placeholder="Tell us about your venue, sports, resources…"
-            className="md:col-span-2"
-            rows={4}
-            value={form.message}
-            onChange={(e) => update('message', e.currentTarget.value)}
-          />
-        </form>
-      )}
+
+        <ol className="space-y-3">
+          {steps.map((step, index) => (
+            <li key={index} className="flex gap-3 text-sm leading-relaxed">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-xs font-bold text-brand-700 dark:text-brand-300">
+                {index + 1}
+              </span>
+              <span className="pt-0.5 text-text-light dark:text-text-dark">{step}</span>
+            </li>
+          ))}
+        </ol>
+
+        {(APP_STORE_URL || PLAY_STORE_URL) && (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {APP_STORE_URL && (
+              <a
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-black px-4 py-3 text-sm font-semibold text-white transition hover:bg-black/90 dark:border-white/10"
+              >
+                <Download size={16} />
+                {t('auth.downloadAppStore')}
+              </a>
+            )}
+            {PLAY_STORE_URL && (
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-black px-4 py-3 text-sm font-semibold text-white transition hover:bg-black/90 dark:border-white/10"
+              >
+                <Download size={16} />
+                {t('auth.downloadGooglePlay')}
+              </a>
+            )}
+          </div>
+        )}
+      </div>
     </Modal>
   );
 }

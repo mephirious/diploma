@@ -57,26 +57,28 @@ const ru: Translations = {
     subTitle:
       'Войдите, чтобы управлять площадками, бронированиями и выручкой.',
     email: 'Email или телефон',
+    usernameOrEmail: 'Имя пользователя или email',
     password: 'Пароль',
     signIn: 'Войти',
     signingIn: 'Входим…',
     forgot: 'Забыли пароль?',
+    rememberMe: 'Запомнить меня',
+    showPassword: 'Показать пароль',
+    hidePassword: 'Скрыть пароль',
+    invalidCredentials: 'Неверное имя пользователя или пароль',
     dontHaveFacility: 'Вашей площадки ещё нет у нас?',
     listFacility: 'Разместите свою площадку',
-    listFacilityTitle: 'Разместите площадку на ZhamSpace',
+    listFacilityTitle: 'Начните в приложении ZhamSpace',
     listFacilitySubtitle:
-      'Расскажите немного о вашем объекте — команда свяжется в течение рабочего дня.',
-    contactName: 'Ваше имя',
-    contactEmail: 'Email',
-    contactPhone: 'Телефон',
-    businessName: 'Название бизнеса / площадки',
-    sport: 'Основной вид спорта',
-    city: 'Город',
-    message: 'Что-нибудь ещё?',
-    submit: 'Отправить заявку',
-    submitted: 'Спасибо! Мы скоро свяжемся с вами.',
-    demoHint:
-      'Демо-режим — подойдут любые данные. Нажмите «Войти», чтобы попасть в платформу.',
+      'Новые площадки подключаются через мобильное приложение — скачайте его, создайте аккаунт и продолжите там.',
+    listFacilityStep1:
+      'Скачайте приложение ZhamSpace в App Store или Google Play.',
+    listFacilityStep2:
+      'Зарегистрируйтесь или войдите, если у вас уже есть аккаунт.',
+    listFacilityStep3:
+      'На главном экране нажмите «Разместить площадку» и отправьте заявку.',
+    downloadAppStore: 'Скачать в App Store',
+    downloadGooglePlay: 'Скачать в Google Play',
     loginHighlightFacilitiesTitle: 'Управляйте площадками',
     loginHighlightFacilitiesDesc:
       'Корты, поля, дорожки и залы — всё в одном месте для аккуратных карточек и ресурсов.',

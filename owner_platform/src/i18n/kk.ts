@@ -57,26 +57,28 @@ const kk: Translations = {
     subTitle:
       'Алаңдарды, брондарды және кірісті басқару үшін жүйеге кіріңіз.',
     email: 'Email немесе телефон',
+    usernameOrEmail: 'Пайдаланушы аты немесе email',
     password: 'Құпиясөз',
     signIn: 'Кіру',
     signingIn: 'Кіру…',
     forgot: 'Құпиясөзді ұмыттыңыз ба?',
+    rememberMe: 'Мені есте сақта',
+    showPassword: 'Құпиясөзді көрсету',
+    hidePassword: 'Құпиясөзді жасыру',
+    invalidCredentials: 'Пайдаланушы аты немесе құпиясөз дұрыс емес',
     dontHaveFacility: 'Алаңыңыз әлі тізімде жоқ па?',
     listFacility: 'Алаңыңызды тіркеңіз',
-    listFacilityTitle: 'Алаңды ZhamSpace-ке қосу',
+    listFacilityTitle: 'ZhamSpace қолданбасында бастаңыз',
     listFacilitySubtitle:
-      'Алаң туралы қысқаша айтыңыз — біздің команда бір жұмыс күні ішінде хабарласады.',
-    contactName: 'Атыңыз',
-    contactEmail: 'Email',
-    contactPhone: 'Телефон',
-    businessName: 'Бизнес / алаң атауы',
-    sport: 'Негізгі спорт түрі',
-    city: 'Қала',
-    message: 'Қосымша ескертпе',
-    submit: 'Сұраныс жіберу',
-    submitted: 'Рақмет! Көп ұзамай хабарласамыз.',
-    demoHint:
-      'Демо-режим — кез келген мәлімет келеді. «Кіру» батырмасын басыңыз.',
+      'Жаңа алаңдар мобильді қолданба арқылы қосылады — оны жүктеп алыңыз, аккаунт ашып, сол жерден жалғастырыңыз.',
+    listFacilityStep1:
+      'ZhamSpace қолданбасын App Store немесе Google Play арқылы жүктеп алыңыз.',
+    listFacilityStep2:
+      'Тіркеліңіз немесе аккаунтыңыз болса, жүйеге кіріңіз.',
+    listFacilityStep3:
+      'Басты экранда «Алаң қосу» батырмасын басып, сұраныс жіберіңіз.',
+    downloadAppStore: 'App Store-дан жүктеп алу',
+    downloadGooglePlay: 'Google Play-ден жүктеп алу',
     loginHighlightFacilitiesTitle: 'Алаңдарды басқару',
     loginHighlightFacilitiesDesc:
       'Корттар, алаңдар, жолдар — барлық карточка мен ресурстар бір жерден.',
