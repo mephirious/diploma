@@ -69,6 +69,57 @@ class AppLocalizationsKk extends AppLocalizations {
   String get tabletennis => 'Үстел теннисі';
 
   @override
+  String get ice_hockey => 'Хоккей';
+
+  @override
+  String get judo => 'Дзюдо';
+
+  @override
+  String get chess => 'Шахмат';
+
+  @override
+  String get boxing => 'Бокс';
+
+  @override
+  String get mma => 'ММА';
+
+  @override
+  String get athletics => 'Жеңіл атлетика';
+
+  @override
+  String get handball => 'Гандбол';
+
+  @override
+  String get futsal => 'Футзал';
+
+  @override
+  String get golf => 'Гольф';
+
+  @override
+  String get climbing => 'Тауға өрмелу';
+
+  @override
+  String get yoga => 'Йога';
+
+  @override
+  String get pilates => 'Пилатес';
+
+  @override
+  String get crossfit => 'Кроссфит';
+
+  @override
+  String get cycling => 'Велоспорт';
+
+  @override
+  String get running => 'Жүгіру';
+
+  @override
+  String get esports => 'Киберспорт';
+
+  @override
+  String get other => 'Өзге';
+
+  @override
   String get popularVenues => 'Танымал алаңдар';
 
   @override
@@ -573,6 +624,25 @@ class AppLocalizationsKk extends AppLocalizations {
   String get joinedSuccessfully => 'Сіз сессияға қосылдыңыз!';
 
   @override
+  String get joinedLabel => 'Қосылған';
+
+  @override
+  String get sessionFull => 'Орын жоқ';
+
+  @override
+  String get sessionLocked => 'Тіркелу жабық';
+
+  @override
+  String get joinLoginRequired => 'Сессияға қосылу үшін кіріңіз';
+
+  @override
+  String get leftSessionSuccessfully => 'Сіз сессиядан шықтыңыз';
+
+  @override
+  String get leaveSessionConfirm =>
+      'Сессиядан шығыңыз келетініне сенімдісіз бе?';
+
+  @override
   String get leaveSession => 'Сессиядан шығу';
 
   @override
@@ -897,6 +967,19 @@ class AppLocalizationsKk extends AppLocalizations {
   String get cancelReasonRefunded => 'Қайтаруға байланысты бас тартылды';
 
   @override
+  String get cancelReasonMinimumNotMet => 'Қатысушылар саны жеткіліксіз';
+
+  @override
+  String get cancelReasonOwnerCancelled => 'Сессия ұйымдастырушысы бас тартты';
+
+  @override
+  String get cancelReasonSessionExpired => 'Сессия басталмай аяқталды';
+
+  @override
+  String get cancelReasonHoldCreationFailed =>
+      'Уақытты броньдау мүмкін болмады';
+
+  @override
   String get paymentStatusPaid => 'Төленді';
 
   @override
@@ -910,4 +993,303 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get paymentStatusRefunded => 'Қайтарылды';
+
+  @override
+  String get savedCardLocalOnlyNotice =>
+      'Сақталған карталар mock-төлем үшін тек осы құрылғыда сақталады. Банк токені жіберілмейді.';
+
+  @override
+  String get cardNumberInvalid => 'Жарамды карта нөмірін енгізіңіз.';
+
+  @override
+  String get cardExpiryInvalid => 'Болашақ жарамдылық мерзімін енгізіңіз.';
+
+  @override
+  String get cardCvvInvalid => 'Жарамды CVV енгізіңіз.';
+
+  @override
+  String get cardDetailsInvalid =>
+      'Карта деректерін тексеріп, қайталап көріңіз.';
+
+  @override
+  String get slotJustBecameUnavailable =>
+      'Бұл уақыт енді қолжетімсіз. Басқа уақытты таңдаңыз.';
+
+  @override
+  String holdCountdown(String timeLeft) {
+    return '$timeLeft кейін аяқталады';
+  }
+
+  @override
+  String get holdExpiredNow => 'Бронь мерзімі аяқталды';
+
+  @override
+  String get confirmCancelPaidRefund =>
+      'Бұл бронь төленген. Бас тартқанда mock-қайтарым сұралады, содан кейін бронь тоқтатылады. Жалғастыру керек пе?';
+
+  @override
+  String get bookingCancelledRefundRequested =>
+      'Бронь тоқтатылды, қайтарым сұралды';
+
+  @override
+  String bookingCancelFailed(String error) {
+    return 'Броньды тоқтату мүмкін болмады: $error';
+  }
+
+  @override
+  String priceRangePerPerson(int min, int max) {
+    return '$min–$max ₸ / адам';
+  }
+
+  @override
+  String priceQuotePerPerson(int amount) {
+    return '$amount ₸ / адам болжам';
+  }
+
+  @override
+  String stablePricePerPerson(int amount) {
+    return '$amount ₸ / адам';
+  }
+
+  @override
+  String get finalPriceLocksShort => 'кейін бекітіледі';
+
+  @override
+  String get fixedSplitPriceDisclosure =>
+      'Fixed-split сессияларында адамға соңғы баға қатысушыларға байланысты және сессия толғанда немесе lock уақытында бекітіледі.';
+
+  @override
+  String get promoSectionTitle => 'Қолжетімді акциялар';
+
+  @override
+  String get promoEnterCode => 'Промокод бар ма?';
+
+  @override
+  String get promoCodeHint => 'Кодты енгізіңіз';
+
+  @override
+  String get promoApply => 'Қолдану';
+
+  @override
+  String get promoRemove => 'Акцияны алып тастау';
+
+  @override
+  String get promoCodeInvalid => 'Промокод жарамсыз';
+
+  @override
+  String get promoConditionsNotMet => 'Брондау акция шарттарына сай келмейді';
+
+  @override
+  String get promoVenuesTitle => 'Акциялары бар алаңдар';
+
+  @override
+  String get promoVenuesBannerTitle => 'Арнайы ұсыныстар';
+
+  @override
+  String get promoVenuesBannerSubtitle =>
+      'Белсенді жеңілдіктері мен акциялары бар алаңдар';
+
+  @override
+  String get promoVenuesEmpty => 'Белсенді акциялар жоқ';
+
+  @override
+  String get promoVenuesEmptySubtitle =>
+      'Қазір белсенді акциялары бар алаңдар жоқ. Кейінірек тексеріңіз!';
+
+  @override
+  String get subtotal => 'Аралық сома';
+
+  @override
+  String get placeFacilityTitle => 'Орынды орналастыру';
+
+  @override
+  String get placeFacilitySubtitle =>
+      'Спорт орныңызды ZhamSpace-те орналастырып, қалаңыздағы мыңдаған белсенді ойыншыларға жетіңіз.';
+
+  @override
+  String get facilityNameLabel => 'Орын атауы';
+
+  @override
+  String get placeFacilityFullNameHint => 'Толық атыңызды енгізіңіз';
+
+  @override
+  String get placeFacilityPhoneHint => '+7 (700) 000-00-00';
+
+  @override
+  String get placeFacilityNameHint => 'мысалы, Arena Sport Club';
+
+  @override
+  String get placeFacilityContactButton => 'Байланысу';
+
+  @override
+  String get placeFacilitySuccessTitle => 'Сұраныс жіберілді!';
+
+  @override
+  String get placeFacilitySuccessMessage =>
+      'Рахмет! Орныңызды орналастыру туралы сөйлесу үшін жақын арада сізбен байланысамыз.';
+
+  @override
+  String get placeFacilityFullNameRequired => 'Толық атыңызды енгізіңіз';
+
+  @override
+  String get placeFacilityPhoneRequired => 'Телефон нөмірін енгізіңіз';
+
+  @override
+  String get placeFacilityPhoneInvalid => 'Жарамды телефон нөмірін енгізіңіз';
+
+  @override
+  String get placeFacilityNameRequired => 'Орын атауын енгізіңіз';
+
+  @override
+  String get placeFacilityCommentLabel => 'Пікір';
+
+  @override
+  String get placeFacilityCommentHint =>
+      'Нысан, мекенжай немесе байланысуға ыңғайлы уақыт туралы жазыңыз';
+
+  @override
+  String get placeFacilityDocumentLabel => 'Құжат';
+
+  @override
+  String get placeFacilityDocumentHint => 'PDF немесе сурет тіркеңіз';
+
+  @override
+  String get placeFacilityDocumentAction => 'Таңдау';
+
+  @override
+  String get placeFacilityDocumentRequired => 'PDF немесе сурет тіркеңіз';
+
+  @override
+  String get placeFacilitySubmitError =>
+      'Өтінімді жіберу мүмкін болмады. Қайталап көріңіз.';
+
+  @override
+  String get placeFacilityMyRequestsTitle => 'Менің өтінімдерім';
+
+  @override
+  String get placeFacilityMyRequestsEmpty => 'Әзірге өтінім жоқ';
+
+  @override
+  String get placeFacilityLoadRequestsError =>
+      'Өтінімдеріңізді жүктеу мүмкін болмады.';
+
+  @override
+  String get placeFacilitySentAt => 'Жіберілді';
+
+  @override
+  String get placeFacilityUpdatedAt => 'Жаңартылды';
+
+  @override
+  String get venueRequestStatusCreated => 'Құрылды';
+
+  @override
+  String get venueRequestStatusAwaiting => 'Күтуде';
+
+  @override
+  String get venueRequestStatusReviewing => 'Қаралуда';
+
+  @override
+  String get venueRequestStatusApproved => 'Мақұлданды';
+
+  @override
+  String get venueRequestStatusCancelled => 'Бас тартылды';
+
+  @override
+  String get venueRequestStatusApprovedMessage =>
+      'Сіздің өтініміңіз мақұлданды. Жақын арада сіздің алаңыңыз орналастырылады.';
+
+  @override
+  String get venueRequestStatusCreatedMessage =>
+      'Бұл өтінім бойынша алаң сәтті құрылды. Объектілерді иелер платформасында басқарыңыз.';
+
+  @override
+  String get venueRequestStatusRejectedMessage =>
+      'Сіздің өтініміңіз қабылданбады. Қосымша ақпарат үшін қолдау қызметіне хабарласыңыз.';
+
+  @override
+  String get guideTitle => 'Нұсқаулық';
+
+  @override
+  String get guideBannerTitle => 'ZhamSpace қалай жұмыс істейді';
+
+  @override
+  String get guideBannerSubtitle =>
+      'Іздеу, бронь және ойын үшін қажеттінің бәрі';
+
+  @override
+  String get guideSectionGettingStarted => 'Бастау';
+
+  @override
+  String get guideSectionGettingStartedSubtitle =>
+      'Алаңдарды шолып, жақын спортты табыңыз';
+
+  @override
+  String get guideSectionBooking => 'Бронь жасау';
+
+  @override
+  String get guideSectionBookingSubtitle =>
+      'Күн, уақыт таңдап, броньды растаңыз';
+
+  @override
+  String get guideSectionSessions => 'Сессияларға қосылу';
+
+  @override
+  String get guideSectionSessionsSubtitle =>
+      'Ашық ойындарды табып, ойыншыларға қосылыңыз';
+
+  @override
+  String get guideSectionPayments => 'Төлемдер және броньдар';
+
+  @override
+  String get guideSectionPaymentsSubtitle =>
+      'Қауіпсіз төлеңіз және броньдарды басқарыңыз';
+
+  @override
+  String get guideSectionProfile => 'Профиль және таңдаулылар';
+
+  @override
+  String get guideSectionProfileSubtitle =>
+      'Алаңдарды сақтаңыз, баптаулар мен режимдер';
+
+  @override
+  String get guideSectionOwners => 'Орын иелеріне';
+
+  @override
+  String get guideSectionOwnersSubtitle =>
+      'Орныңызды орналастырып, броньдарды басқарыңыз';
+
+  @override
+  String get guideSectionSupport => 'Көмек және қолдау';
+
+  @override
+  String get guideSectionSupportSubtitle =>
+      'Жауаптар алу және командамен байланысу';
+
+  @override
+  String get guideContentGettingStarted =>
+      'Жақын спорт алаңдарын зерттеу үшін Басты бет вкладкасын ашыңыз. Іздеу жолағын пайдаланып, атау бойынша белсенділіктер, саябақтар немесе клубтарды табыңыз. Футбол, баскетбол, теннис және басқа санаттар бойынша сүзіңіз.\n\nФото, сипаттама, нысандар, баға және байланыс ақпаратын көру үшін алаң карточкасын басыңыз. Жылдам қол жеткізу үшін алаңдарды таңдаулыларға қосыңыз.';
+
+  @override
+  String get guideContentBooking =>
+      'Алаң бетінен нысанды таңдап, Қазір броньдау батырması басыңыз. Күнтізбеден күн мен бос уақытты таңдаңыз. Жалпы бағаны тексеріп, төлемге өтіңіз.\n\nБронь жасау үшін аккаунтқа кіру керек. Төлемнен кейін бронь Менің броньдарым бөлімінде пайда болады, онда детальдарды көруге немесе бас тартуға болады.';
+
+  @override
+  String get guideContentSessions =>
+      'Алаңдар немесе ойыншылар ұйымдастырған топтық белсенділіктерді табу үшін Сессиялар вкладкасына өтіңіз. Спорт, деңгей немесе күн бойынша сүзіңіз.\n\nДетальдарды — ұйымдастырушы, қатысушылар, адамға баға және бос орындарды көру үшін сессияны басыңыз. Кіріп, Сессияға қосылу батырması басыңыз. Басталмай тұрып сессиядан кетуге болады.';
+
+  @override
+  String get guideContentPayments =>
+      'ZhamSpace карта арқылы төлемді және Kaspi, Halyk Bank сияқты жергілікті опцияларды қолдайды. Сақталған карталар жылдам төлем үшін құрылғыда сақталады.\n\nБроньдан кейін Менің броньдарым бөлімінде статусты бақылаңыз — расталған, аяқталған немесе бас тартылған. Төленген броньдарды қайтарым сұраумен бас тартуға болады. Төлем уақытында аяқталмasa, бронь ұстау мерзімі аяқталады.';
+
+  @override
+  String get guideContentProfile =>
+      'Профиль вкладкасында жеке деректер, тіл және тема баптаулары бар. Жарық, қара немесе жүйелік тема арасында ауысыңыз. Ағылшын, орыс немесе қазақ тілін таңдаңыз.\n\nКез келген алаң карточкасынан таңдаулыларға сақтаңыз. Орын иелері профильден ие режиміне ауысып, алаңдарды, броньдарды және аналитиканы басқара алады.';
+
+  @override
+  String get guideContentOwners =>
+      'Орныңызды орналастырғыңыз келе ме? Басты беттен Орынды орналастыру батырması басып, байланыс деректерін жіберіңіз. Біздің команда қосу үшін сізбен байланысады.\n\nИе режимінде Owner Hub арқылы алаңдарды, кестені, кіріс сұраныстарын және кіріс аналитикасын басқарыңыз.';
+
+  @override
+  String get guideContentSupport =>
+      'Көмек керек пе? Бронь, төлем және сессиялар туралы жиі қойылатын сұрақтарға осы нұсқаулықтан жауап табыңыз.\n\nБасқа сұрақтар үшін Орынды орналастыру арқылы командамен байланысыңыз немесе алаң бетіндегі чат арқылы иеге хат жіберіңіз.';
 }

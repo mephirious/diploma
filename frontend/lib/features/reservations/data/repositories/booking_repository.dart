@@ -4,6 +4,16 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/booking_model.dart';
 
+enum ReservationListType {
+  all('all'),
+  bookings('bookings'),
+  sessions('sessions');
+
+  const ReservationListType(this.queryValue);
+
+  final String queryValue;
+}
+
 class BookingRepository {
   final ApiClient _apiClient;
 
@@ -42,6 +52,8 @@ class BookingRepository {
     bool includeCancelled = true,
     DateTime? from,
     DateTime? to,
+    ReservationListType type = ReservationListType.bookings,
+    bool useReservationsEndpoint = false,
   }) async {
     final query = <String, dynamic>{
       'list_params.page': page.toString(),
@@ -52,9 +64,15 @@ class BookingRepository {
       'include_cancelled': includeCancelled,
       if (from != null) 'from': from.toUtc().toIso8601String(),
       if (to != null) 'to': to.toUtc().toIso8601String(),
+      if (useReservationsEndpoint || type != ReservationListType.bookings)
+        'type': type.queryValue,
     };
+    final endpoint =
+        useReservationsEndpoint || type != ReservationListType.bookings
+            ? ApiEndpoints.bookingReservations
+            : ApiEndpoints.bookings;
     final response = await _apiClient.get(
-      ApiEndpoints.bookings,
+      endpoint,
       queryParameters: query,
     );
     final data = response.data as Map<String, dynamic>?;
@@ -107,7 +125,10 @@ class BookingRepository {
   }
 
   /// POST /booking/v1/bookings/:id/cancel — cancel booking (auth required).
-  Future<BookingModel> cancelBooking(String id, BookingCancelRequest body) async {
+  Future<BookingModel> cancelBooking(
+    String id,
+    BookingCancelRequest body,
+  ) async {
     final response = await _apiClient.post(
       ApiEndpoints.bookingCancel(id),
       data: body.toJson(),

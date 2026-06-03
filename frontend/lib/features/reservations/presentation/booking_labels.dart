@@ -38,6 +38,14 @@ String localizedCancellationReason(AppLocalizations l10n, String raw) {
     case 'refund':
     case 'refunded':
       return l10n.cancelReasonRefunded;
+    case 'minimum_not_met':
+      return l10n.cancelReasonMinimumNotMet;
+    case 'owner_cancelled':
+      return l10n.cancelReasonOwnerCancelled;
+    case 'session_expired':
+      return l10n.cancelReasonSessionExpired;
+    case 'hold_creation_failed':
+      return l10n.cancelReasonHoldCreationFailed;
     default:
       if (raw.trim().toLowerCase() == 'cancelled by user') {
         return l10n.cancelReasonUserCancelled;

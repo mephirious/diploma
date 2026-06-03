@@ -20,7 +20,7 @@ import { Logo } from '@/components/common/Logo';
 import { LanguageMenu } from '@/components/common/LanguageMenu';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useAuth } from '@/store/auth';
-import { SPORT_KEYS } from '@/types/venue';
+import { FILTER_SPORT_KEYS, sortedSportOptions } from '@/lib/sports';
 import { cn } from '@/lib/cn';
 
 export function LoginPage() {
@@ -239,7 +239,7 @@ function BackgroundBlobs() {
 }
 
 function ContactUsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -343,10 +343,7 @@ function ContactUsModal({ open, onClose }: { open: boolean; onClose: () => void 
             label={t('auth.sport')}
             value={form.sport}
             onChange={(e) => update('sport', e.currentTarget.value)}
-            options={SPORT_KEYS.map((s) => ({
-              value: s,
-              label: t(`sports.${s}`),
-            }))}
+            options={sortedSportOptions(t, i18n.language, FILTER_SPORT_KEYS)}
           />
           <Input
             label={t('auth.city')}

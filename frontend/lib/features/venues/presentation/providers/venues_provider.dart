@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/sports/sport_l10n.dart';
 import '../../data/models/venue_model.dart';
 import 'venue_provider.dart';
 
@@ -29,7 +31,14 @@ final filteredVenuesProvider = Provider<List<VenueModel>>((ref) {
   var filtered = venues;
 
   if (category != 'all') {
-    filtered = filtered.where((v) => v.category == category).toList();
+    final cat = canonicalSportKey(category);
+    filtered = filtered
+        .where(
+          (v) =>
+              v.sports.any((s) => canonicalSportKey(s) == cat) ||
+              canonicalSportKey(v.category) == cat,
+        )
+        .toList();
   }
 
   if (searchQuery.isNotEmpty) {

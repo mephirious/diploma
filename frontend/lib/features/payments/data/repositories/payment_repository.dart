@@ -30,11 +30,24 @@ class PaymentRepository {
     return PaymentIntentModel.fromJson(data);
   }
 
+  /// POST /payment/v1/payments/{id}/refund
+  Future<PaymentIntentModel> refundPayment(
+    String intentId,
+    PaymentRefundRequest request,
+  ) async {
+    final response = await _apiClient.post(
+      ApiEndpoints.paymentRefund(intentId),
+      data: request.toJson(),
+    );
+    final data = response.data as Map<String, dynamic>;
+    return PaymentIntentModel.fromJson(data);
+  }
+
   /// Poll until terminal status or [timeout].
   Future<PaymentIntentModel> pollUntilTerminal(
     String intentId, {
     Duration timeout = const Duration(seconds: 30),
-    Duration interval = const Duration(milliseconds: 1500),
+    Duration interval = const Duration(seconds: 1),
   }) async {
     final deadline = DateTime.now().add(timeout);
     while (DateTime.now().isBefore(deadline)) {

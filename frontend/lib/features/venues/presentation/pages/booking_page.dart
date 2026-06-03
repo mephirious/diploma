@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,8 @@ import '../../../../core/widgets/auth_required_screen.dart';
 import '../../../../core/widgets/main_scaffold.dart';
 import '../../data/models/venue_model.dart';
 import '../../data/models/venue_schedule_result_model.dart';
+import '../../data/models/promo_model.dart';
+import '../../data/repositories/venue_repository.dart';
 import '../../data/booking_availability.dart';
 import '../../data/models/saved_card_model.dart';
 import '../../presentation/providers/saved_cards_provider.dart';
@@ -16,26 +20,35 @@ import '../../presentation/providers/venue_provider.dart';
 import '../../../reservations/data/models/booking_model.dart';
 import '../../../reservations/data/repositories/booking_repository.dart';
 import '../../../reservations/presentation/providers/reservations_provider.dart';
+import '../../../sessions/data/models/session_model_simple.dart';
+import '../../../sessions/presentation/providers/sessions_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../payments/data/models/payment_intent_model.dart';
+import '../../../payments/data/payment_card_validator.dart';
 import '../../../payments/data/repositories/payment_repository.dart';
 import '../../../payments/presentation/widgets/payment_processing_sheet.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 final selectedStartTimeProvider = StateProvider<String?>((ref) => null);
 final selectedEndTimeProvider = StateProvider<String?>((ref) => null);
+
 /// Selected resource for the current booking (must be set when using BookingPage).
 final selectedResourceIdProvider = StateProvider<String?>((ref) => null);
+
+/// Currently applied promo code (PromoModel.id) or null if none applied.
+final selectedPromoProvider = StateProvider<PromoModel?>((ref) => null);
 
 // ─────────────────────────────────────────────
 // BOOKING PAGE
 // ─────────────────────────────────────────────
 class BookingPage extends ConsumerStatefulWidget {
   final VenueModel venue;
+
   /// When set, this resource is pre-selected (e.g. from venue detail "Book" on a resource).
   final String? preselectedResourceId;
 
-  const BookingPage({super.key, required this.venue, this.preselectedResourceId});
+  const BookingPage(
+      {super.key, required this.venue, this.preselectedResourceId});
 
   @override
   ConsumerState<BookingPage> createState() => _BookingPageState();
@@ -80,11 +93,21 @@ class _BookingPageState extends ConsumerState<BookingPage> {
         description: l10n.loginToBookDescription,
       );
     }
-    final selectedDate  = ref.watch(selectedDateProvider);
+    final selectedDate = ref.watch(selectedDateProvider);
     final selectedStart = ref.watch(selectedStartTimeProvider);
-    final selectedEnd   = ref.watch(selectedEndTimeProvider);
+    final selectedEnd = ref.watch(selectedEndTimeProvider);
     final selectedResourceId = ref.watch(selectedResourceIdProvider);
-    final scheduleResultAsync = ref.watch(venueScheduleResultProvider(widget.venue.id));
+    final selectedPromo = ref.watch(selectedPromoProvider);
+    final scheduleResultAsync =
+        ref.watch(venueScheduleResultProvider(widget.venue.id));
+
+    // Promos for the selected resource (key: venueId|resourceId).
+    final promoKey = '${widget.venue.id}|${selectedResourceId ?? ''}';
+    final promosAsync = selectedResourceId != null
+        ? ref.watch(resourcePromosProvider(promoKey))
+        : const AsyncValue<List<PromoModel>>.data([]);
+    final availablePromos = promosAsync.valueOrNull ?? const [];
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final sr = scheduleResultAsync.valueOrNull;
@@ -107,9 +130,8 @@ class _BookingPageState extends ConsumerState<BookingPage> {
             selectedDate.day,
           )
         : null;
-    final loc = selectedGroup != null
-        ? resolveVenueLocation(selectedGroup)
-        : tz.UTC;
+    final loc =
+        selectedGroup != null ? resolveVenueLocation(selectedGroup) : tz.UTC;
     final blocked = selectedGroup != null
         ? blockedLocalHoursForDay(
             selectedGroup,
@@ -171,12 +193,30 @@ class _BookingPageState extends ConsumerState<BookingPage> {
           )
         : <int>[];
     final priceLineItems = mergeAdjacentHourPrices(hourlyPrices);
-    final totalPrice =
-        hourlyPrices.fold<int>(0, (a, b) => a + b).toDouble();
+    final rawTotal = hourlyPrices.fold<int>(0, (a, b) => a + b);
 
-    final bg      = isDark ? const Color(0xFF0D1117) : const Color(0xFFF6F8FB);
+    // Apply selected promo discount if conditions are met for the booking date.
+    final effectivePromo = () {
+      final p = selectedPromo;
+      if (p == null || rawTotal == 0 || duration == 0) return null;
+      if (!p.isEffectiveForBooking(
+        date: selectedDate,
+        durationMinutes: duration * 60,
+        bookingPriceMinor: rawTotal,
+      )) {
+        return null;
+      }
+      return p;
+    }();
+
+    final discountedTotal =
+        effectivePromo != null ? effectivePromo.applyTo(rawTotal) : rawTotal;
+    final discountAmount = rawTotal - discountedTotal;
+    final totalPrice = discountedTotal.toDouble();
+
+    final bg = isDark ? const Color(0xFF0D1117) : const Color(0xFFF6F8FB);
     final surface = isDark ? const Color(0xFF161B22) : Colors.white;
-    final sub     = isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A);
+    final sub = isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A);
 
     final String? facilityHeroUrl = () {
       final r = selectedGroup?.resource;
@@ -255,26 +295,33 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                     ),
                   ),
                   Positioned(
-                    left: 20, right: 20, bottom: 16,
+                    left: 20,
+                    right: 20,
+                    bottom: 16,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.venue.name,
                           style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : const Color(0xFF0D1117),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color:
+                                isDark ? Colors.white : const Color(0xFF0D1117),
                             letterSpacing: -0.5,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(children: [
-                          Icon(Icons.location_on_rounded, size: 13, color: AppColors.colorMain),
+                          Icon(Icons.location_on_rounded,
+                              size: 13, color: AppColors.colorMain),
                           const SizedBox(width: 4),
-                          Expanded(child: Text(
+                          Expanded(
+                              child: Text(
                             widget.venue.address,
                             style: TextStyle(fontSize: 12, color: sub),
-                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           )),
                         ]),
                       ],
@@ -303,6 +350,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                     ref.read(selectedResourceIdProvider.notifier).state = id;
                     ref.read(selectedStartTimeProvider.notifier).state = null;
                     ref.read(selectedEndTimeProvider.notifier).state = null;
+                    ref.read(selectedPromoProvider.notifier).state = null;
                   },
                 ),
                 const SizedBox(height: 24),
@@ -318,14 +366,17 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                     itemCount: 14,
                     itemBuilder: (context, i) {
                       final date = DateTime.now().add(Duration(days: i));
-                      final isSel = selectedDate.day == date.day && selectedDate.month == date.month;
+                      final isSel = selectedDate.day == date.day &&
+                          selectedDate.month == date.month;
                       final isToday = i == 0;
                       return GestureDetector(
                         onTap: () {
                           HapticFeedback.selectionClick();
                           ref.read(selectedDateProvider.notifier).state = date;
-                          ref.read(selectedStartTimeProvider.notifier).state = null;
-                          ref.read(selectedEndTimeProvider.notifier).state = null;
+                          ref.read(selectedStartTimeProvider.notifier).state =
+                              null;
+                          ref.read(selectedEndTimeProvider.notifier).state =
+                              null;
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
@@ -335,11 +386,22 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                           decoration: BoxDecoration(
                             color: isSel ? AppColors.colorMain : surface,
                             borderRadius: BorderRadius.circular(18),
-                            boxShadow: isSel ? [
-                              BoxShadow(color: AppColors.colorMain.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4)),
-                            ] : [
-                              if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
-                            ],
+                            boxShadow: isSel
+                                ? [
+                                    BoxShadow(
+                                        color: AppColors.colorMain
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4)),
+                                  ]
+                                : [
+                                    if (!isDark)
+                                      BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.05),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2)),
+                                  ],
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -347,25 +409,37 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                               Text(
                                 DateFormat('EEE').format(date).toUpperCase(),
                                 style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5,
-                                  color: isSel ? Colors.white.withValues(alpha: 0.8) : sub,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                  color: isSel
+                                      ? Colors.white.withValues(alpha: 0.8)
+                                      : sub,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 DateFormat('d').format(date),
                                 style: TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.w800,
-                                  color: isSel ? Colors.white : (isDark ? Colors.white : const Color(0xFF0D1117)),
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: isSel
+                                      ? Colors.white
+                                      : (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0D1117)),
                                 ),
                               ),
                               if (isToday)
                                 Container(
-                                  width: 4, height: 4,
+                                  width: 4,
+                                  height: 4,
                                   margin: const EdgeInsets.only(top: 3),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: isSel ? Colors.white : AppColors.colorMain,
+                                    color: isSel
+                                        ? Colors.white
+                                        : AppColors.colorMain,
                                   ),
                                 )
                               else
@@ -465,13 +539,36 @@ class _BookingPageState extends ConsumerState<BookingPage> {
 
                 const SizedBox(height: 32),
 
+                // ── PROMO SECTION ──
+                if (selectedResourceId != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _PromoSection(
+                      promos: availablePromos,
+                      selectedDate: selectedDate,
+                      selectedPromo: selectedPromo,
+                      duration: duration,
+                      rawTotalMinor: rawTotal,
+                      isDark: isDark,
+                      l10n: l10n,
+                      onSelect: (p) {
+                        ref.read(selectedPromoProvider.notifier).state = p;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
                 // ── PRICE SUMMARY ROW ──
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _PriceSummaryCard(
                     lineItems: priceLineItems,
                     duration: duration,
+                    rawTotal: rawTotal.toDouble(),
                     totalPrice: totalPrice,
+                    discountAmount: discountAmount.toDouble(),
+                    appliedPromo: effectivePromo,
                     isDark: isDark,
                     l10n: l10n,
                   ),
@@ -493,20 +590,22 @@ class _BookingPageState extends ConsumerState<BookingPage> {
             opening != null,
         isDark: isDark,
         l10n: l10n,
-        onTap: () => Navigator.push(context, MaterialPageRoute(
-          builder: (_) => PaymentPage(
-            venue: widget.venue,
-            resourceId: selectedResourceId,
-            date: selectedDate,
-            time: selectedStart!,
-            duration: duration,
-            totalPrice: totalPrice,
-            bookingTimezone: resolveBookingTimezoneIana(
-              venueTimezone: widget.venue.timezone,
-              scheduleGroup: selectedGroup,
-            ),
-          ),
-        )),
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PaymentPage(
+                venue: widget.venue,
+                resourceId: selectedResourceId,
+                date: selectedDate,
+                time: selectedStart!,
+                duration: duration,
+                totalPrice: totalPrice,
+                bookingTimezone: resolveBookingTimezoneIana(
+                  venueTimezone: widget.venue.timezone,
+                  scheduleGroup: selectedGroup,
+                ),
+              ),
+            )),
       ),
     );
   }
@@ -517,16 +616,20 @@ class _BookingPageState extends ConsumerState<BookingPage> {
 // ─────────────────────────────────────────────
 class PaymentPage extends ConsumerStatefulWidget {
   final VenueModel venue;
+
   /// Selected resource for the booking (required by backend).
   final String? resourceId;
   final DateTime date;
   final String time;
   final int duration;
   final double totalPrice;
+
   /// IANA timezone sent with POST /bookings (venue or schedule-derived).
   final String bookingTimezone;
+
   /// When set, only charge this booking (no POST /bookings).
   final BookingModel? payExistingBooking;
+  final SessionModelSimple? paySession;
 
   const PaymentPage({
     super.key,
@@ -538,6 +641,7 @@ class PaymentPage extends ConsumerStatefulWidget {
     required this.totalPrice,
     required this.bookingTimezone,
     this.payExistingBooking,
+    this.paySession,
   });
 
   /// Pay an existing unpaid booking from booking details.
@@ -558,7 +662,47 @@ class PaymentPage extends ConsumerStatefulWidget {
     );
   }
 
+  factory PaymentPage.forSession({
+    required SessionModelSimple session,
+    required VenueModel venue,
+  }) {
+    return PaymentPage(
+      paySession: session,
+      venue: venue,
+      resourceId: session.resourceId,
+      date: DateTime(session.date.year, session.date.month, session.date.day),
+      time: session.timeSlots.isNotEmpty
+          ? session.timeSlots.first.split(' ').first
+          : DateFormat('HH:mm').format(session.date),
+      duration: _sessionDurationHours(session),
+      totalPrice: session.pricePerPlayer,
+      bookingTimezone: 'Asia/Almaty',
+    );
+  }
+
   bool get _isExistingBookingPayment => payExistingBooking != null;
+  bool get _isSessionPayment => paySession != null;
+
+  static int _sessionDurationHours(SessionModelSimple session) {
+    if (session.timeSlots.isEmpty) return 1;
+    final parts = session.timeSlots.first.split('–');
+    if (parts.length < 2) return 1;
+    final start = _parseHourMinute(parts[0]);
+    final end = _parseHourMinute(parts[1]);
+    if (start == null || end == null) return 1;
+    var minutes = end.$1 * 60 + end.$2 - (start.$1 * 60 + start.$2);
+    if (minutes <= 0) minutes += 24 * 60;
+    return (minutes / 60).ceil().clamp(1, 24);
+  }
+
+  static (int, int)? _parseHourMinute(String raw) {
+    final pieces = raw.trim().split(':');
+    if (pieces.length < 2) return null;
+    final hour = int.tryParse(pieces[0]);
+    final minute = int.tryParse(pieces[1].replaceAll(RegExp(r'[^0-9]'), ''));
+    if (hour == null || minute == null) return null;
+    return (hour, minute);
+  }
 
   @override
   ConsumerState<PaymentPage> createState() => _PaymentPageState();
@@ -587,16 +731,18 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n      = AppLocalizations.of(context)!;
-    final isDark    = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final savedCards = ref.watch(savedCardsProvider);
-    final bg        = isDark ? const Color(0xFF0D1117) : const Color(0xFFF6F8FB);
-    final surface   = isDark ? const Color(0xFF161B22) : Colors.white;
-    final sub       = isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A);
-    final isIOS     = Theme.of(context).platform == TargetPlatform.iOS;
+    final bg = isDark ? const Color(0xFF0D1117) : const Color(0xFFF6F8FB);
+    final surface = isDark ? const Color(0xFF161B22) : Colors.white;
+    final sub = isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A);
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
 
     if (_selectedPaymentMethod.isEmpty) {
-      return Scaffold(backgroundColor: bg, body: const Center(child: CircularProgressIndicator()));
+      return Scaffold(
+          backgroundColor: bg,
+          body: const Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -608,7 +754,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
         title: Text(
           l10n.payment,
           style: TextStyle(
-            fontWeight: FontWeight.w800, fontSize: 18,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
             color: isDark ? Colors.white : const Color(0xFF0D1117),
           ),
         ),
@@ -628,6 +775,12 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               time: widget.time,
               duration: widget.duration,
               totalPrice: widget.totalPrice,
+              title: widget._isSessionPayment
+                  ? (widget.paySession?.sportType ?? 'Session')
+                  : null,
+              notice: widget._isSessionPayment
+                  ? 'You are paying to join a shared session, not booking the venue privately.'
+                  : null,
               isDark: isDark,
               surface: surface,
               sub: sub,
@@ -640,7 +793,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             Text(
               l10n.paymentMethod,
               style: TextStyle(
-                fontSize: 17, fontWeight: FontWeight.w800,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
                 color: isDark ? Colors.white : const Color(0xFF0D1117),
                 letterSpacing: -0.3,
               ),
@@ -654,19 +808,20 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                 bgColor: const Color(0xFF000000),
                 selectedBorderColor: AppColors.colorMain,
                 child: _ApplePayContent(payLabel: l10n.paymentPayButton),
-                onTap: () => setState(() => _selectedPaymentMethod = 'apple_pay'),
+                onTap: () =>
+                    setState(() => _selectedPaymentMethod = 'apple_pay'),
               ),
               const SizedBox(height: 10),
             ],
             _FullWidthPayTile(
               selected: _selectedPaymentMethod == 'google_pay',
               bgColor: Colors.white,
-              unselectedBorderColor: isDark
-                  ? const Color(0xFF30363D)
-                  : const Color(0xFFE8ECF0),
+              unselectedBorderColor:
+                  isDark ? const Color(0xFF30363D) : const Color(0xFFE8ECF0),
               selectedBorderColor: AppColors.colorMain,
               child: _GooglePayContent(payLabel: l10n.paymentPayButton),
-              onTap: () => setState(() => _selectedPaymentMethod = 'google_pay'),
+              onTap: () =>
+                  setState(() => _selectedPaymentMethod = 'google_pay'),
             ),
             const SizedBox(height: 10),
             _FullWidthPayTile(
@@ -695,7 +850,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                 if (_selectedPaymentMethod == 'card_$cardId') {
                   final cards = ref.read(savedCardsProvider);
                   setState(() {
-                    _selectedPaymentMethod = cards.isEmpty ? 'google_pay' : 'card_${cards.first.id}';
+                    _selectedPaymentMethod =
+                        cards.isEmpty ? 'google_pay' : 'card_${cards.first.id}';
                   });
                 }
               },
@@ -706,7 +862,6 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           ],
         ),
       ),
-
       bottomNavigationBar: _PaymentBottomBar(
         totalPrice: widget.totalPrice,
         isDark: isDark,
@@ -719,80 +874,162 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
   void _showAddCardSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final cardNumberController = TextEditingController();
-    final expiryController     = TextEditingController();
-    final cvvController        = TextEditingController();
-    final bankNameController   = TextEditingController();
+    final expiryController = TextEditingController();
+    final cvvController = TextEditingController();
+    final bankNameController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? const Color(0xFF161B22) : Colors.white;
+    String? cardError;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-          decoration: BoxDecoration(
-            color: surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(child: Container(
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                )),
-                const SizedBox(height: 20),
-                Text(l10n.addNewCard,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-                const SizedBox(height: 20),
-                _StyledTextField(controller: cardNumberController, label: l10n.cardNumber, hint: '1234  5678  9012  3456', icon: Icons.credit_card, keyboardType: TextInputType.number, maxLength: 19, isDark: isDark),
-                const SizedBox(height: 12),
-                _StyledTextField(controller: bankNameController, label: l10n.bankCardBrandLabel, hint: l10n.bankCardBrandHint, icon: Icons.account_balance_rounded, isDark: isDark),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: _StyledTextField(controller: expiryController, label: l10n.expiryDate, hint: 'MM/YY', icon: Icons.date_range_rounded, keyboardType: TextInputType.datetime, maxLength: 5, isDark: isDark)),
-                    const SizedBox(width: 12),
-                    Expanded(child: _StyledTextField(controller: cvvController, label: l10n.cvv, hint: '•••', icon: Icons.lock_outline_rounded, keyboardType: TextInputType.number, obscure: true, maxLength: 4, isDark: isDark)),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final number = cardNumberController.text.replaceAll(' ', '');
-                      if (number.length >= 4) {
-                        final lastFour = number.substring(number.length - 4);
-                        final expiry = expiryController.text.split('/');
-                        final card = SavedCardModel(
-                          id: 'card_${DateTime.now().millisecondsSinceEpoch}',
-                          lastFourDigits: lastFour,
-                          brand: bankNameController.text.isNotEmpty ? bankNameController.text : 'card',
-                          bankName: bankNameController.text.isNotEmpty ? bankNameController.text : null,
-                          expiryMonth: expiry.isNotEmpty ? expiry[0] : '00',
-                          expiryYear: expiry.length >= 2 ? expiry[1] : '00',
-                        );
-                        ref.read(savedCardsProvider.notifier).addCard(card);
-                        setState(() => _selectedPaymentMethod = 'card_${card.id}');
-                        Navigator.pop(ctx);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+            decoration: BoxDecoration(
+              color: surface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                      child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    child: Text(l10n.save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  )),
+                  const SizedBox(height: 20),
+                  Text(l10n.addNewCard,
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3)),
+                  const SizedBox(height: 20),
+                  _StyledTextField(
+                      controller: cardNumberController,
+                      label: l10n.cardNumber,
+                      hint: '1234  5678  9012  3456',
+                      icon: Icons.credit_card,
+                      keyboardType: TextInputType.number,
+                      maxLength: 19,
+                      isDark: isDark),
+                  const SizedBox(height: 12),
+                  _StyledTextField(
+                      controller: bankNameController,
+                      label: l10n.bankCardBrandLabel,
+                      hint: l10n.bankCardBrandHint,
+                      icon: Icons.account_balance_rounded,
+                      isDark: isDark),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: _StyledTextField(
+                              controller: expiryController,
+                              label: l10n.expiryDate,
+                              hint: 'MM/YY',
+                              icon: Icons.date_range_rounded,
+                              keyboardType: TextInputType.datetime,
+                              maxLength: 5,
+                              isDark: isDark)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: _StyledTextField(
+                              controller: cvvController,
+                              label: l10n.cvv,
+                              hint: '•••',
+                              icon: Icons.lock_outline_rounded,
+                              keyboardType: TextInputType.number,
+                              obscure: true,
+                              maxLength: 4,
+                              isDark: isDark)),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.savedCardLocalOnlyNotice,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.35,
+                      color: isDark
+                          ? const Color(0xFF8B949E)
+                          : const Color(0xFF6E7A8A),
+                    ),
+                  ),
+                  if (cardError != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      cardError!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.colorError,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final validation = PaymentCardValidator.validate(
+                          number: cardNumberController.text,
+                          expiry: expiryController.text,
+                          cvv: cvvController.text,
+                        );
+                        if (!validation.isValid) {
+                          setSheetState(() {
+                            cardError =
+                                _cardValidationMessage(l10n, validation.field);
+                          });
+                          return;
+                        }
+                        final number = cardNumberController.text
+                            .replaceAll(RegExp(r'\D'), '');
+                        if (number.length >= 4) {
+                          final lastFour = number.substring(number.length - 4);
+                          final expiry = expiryController.text.split('/');
+                          final card = SavedCardModel(
+                            id: 'card_${DateTime.now().millisecondsSinceEpoch}',
+                            lastFourDigits: lastFour,
+                            brand: bankNameController.text.isNotEmpty
+                                ? bankNameController.text
+                                : 'card',
+                            bankName: bankNameController.text.isNotEmpty
+                                ? bankNameController.text
+                                : null,
+                            expiryMonth: expiry.isNotEmpty ? expiry[0] : '00',
+                            expiryYear: expiry.length >= 2 ? expiry[1] : '00',
+                          );
+                          ref.read(savedCardsProvider.notifier).addCard(card);
+                          setState(
+                              () => _selectedPaymentMethod = 'card_${card.id}');
+                          Navigator.pop(ctx);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: Text(l10n.save,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -800,8 +1037,19 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     );
   }
 
+  String _cardValidationMessage(AppLocalizations l10n, String? field) {
+    return switch (field) {
+      'number' => l10n.cardNumberInvalid,
+      'expiry' => l10n.cardExpiryInvalid,
+      'cvv' => l10n.cardCvvInvalid,
+      _ => l10n.cardDetailsInvalid,
+    };
+  }
+
   Future<void> _confirmPayment(BuildContext context) async {
-    if (widget._isExistingBookingPayment) {
+    if (widget._isSessionPayment) {
+      await _confirmPaymentForSession(context);
+    } else if (widget._isExistingBookingPayment) {
       await _confirmPaymentForExistingBooking(context);
     } else {
       await _confirmPaymentForNewBooking(context);
@@ -811,7 +1059,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
   Future<void> _runPaymentFlow(
     BuildContext context,
     AppLocalizations l10n, {
-    required Future<String> Function() resolveBookingId,
+    required Future<PaymentCreateRequest> Function() buildPaymentRequest,
     bool bookingAlreadyExists = false,
   }) async {
     if (!context.mounted) return;
@@ -825,15 +1073,11 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
     var bookingCreated = bookingAlreadyExists;
     try {
-      final bookingId = await resolveBookingId();
+      final request = await buildPaymentRequest();
       bookingCreated = true;
 
       final intent = await ref.read(paymentRepositoryProvider).createPayment(
-            PaymentCreateRequest(
-              bookingId: bookingId,
-              paymentMethod:
-                  apiPaymentMethodFromSelection(_selectedPaymentMethod),
-            ),
+            request,
           );
 
       final result = await ref
@@ -843,9 +1087,13 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
       if (!context.mounted) return;
       Navigator.of(context).pop();
 
-      if (!widget._isExistingBookingPayment) {
+      if (!widget._isExistingBookingPayment && !widget._isSessionPayment) {
         resetGuestBookingLists(ref);
       }
+      if (widget._isSessionPayment) {
+        ref.invalidate(sessionsListProvider);
+      }
+      ref.invalidate(venueScheduleResultProvider(widget.venue.id));
 
       if (result.isSucceeded) {
         _showSuccessDialog(context, l10n);
@@ -855,7 +1103,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     } on PaymentPollTimeoutException {
       if (!context.mounted) return;
       Navigator.of(context).pop();
-      if (!widget._isExistingBookingPayment) {
+      if (!widget._isExistingBookingPayment && !widget._isSessionPayment) {
         resetGuestBookingLists(ref);
       }
       if (!context.mounted) return;
@@ -864,7 +1112,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
       if (!context.mounted) return;
       Navigator.of(context).pop();
       if (bookingCreated) {
-        if (!widget._isExistingBookingPayment) {
+        if (!widget._isExistingBookingPayment && !widget._isSessionPayment) {
           resetGuestBookingLists(ref);
         }
         _showPaymentFailedDialog(context, l10n);
@@ -886,7 +1134,25 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
       context,
       l10n,
       bookingAlreadyExists: true,
-      resolveBookingId: () async => booking.id,
+      buildPaymentRequest: () async => PaymentCreateRequest(
+        bookingId: booking.id,
+        paymentMethod: apiPaymentMethodFromSelection(_selectedPaymentMethod),
+      ),
+    );
+  }
+
+  Future<void> _confirmPaymentForSession(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final session = widget.paySession!;
+    await _runPaymentFlow(
+      context,
+      l10n,
+      bookingAlreadyExists: true,
+      buildPaymentRequest: () async => PaymentCreateRequest(
+        paymentType: 'session',
+        sessionId: session.id,
+        paymentMethod: apiPaymentMethodFromSelection(_selectedPaymentMethod),
+      ),
     );
   }
 
@@ -922,12 +1188,54 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     await _runPaymentFlow(
       context,
       l10n,
-      resolveBookingId: () async {
+      buildPaymentRequest: () async {
+        final unavailable = await _selectedSlotUnavailable(startAt, endAt);
+        if (unavailable) {
+          ref.invalidate(venueScheduleResultProvider(widget.venue.id));
+          throw Exception(l10n.slotJustBecameUnavailable);
+        }
         final created =
             await ref.read(bookingRepositoryProvider).createBooking(request);
-        return created.id;
+        ref.invalidate(venueScheduleResultProvider(widget.venue.id));
+        return PaymentCreateRequest(
+          bookingId: created.id,
+          paymentMethod: apiPaymentMethodFromSelection(_selectedPaymentMethod),
+        );
       },
     );
+  }
+
+  Future<bool> _selectedSlotUnavailable(
+      DateTime startAt, DateTime endAt) async {
+    final resourceId = widget.resourceId;
+    if (resourceId == null || resourceId.isEmpty) return true;
+    final schedule = await ref.read(venueRepositoryProvider).getScheduleResult(
+          widget.venue.id,
+          resourceId: resourceId,
+          from: startAt,
+          to: endAt,
+        );
+    ScheduleResultGroup? group;
+    for (final g in schedule.groups) {
+      final id = g.resource?.id ?? g.resourceId;
+      if (id == resourceId) {
+        group = g;
+        break;
+      }
+    }
+    if (group == null) return true;
+    final loc = resolveVenueLocation(group);
+    final blocked = blockedLocalHoursForDay(
+      group,
+      widget.date.year,
+      widget.date.month,
+      widget.date.day,
+      loc,
+    );
+    for (var h = startAt.hour; h < endAt.hour; h++) {
+      if (blocked.contains(h)) return true;
+    }
+    return false;
   }
 
   void _navigateToMyBookings() {
@@ -982,7 +1290,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               l10n.paymentFailedMessage,
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A),
+                color:
+                    isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A),
               ),
               textAlign: TextAlign.center,
             ),
@@ -994,6 +1303,8 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               Navigator.of(dialogContext).pop();
               if (widget._isExistingBookingPayment) {
                 _finishPaymentFlow(context);
+              } else if (widget._isSessionPayment) {
+                Navigator.of(context).popUntil((r) => r.isFirst);
               } else {
                 _navigateToMyBookings();
               }
@@ -1008,7 +1319,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             child: Text(
               widget._isExistingBookingPayment
                   ? l10n.bookingDetails
-                  : l10n.myBookings,
+                  : widget._isSessionPayment
+                      ? 'Sessions'
+                      : l10n.myBookings,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
@@ -1030,49 +1343,82 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           children: [
             const SizedBox(height: 8),
             Container(
-              width: 80, height: 80,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.colorMain, AppColors.colorMain.withValues(alpha: 0.7)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.colorMain,
+                    AppColors.colorMain.withValues(alpha: 0.7)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: AppColors.colorMain.withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
+                boxShadow: [
+                  BoxShadow(
+                      color: AppColors.colorMain.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8))
+                ],
               ),
-              child: const Icon(Icons.check_rounded, color: Colors.white, size: 40),
+              child: const Icon(Icons.check_rounded,
+                  color: Colors.white, size: 40),
             ),
             const SizedBox(height: 20),
-            Text(l10n.bookingConfirmed,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-              textAlign: TextAlign.center),
+            Text(
+                widget._isSessionPayment
+                    ? 'Session joined'
+                    : l10n.bookingConfirmed,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5),
+                textAlign: TextAlign.center),
             const SizedBox(height: 10),
-            Text(l10n.bookingSuccess,
-              style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A)),
-              textAlign: TextAlign.center),
+            Text(
+                widget._isSessionPayment
+                    ? 'Your payment was successful and your place in this session is confirmed.'
+                    : l10n.bookingSuccess,
+                style: TextStyle(
+                    fontSize: 14,
+                    color: isDark
+                        ? const Color(0xFF8B949E)
+                        : const Color(0xFF6E7A8A)),
+                textAlign: TextAlign.center),
             const SizedBox(height: 4),
           ],
         ),
         actions: [
-          if (!widget._isExistingBookingPayment)
+          if (!widget._isExistingBookingPayment && !widget._isSessionPayment)
             TextButton(
               onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
-              child: Text(l10n.backToHome, style: TextStyle(color: isDark ? Colors.white54 : Colors.grey[600], fontWeight: FontWeight.w600)),
+              child: Text(l10n.backToHome,
+                  style: TextStyle(
+                      color: isDark ? Colors.white54 : Colors.grey[600],
+                      fontWeight: FontWeight.w600)),
             ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               if (widget._isExistingBookingPayment) {
                 _finishPaymentFlow(context);
+              } else if (widget._isSessionPayment) {
+                Navigator.of(context).popUntil((r) => r.isFirst);
               } else {
                 Navigator.of(context).popUntil((r) => r.isFirst);
                 ref.read(selectedIndexProvider.notifier).state = 1;
               }
             },
-            style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12))),
             child: Text(
               widget._isExistingBookingPayment
                   ? l10n.bookingDetails
-                  : l10n.viewBooking,
+                  : widget._isSessionPayment
+                      ? 'Sessions'
+                      : l10n.viewBooking,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
@@ -1110,11 +1456,13 @@ class _BackButton extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.06),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.06),
           shape: BoxShape.circle,
         ),
-        child: Icon(Icons.arrow_back_ios_new_rounded, size: 16,
-          color: isDark ? Colors.white : const Color(0xFF0D1117)),
+        child: Icon(Icons.arrow_back_ios_new_rounded,
+            size: 16, color: isDark ? Colors.white : const Color(0xFF0D1117)),
       ),
     );
   }
@@ -1141,13 +1489,17 @@ class _ResourceSelector extends ConsumerWidget {
     return scheduleAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        child: SizedBox(height: 52, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+        child: SizedBox(
+            height: 52,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
       ),
       error: (_, __) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Text(
           l10n.unableToLoadFacilities,
-          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
+          style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 14),
         ),
       ),
       data: (sr) {
@@ -1157,7 +1509,9 @@ class _ResourceSelector extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               l10n.noFacilitiesListed,
-              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
+              style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14),
             ),
           );
         }
@@ -1180,12 +1534,17 @@ class _ResourceSelector extends ConsumerWidget {
                   onTap: () => onSelect(id),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isSel ? AppColors.colorMain : (isDark ? const Color(0xFF161B22) : Colors.white),
+                      color: isSel
+                          ? AppColors.colorMain
+                          : (isDark ? const Color(0xFF161B22) : Colors.white),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isSel ? AppColors.colorMain : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
+                        color: isSel
+                            ? AppColors.colorMain
+                            : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
                         width: isSel ? 2 : 1,
                       ),
                     ),
@@ -1195,7 +1554,11 @@ class _ResourceSelector extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: isSel ? Colors.white : (isDark ? Colors.white : const Color(0xFF0D1117)),
+                          color: isSel
+                              ? Colors.white
+                              : (isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0D1117)),
                         ),
                       ),
                     ),
@@ -1219,10 +1582,13 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(label, style: TextStyle(
-        fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: -0.3,
-        color: isDark ? Colors.white : const Color(0xFF0D1117),
-      )),
+      child: Text(label,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
+            color: isDark ? Colors.white : const Color(0xFF0D1117),
+          )),
     );
   }
 }
@@ -1252,9 +1618,9 @@ class _TimeSlotRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: slots.length,
         itemBuilder: (context, i) {
-          final time     = slots[i];
+          final time = slots[i];
           final isBooked = bookedSlots.contains(time);
-          final isSel    = selectedSlot == time;
+          final isSel = selectedSlot == time;
 
           return GestureDetector(
             onTap: isBooked ? null : () => onSelect(time),
@@ -1264,7 +1630,9 @@ class _TimeSlotRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: isBooked
-                    ? (isDark ? const Color(0xFF1C2128) : const Color(0xFFF0F0F0))
+                    ? (isDark
+                        ? const Color(0xFF1C2128)
+                        : const Color(0xFFF0F0F0))
                     : isSel
                         ? AppColors.colorMain
                         : surface,
@@ -1276,15 +1644,21 @@ class _TimeSlotRow extends StatelessWidget {
                           ? AppColors.colorMain
                           : (isDark ? Colors.white12 : const Color(0xFFE8ECF0)),
                 ),
-                boxShadow: isSel ? [
-                  BoxShadow(color: AppColors.colorMain.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3)),
-                ] : null,
+                boxShadow: isSel
+                    ? [
+                        BoxShadow(
+                            color: AppColors.colorMain.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3)),
+                      ]
+                    : null,
               ),
               alignment: Alignment.center,
               child: Text(
                 time,
                 style: TextStyle(
-                  fontSize: 14, fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 14,
+                  fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                   color: isBooked
                       ? (isDark ? Colors.white24 : Colors.grey[400])
                       : isSel
@@ -1310,8 +1684,11 @@ class _TimeRangeBanner extends StatelessWidget {
   final bool isDark;
 
   const _TimeRangeBanner({
-    required this.start, required this.end, required this.duration,
-    required this.l10n, required this.isDark,
+    required this.start,
+    required this.end,
+    required this.duration,
+    required this.l10n,
+    required this.isDark,
   });
 
   @override
@@ -1324,7 +1701,8 @@ class _TimeRangeBanner extends StatelessWidget {
             AppColors.colorMain.withValues(alpha: isDark ? 0.2 : 0.08),
             AppColors.colorMain.withValues(alpha: isDark ? 0.08 : 0.04),
           ],
-          begin: Alignment.centerLeft, end: Alignment.centerRight,
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.colorMain.withValues(alpha: 0.25)),
@@ -1337,22 +1715,34 @@ class _TimeRangeBanner extends StatelessWidget {
               color: AppColors.colorMain.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.schedule_rounded, color: AppColors.colorMain, size: 18),
+            child: Icon(Icons.schedule_rounded,
+                color: AppColors.colorMain, size: 18),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: end != null
-                ? RichText(text: TextSpan(
+                ? RichText(
+                    text: TextSpan(
                     style: TextStyle(fontSize: 14, color: AppColors.colorMain),
                     children: [
-                      TextSpan(text: '$start  →  $end',
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-                      TextSpan(text: '  ·  $duration ${duration == 1 ? l10n.hour : l10n.hours}',
-                        style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.colorMain.withValues(alpha: 0.7))),
+                      TextSpan(
+                          text: '$start  →  $end',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800, fontSize: 15)),
+                      TextSpan(
+                          text:
+                              '  ·  $duration ${duration == 1 ? l10n.hour : l10n.hours}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color:
+                                  AppColors.colorMain.withValues(alpha: 0.7))),
                     ],
                   ))
                 : Text('$start  →  ?',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.colorMain)),
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.colorMain)),
           ),
         ],
       ),
@@ -1364,14 +1754,20 @@ class _PriceSummaryCard extends StatelessWidget {
   /// Consecutive runs of the same hourly rate: `(rate, hours)`.
   final List<(int, int)> lineItems;
   final int duration;
+  final double rawTotal;
   final double totalPrice;
+  final double discountAmount;
+  final PromoModel? appliedPromo;
   final bool isDark;
   final AppLocalizations l10n;
 
   const _PriceSummaryCard({
     required this.lineItems,
     required this.duration,
+    required this.rawTotal,
     required this.totalPrice,
+    this.discountAmount = 0,
+    this.appliedPromo,
     required this.isDark,
     required this.l10n,
   });
@@ -1411,9 +1807,14 @@ class _PriceSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: isDark ? null : [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 4)),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4)),
+              ],
       ),
       child: Column(
         children: [
@@ -1421,12 +1822,33 @@ class _PriceSummaryCard extends StatelessWidget {
           if (duration > 0) ...[
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Divider(color: isDark ? Colors.white12 : const Color(0xFFEEF0F4), height: 1),
+              child: Divider(
+                  color: isDark ? Colors.white12 : const Color(0xFFEEF0F4),
+                  height: 1),
             ),
+            // Show subtotal + discount lines when a promo is applied.
+            if (appliedPromo != null && discountAmount > 0) ...[
+              _PriceRow(
+                label: l10n.subtotal,
+                value: '${rawTotal.toInt()} ₸',
+                isDark: isDark,
+                isTotal: false,
+              ),
+              const SizedBox(height: 6),
+              _PriceRow(
+                label: '🏷 ${appliedPromo!.name}',
+                value: '−${discountAmount.toInt()} ₸',
+                isDark: isDark,
+                isTotal: false,
+                isDiscount: true,
+              ),
+              const SizedBox(height: 10),
+            ],
             _PriceRow(
               label: l10n.totalPrice,
               value: '${totalPrice.toInt()} ₸',
-              isDark: isDark, isTotal: true,
+              isDark: isDark,
+              isTotal: true,
             ),
           ],
         ],
@@ -1438,25 +1860,428 @@ class _PriceSummaryCard extends StatelessWidget {
 class _PriceRow extends StatelessWidget {
   final String label, value;
   final bool isDark, isTotal;
-  const _PriceRow({required this.label, required this.value, required this.isDark, required this.isTotal});
+  final bool isDiscount;
+  const _PriceRow({
+    required this.label,
+    required this.value,
+    required this.isDark,
+    required this.isTotal,
+    this.isDiscount = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final sub = isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A);
+    final discountGreen =
+        isDark ? const Color(0xFF3FB950) : const Color(0xFF1A7F37);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(
-          fontSize: isTotal ? 15 : 14,
-          fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-          color: isTotal ? (isDark ? Colors.white : const Color(0xFF0D1117)) : sub,
-        )),
-        Text(value, style: TextStyle(
-          fontSize: isTotal ? 20 : 15,
-          fontWeight: FontWeight.w800,
-          color: isTotal ? AppColors.colorMain : (isDark ? Colors.white : const Color(0xFF0D1117)),
-        )),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: isTotal ? 15 : 14,
+              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+              color: isDiscount
+                  ? discountGreen
+                  : isTotal
+                      ? (isDark ? Colors.white : const Color(0xFF0D1117))
+                      : sub,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isTotal ? 20 : 15,
+            fontWeight: FontWeight.w800,
+            color: isDiscount
+                ? discountGreen
+                : isTotal
+                    ? AppColors.colorMain
+                    : (isDark ? Colors.white : const Color(0xFF0D1117)),
+          ),
+        ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Promo section: selectable promos + always-visible code entry
+// ─────────────────────────────────────────────────────────────────────────────
+
+String _promoConditionsText(PromoModel p, {String? locale, DateTime? onDate}) {
+  final parts = <String>[];
+  if (p.minDurationMinutes != null) {
+    parts.add('Min ${p.minDurationMinutes! ~/ 60}h booking required');
+  }
+  if (p.minBookingPriceMinor != null) {
+    parts.add('Min ${p.minBookingPriceMinor! ~/ 100} ₸ required');
+  }
+  final daysLabel = p.applicableDaysLabel(locale: locale);
+  if (daysLabel.isNotEmpty) {
+    parts.add('Valid on $daysLabel');
+  }
+  if (onDate != null &&
+      !p.appliesAnyDay &&
+      !p.isApplicableOnDate(onDate)) {
+    parts.add('Not valid on ${DateFormat.E(locale).format(onDate)}');
+  }
+  return parts.join(' · ');
+}
+
+class _PromoSection extends StatefulWidget {
+  final List<PromoModel> promos;
+  final DateTime selectedDate;
+  final PromoModel? selectedPromo;
+  final int duration; // in hours
+  final int rawTotalMinor;
+  final bool isDark;
+  final AppLocalizations l10n;
+  final void Function(PromoModel?) onSelect;
+
+  const _PromoSection({
+    required this.promos,
+    required this.selectedDate,
+    required this.selectedPromo,
+    required this.duration,
+    required this.rawTotalMinor,
+    required this.isDark,
+    required this.l10n,
+    required this.onSelect,
+  });
+
+  @override
+  State<_PromoSection> createState() => _PromoSectionState();
+}
+
+class _PromoSectionState extends State<_PromoSection> {
+  final _codeController = TextEditingController();
+  String? _codeError;
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  bool _isPromoEffective(PromoModel p) {
+    return p.isEffectiveForBooking(
+      date: widget.selectedDate,
+      durationMinutes: widget.duration * 60,
+      bookingPriceMinor: widget.rawTotalMinor,
+    );
+  }
+
+  String _conditionsText(PromoModel p) {
+    return _promoConditionsText(
+      p,
+      locale: Localizations.localeOf(context).toString(),
+      onDate: widget.selectedDate,
+    );
+  }
+
+  Future<void> _showConditionsNotMetDialog(PromoModel p) {
+    final conditions = _conditionsText(p);
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(widget.l10n.promoConditionsNotMet),
+        content: Text(
+          conditions.isNotEmpty ? conditions : widget.l10n.promoConditionsNotMet,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handlePromoSelect(PromoModel p, {required bool isSelected}) {
+    final next = isSelected ? null : p;
+    if (next != null && !_isPromoEffective(next)) {
+      unawaited(_showConditionsNotMetDialog(next));
+    }
+    widget.onSelect(next);
+  }
+
+  void _applyPromoCode() {
+    final code = _codeController.text.trim().toUpperCase();
+    if (code.isEmpty) return;
+
+    final codePromos =
+        widget.promos.where((p) => !p.isAutoApplied).toList();
+    PromoModel? found;
+    for (final p in codePromos) {
+      if ((p.code?.toUpperCase() ?? '') == code) {
+        found = p;
+        break;
+      }
+    }
+
+    if (found == null) {
+      setState(() => _codeError = widget.l10n.promoCodeInvalid);
+      return;
+    }
+
+    setState(() => _codeError = null);
+    if (!_isPromoEffective(found)) {
+      unawaited(_showConditionsNotMetDialog(found));
+    }
+    _codeController.clear();
+    widget.onSelect(found);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = widget.isDark ? const Color(0xFF161B22) : Colors.white;
+    final sub =
+        widget.isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A);
+
+    final selectablePromos = widget.promos
+        .where(
+          (p) => p.isAutoApplied && p.isValidForBookingDate(widget.selectedDate),
+        )
+        .toList();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: widget.isDark
+            ? null
+            : [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4)),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.local_offer_rounded,
+                  size: 16, color: AppColors.colorMain),
+              const SizedBox(width: 8),
+              Text(
+                widget.l10n.promoSectionTitle,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: widget.isDark ? Colors.white : const Color(0xFF0D1117),
+                ),
+              ),
+            ],
+          ),
+
+          // Selectable (non-code) promos — shown before code entry.
+          if (selectablePromos.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...selectablePromos.map((p) {
+              final isSelected = widget.selectedPromo?.id == p.id;
+              return _PromoTile(
+                promo: p,
+                isSelected: isSelected,
+                isDark: widget.isDark,
+                sub: sub,
+                conditionsText: _conditionsText(p),
+                onTap: () => _handlePromoSelect(p, isSelected: isSelected),
+              );
+            }),
+          ],
+
+          // Code entry — always visible regardless of available promos.
+          const SizedBox(height: 12),
+          Text(
+            widget.l10n.promoEnterCode,
+            style: TextStyle(
+              fontSize: 13,
+              color: sub,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _codeController,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    hintText: widget.l10n.promoCodeHint,
+                    errorText: _codeError,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    isDense: true,
+                    filled: true,
+                    fillColor: widget.isDark
+                        ? const Color(0xFF0D1117)
+                        : const Color(0xFFF6F8FB),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onSubmitted: (_) => _applyPromoCode(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.colorMain,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                onPressed: _applyPromoCode,
+                child: Text(widget.l10n.promoApply),
+              ),
+            ],
+          ),
+
+          // Applied code promo — shown after successful code entry (not in list).
+          if (widget.selectedPromo != null &&
+              !widget.selectedPromo!.isAutoApplied) ...[
+            const SizedBox(height: 8),
+            _PromoTile(
+              promo: widget.selectedPromo!,
+              isSelected: true,
+              isDark: widget.isDark,
+              sub: sub,
+              conditionsText: _conditionsText(widget.selectedPromo!),
+              onTap: () {},
+            ),
+          ],
+
+          // Remove applied / selected promo.
+          if (widget.selectedPromo != null) ...[
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => widget.onSelect(null),
+              child: Row(
+                children: [
+                  Icon(Icons.remove_circle_outline_rounded,
+                      size: 16, color: sub),
+                  const SizedBox(width: 6),
+                  Text(
+                    widget.l10n.promoRemove,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: sub,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PromoTile extends StatelessWidget {
+  final PromoModel promo;
+  final bool isSelected;
+  final bool isDark;
+  final Color sub;
+  final String conditionsText;
+  final VoidCallback onTap;
+
+  const _PromoTile({
+    required this.promo,
+    required this.isSelected,
+    required this.isDark,
+    required this.sub,
+    required this.conditionsText,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final border = isDark ? const Color(0xFF30363D) : const Color(0xFFE8ECF0);
+    final hasConditions = conditionsText.isNotEmpty;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.colorMain.withValues(alpha: isDark ? 0.18 : 0.08)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.colorMain : border,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF6B35), Color(0xFFFF3D71)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                promo.discountLabel,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    promo.name,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF0D1117),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (hasConditions)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        conditionsText,
+                        style: TextStyle(fontSize: 11, color: sub),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded,
+                  size: 18, color: AppColors.colorMain),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1469,18 +2294,27 @@ class _BookingBottomBar extends StatelessWidget {
   final VoidCallback onTap;
 
   const _BookingBottomBar({
-    required this.totalPrice, required this.enabled, required this.isDark,
-    required this.l10n, required this.onTap,
+    required this.totalPrice,
+    required this.enabled,
+    required this.isDark,
+    required this.l10n,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final surface = isDark ? const Color(0xFF161B22) : Colors.white;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(
+          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
         color: surface,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08), blurRadius: 20, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4))
+        ],
       ),
       child: Row(
         children: [
@@ -1489,10 +2323,18 @@ class _BookingBottomBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.bookingTotalLabel, style: TextStyle(fontSize: 12, color: isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A))),
+                Text(l10n.bookingTotalLabel,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? const Color(0xFF8B949E)
+                            : const Color(0xFF6E7A8A))),
                 Text('${totalPrice.toInt()} ₸',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : const Color(0xFF0D1117))),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color:
+                            isDark ? Colors.white : const Color(0xFF0D1117))),
               ],
             ),
             const SizedBox(width: 16),
@@ -1504,14 +2346,22 @@ class _BookingBottomBar extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: enabled ? onTap : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: enabled ? AppColors.colorMain : (isDark ? Colors.white12 : const Color(0xFFE8ECF0)),
-                  foregroundColor: enabled ? Colors.white : (isDark ? Colors.white38 : Colors.grey[400]),
+                  backgroundColor: enabled
+                      ? AppColors.colorMain
+                      : (isDark ? Colors.white12 : const Color(0xFFE8ECF0)),
+                  foregroundColor: enabled
+                      ? Colors.white
+                      : (isDark ? Colors.white38 : Colors.grey[400]),
                   elevation: enabled ? 0 : 0,
                   shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
                 child: Text(l10n.proceedToPayment,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2)),
               ),
             ),
           ),
@@ -1529,15 +2379,25 @@ class _BookingSummaryCard extends StatelessWidget {
   final String time;
   final int duration;
   final double totalPrice;
+  final String? title;
+  final String? notice;
   final bool isDark;
   final Color surface;
   final Color sub;
   final AppLocalizations l10n;
 
   const _BookingSummaryCard({
-    required this.venue, required this.date, required this.time,
-    required this.duration, required this.totalPrice,
-    required this.isDark, required this.surface, required this.sub, required this.l10n,
+    required this.venue,
+    required this.date,
+    required this.time,
+    required this.duration,
+    required this.totalPrice,
+    this.title,
+    this.notice,
+    required this.isDark,
+    required this.surface,
+    required this.sub,
+    required this.l10n,
   });
 
   @override
@@ -1546,9 +2406,14 @@ class _BookingSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: isDark ? null : [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 4)),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4)),
+              ],
       ),
       child: Column(
         children: [
@@ -1565,25 +2430,42 @@ class _BookingSummaryCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             color: AppColors.colorMain.withValues(alpha: 0.15),
-                            child: Icon(Icons.sports, size: 32, color: AppColors.colorMain.withValues(alpha: 0.5)),
+                            child: Icon(Icons.sports,
+                                size: 32,
+                                color:
+                                    AppColors.colorMain.withValues(alpha: 0.5)),
                           ),
                         )
                       : Container(
                           color: AppColors.colorMain.withValues(alpha: 0.15),
-                          child: Icon(Icons.sports, size: 32, color: AppColors.colorMain.withValues(alpha: 0.5)),
+                          child: Icon(Icons.sports,
+                              size: 32,
+                              color:
+                                  AppColors.colorMain.withValues(alpha: 0.5)),
                         ),
                 ),
-                Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
+                Positioned.fill(
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.black54, Colors.transparent],
-                    begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
                   ),
                 ))),
-                Positioned(left: 16, bottom: 12, right: 16, child: Text(
-                  venue.name,
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                )),
+                Positioned(
+                    left: 16,
+                    bottom: 12,
+                    right: 16,
+                    child: Text(
+                      title ?? venue.name,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )),
               ],
             ),
           ),
@@ -1591,26 +2473,68 @@ class _BookingSummaryCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _SummaryRow(icon: Icons.calendar_today_rounded, label: l10n.date,
-                  value: DateFormat('EEE, MMM d, yyyy').format(date), sub: sub, isDark: isDark),
+                _SummaryRow(
+                    icon: Icons.calendar_today_rounded,
+                    label: l10n.date,
+                    value: DateFormat('EEE, MMM d, yyyy').format(date),
+                    sub: sub,
+                    isDark: isDark),
                 const SizedBox(height: 10),
-                _SummaryRow(icon: Icons.schedule_rounded, label: l10n.time,
-                  value: time, sub: sub, isDark: isDark),
+                _SummaryRow(
+                    icon: Icons.schedule_rounded,
+                    label: l10n.time,
+                    value: time,
+                    sub: sub,
+                    isDark: isDark),
                 const SizedBox(height: 10),
-                _SummaryRow(icon: Icons.timelapse_rounded, label: l10n.duration,
-                  value: '$duration ${duration == 1 ? l10n.hour : l10n.hours}', sub: sub, isDark: isDark),
+                _SummaryRow(
+                    icon: Icons.timelapse_rounded,
+                    label: l10n.duration,
+                    value:
+                        '$duration ${duration == 1 ? l10n.hour : l10n.hours}',
+                    sub: sub,
+                    isDark: isDark),
+                if (notice != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.colorMain.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      notice!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF0D1117),
+                      ),
+                    ),
+                  ),
+                ],
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(color: isDark ? Colors.white12 : const Color(0xFFEEF0F4), height: 1),
+                  child: Divider(
+                      color: isDark ? Colors.white12 : const Color(0xFFEEF0F4),
+                      height: 1),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(l10n.totalPrice, style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : const Color(0xFF0D1117))),
-                    Text('${totalPrice.toInt()} ₸', style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.colorMain)),
+                    Text(l10n.totalPrice,
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0D1117))),
+                    Text('${totalPrice.toInt()} ₸',
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.colorMain)),
                   ],
                 ),
               ],
@@ -1628,7 +2552,12 @@ class _SummaryRow extends StatelessWidget {
   final Color sub;
   final bool isDark;
 
-  const _SummaryRow({required this.icon, required this.label, required this.value, required this.sub, required this.isDark});
+  const _SummaryRow(
+      {required this.icon,
+      required this.label,
+      required this.value,
+      required this.sub,
+      required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -1637,10 +2566,13 @@ class _SummaryRow extends StatelessWidget {
         Icon(icon, size: 15, color: AppColors.colorMain.withValues(alpha: 0.7)),
         const SizedBox(width: 8),
         Text('$label  ', style: TextStyle(fontSize: 13, color: sub)),
-        Expanded(child: Text(value, style: TextStyle(
-          fontSize: 13, fontWeight: FontWeight.w700,
-          color: isDark ? Colors.white : const Color(0xFF0D1117)),
-          textAlign: TextAlign.end)),
+        Expanded(
+            child: Text(value,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : const Color(0xFF0D1117)),
+                textAlign: TextAlign.end)),
       ],
     );
   }
@@ -1673,7 +2605,10 @@ class _FullWidthPayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () { HapticFeedback.selectionClick(); onTap(); },
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
@@ -1688,24 +2623,40 @@ class _FullWidthPayTile extends StatelessWidget {
             width: selected ? 2.5 : 1,
           ),
           boxShadow: selected
-              ? [BoxShadow(color: selectedBorderColor.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))]
-              : [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 2))],
+              ? [
+                  BoxShadow(
+                      color: selectedBorderColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4))
+                ]
+              : [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2))
+                ],
         ),
         child: Stack(
           children: [
             Center(child: child),
             if (selected)
               Positioned(
-                top: 8, right: 10,
+                top: 8,
+                right: 10,
                 child: Container(
-                  width: 20, height: 20,
+                  width: 20,
+                  height: 20,
                   decoration: BoxDecoration(
                     color: checkBgColor ?? selectedBorderColor,
                     shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4)],
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4)
+                    ],
                   ),
-                  child: Icon(Icons.check_rounded, size: 13,
-                    color: checkIconColor ?? Colors.white),
+                  child: Icon(Icons.check_rounded,
+                      size: 13, color: checkIconColor ?? Colors.white),
                 ),
               ),
           ],
@@ -1808,8 +2759,10 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
     final selectedCard = _selectedCard;
 
     // Slightly darker than surface for the dropdown
-    final headerColor = widget.isDark ? const Color(0xFF11161D) : const Color(0xFFF0F2F5);
-    final panelColor = widget.isDark ? const Color(0xFF0F1419) : const Color(0xFFECEFF3);
+    final headerColor =
+        widget.isDark ? const Color(0xFF11161D) : const Color(0xFFF0F2F5);
+    final panelColor =
+        widget.isDark ? const Color(0xFF0F1419) : const Color(0xFFECEFF3);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1827,7 +2780,9 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
               border: Border.all(
                 color: selectedCard != null
                     ? AppColors.colorMain.withValues(alpha: 0.4)
-                    : (widget.isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFDDE0E6)),
+                    : (widget.isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : const Color(0xFFDDE0E6)),
                 width: selectedCard != null ? 1.5 : 1,
               ),
               boxShadow: [
@@ -1843,16 +2798,21 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
               children: [
                 // Card icon
                 Container(
-                  width: 38, height: 28,
+                  width: 38,
+                  height: 28,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
                     color: selectedCard != null
                         ? AppColors.colorMain.withValues(alpha: 0.15)
-                        : (widget.isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFE4E7EC)),
+                        : (widget.isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : const Color(0xFFE4E7EC)),
                   ),
                   child: Icon(
-                    Icons.credit_card_rounded, size: 18,
-                    color: selectedCard != null ? AppColors.colorMain : widget.sub,
+                    Icons.credit_card_rounded,
+                    size: 18,
+                    color:
+                        selectedCard != null ? AppColors.colorMain : widget.sub,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1865,14 +2825,19 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                             Text(
                               selectedCard.bankName ?? selectedCard.brand,
                               style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700,
-                                color: widget.isDark ? Colors.white : const Color(0xFF0D1117),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: widget.isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0D1117),
                               ),
                             ),
                             Text(
                               '••••  ${selectedCard.lastFourDigits}',
                               style: TextStyle(
-                                fontSize: 12, color: widget.sub, fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                                color: widget.sub,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -1882,15 +2847,19 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                               ? widget.l10n.otherBankCards
                               : widget.l10n.paymentMyCards,
                           style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600,
-                            color: widget.isDark ? Colors.white : const Color(0xFF0D1117),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: widget.isDark
+                                ? Colors.white
+                                : const Color(0xFF0D1117),
                           ),
                         ),
                 ),
                 // Card count badge
                 if (hasCards)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
                       color: AppColors.colorMain.withValues(alpha: 0.12),
@@ -1899,7 +2868,8 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                     child: Text(
                       '${widget.savedCards.length}',
                       style: TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
                         color: AppColors.colorMain,
                       ),
                     ),
@@ -1908,8 +2878,11 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                 RotationTransition(
                   turns: _rotateAnimation,
                   child: Icon(
-                    Icons.keyboard_arrow_down_rounded, size: 22,
-                    color: widget.isDark ? Colors.white54 : const Color(0xFF9CA3AF),
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 22,
+                    color: widget.isDark
+                        ? Colors.white54
+                        : const Color(0xFF9CA3AF),
                   ),
                 ),
               ],
@@ -1930,7 +2903,9 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                   color: panelColor,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: widget.isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFDDE0E6),
+                    color: widget.isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFDDE0E6),
                   ),
                   boxShadow: [
                     if (!widget.isDark)
@@ -1950,7 +2925,8 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                       ...widget.savedCards.asMap().entries.map((entry) {
                         final index = entry.key;
                         final card = entry.value;
-                        final isSelected = widget.selectedPaymentMethod == 'card_${card.id}';
+                        final isSelected =
+                            widget.selectedPaymentMethod == 'card_${card.id}';
                         final isLast = index == widget.savedCards.length - 1;
 
                         return Column(
@@ -1964,7 +2940,8 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                                 HapticFeedback.selectionClick();
                                 widget.onSelectCard('card_${card.id}');
                                 // Auto-collapse after selection
-                                Future.delayed(const Duration(milliseconds: 200), () {
+                                Future.delayed(
+                                    const Duration(milliseconds: 200), () {
                                   if (mounted) _toggle();
                                 });
                               },
@@ -1974,7 +2951,9 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                               Divider(
                                 height: 1,
                                 indent: 56,
-                                color: widget.isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFE4E7EC),
+                                color: widget.isDark
+                                    ? Colors.white.withValues(alpha: 0.04)
+                                    : const Color(0xFFE4E7EC),
                               ),
                           ],
                         );
@@ -1985,10 +2964,13 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         child: Column(
                           children: [
-                            Icon(Icons.credit_card_off_rounded, size: 28, color: widget.sub.withValues(alpha: 0.4)),
+                            Icon(Icons.credit_card_off_rounded,
+                                size: 28,
+                                color: widget.sub.withValues(alpha: 0.4)),
                             const SizedBox(height: 6),
                             Text(widget.l10n.paymentNoSavedCards,
-                                style: TextStyle(fontSize: 12, color: widget.sub)),
+                                style:
+                                    TextStyle(fontSize: 12, color: widget.sub)),
                           ],
                         ),
                       ),
@@ -1996,7 +2978,9 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                     // Add card button at bottom
                     Divider(
                       height: 1,
-                      color: widget.isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFE4E7EC),
+                      color: widget.isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : const Color(0xFFE4E7EC),
                     ),
                     GestureDetector(
                       onTap: widget.onAddCard,
@@ -2008,16 +2992,19 @@ class _SavedCardsDropdownState extends State<_SavedCardsDropdown>
                             Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: AppColors.colorMain.withValues(alpha: 0.12),
+                                color:
+                                    AppColors.colorMain.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.add_rounded, size: 16, color: AppColors.colorMain),
+                              child: Icon(Icons.add_rounded,
+                                  size: 16, color: AppColors.colorMain),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               widget.l10n.addNewCard,
                               style: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.colorMain,
                               ),
                             ),
@@ -2045,8 +3032,12 @@ class _DropdownCardItem extends StatelessWidget {
   final VoidCallback onDelete;
 
   const _DropdownCardItem({
-    required this.card, required this.isSelected, required this.isDark,
-    required this.sub, required this.onSelect, required this.onDelete,
+    required this.card,
+    required this.isSelected,
+    required this.isDark,
+    required this.sub,
+    required this.onSelect,
+    required this.onDelete,
   });
 
   @override
@@ -2064,15 +3055,18 @@ class _DropdownCardItem extends StatelessWidget {
           children: [
             // Card chip
             Container(
-              width: 36, height: 26,
+              width: 36,
+              height: 26,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 color: isSelected
                     ? AppColors.colorMain.withValues(alpha: 0.2)
-                    : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFE0E3E8)),
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFE0E3E8)),
               ),
-              child: Icon(Icons.credit_card_rounded, size: 16,
-                color: isSelected ? AppColors.colorMain : sub),
+              child: Icon(Icons.credit_card_rounded,
+                  size: 16, color: isSelected ? AppColors.colorMain : sub),
             ),
             const SizedBox(width: 12),
             // Card details
@@ -2083,7 +3077,8 @@ class _DropdownCardItem extends StatelessWidget {
                   Text(
                     card.bankName ?? card.brand,
                     style: TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                       color: isSelected
                           ? AppColors.colorMain
                           : (isDark ? Colors.white : const Color(0xFF0D1117)),
@@ -2092,7 +3087,9 @@ class _DropdownCardItem extends StatelessWidget {
                   Text(
                     '••••  ••••  ••••  ${card.lastFourDigits}',
                     style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 0.5,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
                       color: isSelected
                           ? AppColors.colorMain.withValues(alpha: 0.7)
                           : sub,
@@ -2109,13 +3106,15 @@ class _DropdownCardItem extends StatelessWidget {
                   color: AppColors.colorMain,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+                child: const Icon(Icons.check_rounded,
+                    size: 12, color: Colors.white),
               )
             else
               GestureDetector(
                 onTap: onDelete,
-                child: Icon(Icons.close_rounded, size: 16,
-                  color: isDark ? Colors.white24 : Colors.grey[350]),
+                child: Icon(Icons.close_rounded,
+                    size: 16,
+                    color: isDark ? Colors.white24 : Colors.grey[350]),
               ),
           ],
         ),
@@ -2139,7 +3138,9 @@ class _ApplePayContent extends StatelessWidget {
         const SizedBox(width: 6),
         Text(payLabel,
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w700, fontSize: 17)),
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 17)),
       ],
     );
   }
@@ -2155,15 +3156,26 @@ class _GooglePayContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _BankAsset(asset: 'assets/banks/google.png', size: 28, fallback: Container(
-          width: 24, height: 24,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            gradient: const LinearGradient(colors: [Color(0xFF4285F4), Color(0xFF34A853)],
-              begin: Alignment.topLeft, end: Alignment.bottomRight),
-          ),
-          child: const Center(child: Text('G', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-        )),
+        _BankAsset(
+            asset: 'assets/banks/google.png',
+            size: 28,
+            fallback: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF4285F4), Color(0xFF34A853)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
+              ),
+              child: const Center(
+                  child: Text('G',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12))),
+            )),
         const SizedBox(width: 8),
         Text(payLabel,
             style: const TextStyle(
@@ -2188,12 +3200,21 @@ class _KaspiContent extends StatelessWidget {
           size: 28,
           fallback: Container(
             padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-            child: const Text('K', style: TextStyle(color: Color(0xFFE31E24), fontWeight: FontWeight.bold, fontSize: 14)),
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: const Text('K',
+                style: TextStyle(
+                    color: Color(0xFFE31E24),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14)),
           ),
         ),
         const SizedBox(width: 8),
-        const Text('Kaspi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+        const Text('Kaspi',
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 16)),
       ],
     );
   }
@@ -2204,7 +3225,8 @@ class _BankAsset extends StatelessWidget {
   final double size;
   final Widget fallback;
 
-  const _BankAsset({required this.asset, required this.size, required this.fallback});
+  const _BankAsset(
+      {required this.asset, required this.size, required this.fallback});
 
   @override
   Widget build(BuildContext context) {
@@ -2225,17 +3247,26 @@ class _PaymentBottomBar extends StatelessWidget {
   final VoidCallback onTap;
 
   const _PaymentBottomBar({
-    required this.totalPrice, required this.isDark, required this.l10n, required this.onTap,
+    required this.totalPrice,
+    required this.isDark,
+    required this.l10n,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final surface = isDark ? const Color(0xFF161B22) : Colors.white;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(
+          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
         color: surface,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08), blurRadius: 20, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4))
+        ],
       ),
       child: Row(
         children: [
@@ -2243,10 +3274,17 @@ class _PaymentBottomBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.payNowLabel, style: TextStyle(fontSize: 12, color: isDark ? const Color(0xFF8B949E) : const Color(0xFF6E7A8A))),
-              Text('${totalPrice.toInt()} ₸', style: TextStyle(
-                fontSize: 20, fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : const Color(0xFF0D1117))),
+              Text(l10n.payNowLabel,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: isDark
+                          ? const Color(0xFF8B949E)
+                          : const Color(0xFF6E7A8A))),
+              Text('${totalPrice.toInt()} ₸',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0D1117))),
             ],
           ),
           const SizedBox(width: 16),
@@ -2260,10 +3298,14 @@ class _PaymentBottomBar extends StatelessWidget {
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                 ),
                 child: Text(l10n.confirmPayment,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2)),
               ),
             ),
           ),
@@ -2283,10 +3325,14 @@ class _StyledTextField extends StatelessWidget {
   final bool isDark;
 
   const _StyledTextField({
-    required this.controller, required this.label, required this.hint,
-    required this.icon, required this.isDark,
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    required this.isDark,
     this.keyboardType = TextInputType.text,
-    this.obscure = false, this.maxLength,
+    this.obscure = false,
+    this.maxLength,
   });
 
   @override
@@ -2297,19 +3343,29 @@ class _StyledTextField extends StatelessWidget {
       keyboardType: keyboardType,
       obscureText: obscure,
       maxLength: maxLength,
-      style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF0D1117)),
+      style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : const Color(0xFF0D1117)),
       decoration: InputDecoration(
-        labelText: label, hintText: hint,
-        prefixIcon: Icon(icon, size: 20, color: AppColors.colorMain.withValues(alpha: 0.7)),
-        filled: true, fillColor: bg,
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon,
+            size: 20, color: AppColors.colorMain.withValues(alpha: 0.7)),
+        filled: true,
+        fillColor: bg,
         counterText: '',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: AppColors.colorMain, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
@@ -28,18 +28,29 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { IconButton } from '@/components/ui/IconButton';
 
 import { buildAddress, shortTime } from '@/lib/format';
+import {
+  canonicalSportKeys,
+  sortSportKeysForDisplay,
+  sortedSportOptions,
+  sportLabel,
+} from '@/lib/sports';
 import type { Venue, VenueContact } from '@/types/venue';
 import type { Resource } from '@/types/resource';
 import type { VenueScheduleResult } from '@/types/schedule';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Textarea } from '@/components/ui/Input';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 import {
   useCreateResource,
-  useDeleteVenue,
+  useCreateVenueContact,
+  useDeleteVenueContact,
+  useUpdateVenue,
+  useUpdateVenueContact,
   useScheduleResult,
   useVenue,
   useVenueResources,
 } from '@/hooks/useVenues';
+import type { VenueContactPayload } from '@/api/venues';
 
 const RESOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
   court: <span className="text-lg">🎾</span>,
@@ -53,19 +64,24 @@ const RESOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
 type Tab = 'overview' | 'resources';
 
 export function FacilityDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { facilityId = '' } = useParams();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('overview');
   const [activeImage, setActiveImage] = useState(0);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editVenueOpen, setEditVenueOpen] = useState(false);
   const [createResourceOpen, setCreateResourceOpen] = useState(false);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [editContactIndex, setEditContactIndex] = useState<number | null>(null);
+  const [deleteContactIndex, setDeleteContactIndex] = useState<number | null>(null);
 
   const { data: venueData, isLoading: venueLoading } = useVenue(facilityId);
   const { data: resourcesData } = useVenueResources(facilityId);
   const { data: scheduleResultData } = useScheduleResult(facilityId);
-  const deleteVenue = useDeleteVenue();
+  const updateVenue = useUpdateVenue(facilityId);
   const createResource = useCreateResource(facilityId);
+  const createContact = useCreateVenueContact(facilityId);
+  const updateContact = useUpdateVenueContact(facilityId);
+  const deleteContact = useDeleteVenueContact(facilityId);
 
   const venue = useMemo<Venue | undefined>(() => {
     if (!venueData) return undefined;
@@ -161,28 +177,26 @@ export function FacilityDetailPage() {
                 <Badge tone="brand">{venue.timezone}</Badge>
               </div>
               <div className="absolute top-4 right-4 flex items-center gap-2">
-                <Button variant="secondary" size="sm" leftIcon={<Pencil size={14} />}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  leftIcon={<Pencil size={14} />}
+                  onClick={() => setEditVenueOpen(true)}
+                >
                   {t('common.edit')}
                 </Button>
-                <IconButton
-                  icon={<Trash2 size={16} />}
-                  aria-label={t('common.delete')}
-                  tone="danger"
-                  onClick={() => setConfirmOpen(true)}
-                  className="bg-white/90 dark:bg-surface-dark/80"
-                />
               </div>
               <div className="absolute left-4 bottom-4 right-4 text-white">
                 <h1 className="text-2xl font-extrabold drop-shadow md:text-3xl">
                   {venue.name}
                 </h1>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                  {venue.sports.map((s) => (
+                  {sortSportKeysForDisplay(venue.sports, t, i18n.language).map((s) => (
                     <span
                       key={s}
                       className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide backdrop-blur"
                     >
-                      {t(`sports.${s}`)}
+                      {sportLabel(t, s)}
                     </span>
                   ))}
                 </div>
@@ -274,7 +288,15 @@ export function FacilityDetailPage() {
                 <h3 className="text-base font-extrabold">
                   {t('facilityDetail.contacts')}
                 </h3>
-                <Button size="sm" variant="ghost" leftIcon={<Plus size={14} />}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  leftIcon={<Plus size={14} />}
+                  onClick={() => {
+                    setEditContactIndex(null);
+                    setContactFormOpen(true);
+                  }}
+                >
                   {t('facilityDetail.addContact')}
                 </Button>
               </div>
@@ -287,8 +309,24 @@ export function FacilityDetailPage() {
               ) : (
                 <ul className="space-y-3">
                   {venue.contacts.map((c, i) => (
-                    <li key={i}>
-                      <ContactRow contact={c} />
+                    <li key={i} className="flex items-center gap-1">
+                      <div className="min-w-0 flex-1">
+                        <ContactRow contact={c} />
+                      </div>
+                      <IconButton
+                        icon={<Pencil size={16} />}
+                        aria-label={t('common.edit')}
+                        onClick={() => {
+                          setEditContactIndex(i);
+                          setContactFormOpen(true);
+                        }}
+                      />
+                      <IconButton
+                        icon={<Trash2 size={16} />}
+                        aria-label={t('common.delete')}
+                        tone="danger"
+                        onClick={() => setDeleteContactIndex(i)}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -298,19 +336,15 @@ export function FacilityDetailPage() {
         </aside>
       </div>
 
-      <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={() => {
-          void deleteVenue.mutateAsync(venue.id).then(() => {
-            navigate('/facilities', { replace: true });
-          });
+      <EditVenueModal
+        open={editVenueOpen}
+        onClose={() => setEditVenueOpen(false)}
+        saving={updateVenue.isPending}
+        venue={venue}
+        onSave={async (payload) => {
+          await updateVenue.mutateAsync(payload);
+          setEditVenueOpen(false);
         }}
-        title={t('facilityDetail.deleteConfirm')}
-        description={t('facilityDetail.deleteHint')}
-        confirmLabel={t('common.delete')}
-        cancelLabel={t('common.cancel')}
-        tone="danger"
       />
 
       <CreateResourceModal
@@ -322,12 +356,49 @@ export function FacilityDetailPage() {
           setCreateResourceOpen(false);
         }}
       />
+
+      <ContactFormModal
+        open={contactFormOpen}
+        onClose={() => {
+          setContactFormOpen(false);
+          setEditContactIndex(null);
+        }}
+        saving={createContact.isPending || updateContact.isPending}
+        mode={editContactIndex !== null ? 'edit' : 'create'}
+        initial={
+          editContactIndex !== null ? venue.contacts[editContactIndex] : undefined
+        }
+        onSave={async (payload) => {
+          if (editContactIndex !== null) {
+            await updateContact.mutateAsync({ index: editContactIndex, contact: payload });
+          } else {
+            await createContact.mutateAsync(payload);
+          }
+          setContactFormOpen(false);
+          setEditContactIndex(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={deleteContactIndex !== null}
+        onClose={() => setDeleteContactIndex(null)}
+        onConfirm={() => {
+          if (deleteContactIndex === null) return;
+          const index = deleteContactIndex;
+          void deleteContact.mutateAsync(index).then(() => setDeleteContactIndex(null));
+        }}
+        title={t('facilityDetail.deleteContactConfirm')}
+        description={t('facilityDetail.deleteContactHint')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        tone="danger"
+      />
     </div>
   );
 }
 
 function OverviewTab({ venue }: { venue: Venue }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <Card>
       <CardHeader>
@@ -337,8 +408,23 @@ function OverviewTab({ venue }: { venue: Venue }) {
       </CardHeader>
       <CardBody className="space-y-6">
         <p className="text-[15px] leading-relaxed text-text-light dark:text-text-dark">
-          {venue.description}
+          {venue.description || t('common.none')}
         </p>
+
+        {venue.sports.length > 0 ? (
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-light dark:text-muted-dark">
+              {t('facilityDetail.sportsLabel')}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {sortSportKeysForDisplay(venue.sports, t, i18n.language).map((s) => (
+                <Badge key={s} tone="neutral">
+                  {sportLabel(t, s)}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-3 sm:grid-cols-3">
           <MetaCard label="City">{venue.city}</MetaCard>
@@ -361,7 +447,7 @@ function ResourcesTab({
   onAddResource: () => void;
   adding: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (result.groups.length === 0) {
     return (
@@ -405,6 +491,205 @@ function ResourcesTab({
   );
 }
 
+function EditVenueModal({
+  open,
+  onClose,
+  saving,
+  venue,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  saving: boolean;
+  venue: Venue;
+  onSave: (payload: { description: string; sports: string[] }) => Promise<void>;
+}) {
+  const { t, i18n } = useTranslation();
+  const [description, setDescription] = useState('');
+  const [sports, setSports] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    setDescription(venue.description ?? '');
+    setSports(canonicalSportKeys(venue.sports ?? []));
+  }, [open, venue]);
+
+  const sportOptions = sortedSportOptions(t, i18n.language);
+
+  const canSave = description.trim().length > 0 && sports.length > 0;
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={t('facilityDetail.editVenue')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            loading={saving}
+            disabled={!canSave}
+            onClick={() => {
+              void onSave({
+                description: description.trim(),
+                sports,
+              });
+            }}
+          >
+            {t('common.save')}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        <Textarea
+          label={t('facilityDetail.description')}
+          rows={4}
+          value={description}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+        />
+        <MultiSelect
+          label={t('facilityDetail.sportsLabel')}
+          hint={t('facilityDetail.sportsHint')}
+          options={sportOptions}
+          value={sports}
+          onChange={setSports}
+          error={sports.length === 0 ? t('common.required') : undefined}
+        />
+      </div>
+    </Modal>
+  );
+}
+
+type ContactKind = 'phone' | 'email' | 'link';
+
+function contactKindOf(c: VenueContact): ContactKind {
+  if (c.phone?.trim()) return 'phone';
+  if (c.email?.trim()) return 'email';
+  return 'link';
+}
+
+function contactValueOf(c: VenueContact): string {
+  return (c.phone ?? c.email ?? c.link ?? '').trim();
+}
+
+function contactPlaceholder(kind: ContactKind, t: (key: string) => string): string {
+  if (kind === 'phone') return t('facilityDetail.contactPhonePlaceholder');
+  if (kind === 'email') return t('facilityDetail.contactEmailPlaceholder');
+  return t('facilityDetail.contactLinkPlaceholder');
+}
+
+function buildContactPayload(
+  kind: ContactKind,
+  description: string,
+  contact: string,
+): VenueContactPayload | null {
+  const desc = description.trim();
+  const value = contact.trim();
+  if (!desc || !value) return null;
+  if (kind === 'phone') return { description: desc, phone: value };
+  if (kind === 'email') return { description: desc, email: value };
+  return { description: desc, link: value };
+}
+
+function ContactFormModal({
+  open,
+  onClose,
+  saving,
+  mode,
+  initial,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  saving: boolean;
+  mode: 'create' | 'edit';
+  initial?: VenueContact;
+  onSave: (payload: VenueContactPayload) => Promise<void>;
+}) {
+  const { t, i18n } = useTranslation();
+  const [kind, setKind] = useState<ContactKind>('phone');
+  const [description, setDescription] = useState('');
+  const [contact, setContact] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    if (initial) {
+      const k = contactKindOf(initial);
+      setKind(k);
+      setDescription(initial.description?.trim() ?? '');
+      setContact(contactValueOf(initial));
+    } else {
+      setKind('phone');
+      setDescription('');
+      setContact('');
+    }
+  }, [open, initial]);
+
+  const canSave = description.trim().length > 0 && contact.trim().length > 0;
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={
+        mode === 'edit'
+          ? t('facilityDetail.editContact')
+          : t('facilityDetail.addContact')
+      }
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            loading={saving}
+            disabled={!canSave}
+            onClick={() => {
+              const payload = buildContactPayload(kind, description, contact);
+              if (!payload) return;
+              void onSave(payload);
+            }}
+          >
+            {mode === 'edit' ? t('common.save') : t('common.create')}
+          </Button>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        <Select
+          label={t('facilityDetail.contactType')}
+          value={kind}
+          onChange={(e) => {
+            setKind(e.currentTarget.value as ContactKind);
+            setContact('');
+          }}
+          options={[
+            { value: 'phone', label: t('facilityDetail.phone') },
+            { value: 'email', label: t('facilityDetail.email') },
+            { value: 'link', label: t('facilityDetail.website') },
+          ]}
+        />
+        <Input
+          label={t('facilityDetail.description')}
+          value={description}
+          onChange={(e) => setDescription(e.currentTarget.value)}
+          placeholder={t('facilityDetail.contactDescriptionPlaceholder')}
+        />
+        <Input
+          label={t('facilityDetail.contact')}
+          value={contact}
+          onChange={(e) => setContact(e.currentTarget.value)}
+          placeholder={contactPlaceholder(kind, t)}
+          type={kind === 'email' ? 'email' : kind === 'phone' ? 'tel' : 'url'}
+        />
+      </div>
+    </Modal>
+  );
+}
+
 function CreateResourceModal({
   open,
   onClose,
@@ -425,7 +710,7 @@ function CreateResourceModal({
     images?: string[];
   }) => Promise<void>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState('');
   const [type, setType] = useState('court');
   const [sport, setSport] = useState('football');
@@ -528,7 +813,7 @@ function ResourceCard({
   schedulesCount: number;
   pricingCount: number;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const name = resource.name ?? `Resource ${resource.id}`;
   const typeKey = (resource.type ?? 'other') as keyof typeof RESOURCE_TYPE_ICONS;
 
@@ -561,7 +846,10 @@ function ResourceCard({
       </div>
       <div className="flex items-center justify-between gap-2 p-4">
         <div className="grid grid-cols-3 gap-2 text-center">
-          <Metric label={t('resource.sport')} value={t(`sports.${resource.sport ?? 'other'}`, { defaultValue: '—' })} />
+          <Metric
+            label={t('resource.sport')}
+            value={sportLabel(t, resource.sport ?? 'other')}
+          />
           <Metric label={t('resource.capacity')} value={resource.capacity != null ? String(resource.capacity) : '—'} />
           <Metric
             label={t('resource.slotsSchedules')}
@@ -616,7 +904,7 @@ function InfoRow({
 }
 
 function ContactRow({ contact }: { contact: VenueContact }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   let icon = <LinkIcon size={16} />;
   let value: string | null = null;
   let href: string | null = null;

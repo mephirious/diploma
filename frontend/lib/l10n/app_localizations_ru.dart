@@ -69,6 +69,57 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tabletennis => 'Настольный теннис';
 
   @override
+  String get ice_hockey => 'Хоккей';
+
+  @override
+  String get judo => 'Дзюдо';
+
+  @override
+  String get chess => 'Шахматы';
+
+  @override
+  String get boxing => 'Бокс';
+
+  @override
+  String get mma => 'ММА';
+
+  @override
+  String get athletics => 'Лёгкая атлетика';
+
+  @override
+  String get handball => 'Гандбол';
+
+  @override
+  String get futsal => 'Футзал';
+
+  @override
+  String get golf => 'Гольф';
+
+  @override
+  String get climbing => 'Скалолазание';
+
+  @override
+  String get yoga => 'Йога';
+
+  @override
+  String get pilates => 'Пилатес';
+
+  @override
+  String get crossfit => 'Кроссфит';
+
+  @override
+  String get cycling => 'Велоспорт';
+
+  @override
+  String get running => 'Бег';
+
+  @override
+  String get esports => 'Киберспорт';
+
+  @override
+  String get other => 'Другое';
+
+  @override
   String get popularVenues => 'Популярные площадки';
 
   @override
@@ -574,6 +625,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get joinedSuccessfully => 'Вы присоединились к сессии!';
 
   @override
+  String get joinedLabel => 'Участвую';
+
+  @override
+  String get sessionFull => 'Мест нет';
+
+  @override
+  String get sessionLocked => 'Регистрация закрыта';
+
+  @override
+  String get joinLoginRequired => 'Войдите, чтобы присоединиться к сессии';
+
+  @override
+  String get leftSessionSuccessfully => 'Вы покинули сессию';
+
+  @override
+  String get leaveSessionConfirm => 'Вы уверены, что хотите покинуть сессию?';
+
+  @override
   String get leaveSession => 'Покинуть сессию';
 
   @override
@@ -898,6 +967,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cancelReasonRefunded => 'Отменено из-за возврата';
 
   @override
+  String get cancelReasonMinimumNotMet => 'Недостаточно участников';
+
+  @override
+  String get cancelReasonOwnerCancelled => 'Отменено организатором сессии';
+
+  @override
+  String get cancelReasonSessionExpired => 'Сессия завершилась без начала';
+
+  @override
+  String get cancelReasonHoldCreationFailed =>
+      'Не удалось зарезервировать время';
+
+  @override
   String get paymentStatusPaid => 'Оплачено';
 
   @override
@@ -911,4 +993,303 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get paymentStatusRefunded => 'Возврат';
+
+  @override
+  String get savedCardLocalOnlyNotice =>
+      'Сохранённые карты хранятся только на этом устройстве для mock-оплаты. Банковский токен не отправляется.';
+
+  @override
+  String get cardNumberInvalid => 'Введите корректный номер карты.';
+
+  @override
+  String get cardExpiryInvalid => 'Введите будущий срок действия.';
+
+  @override
+  String get cardCvvInvalid => 'Введите корректный CVV.';
+
+  @override
+  String get cardDetailsInvalid => 'Проверьте данные карты и попробуйте снова.';
+
+  @override
+  String get slotJustBecameUnavailable =>
+      'Этот слот только что стал недоступен. Выберите другое время.';
+
+  @override
+  String holdCountdown(String timeLeft) {
+    return 'Истекает через $timeLeft';
+  }
+
+  @override
+  String get holdExpiredNow => 'Бронь истекла';
+
+  @override
+  String get confirmCancelPaidRefund =>
+      'Это бронирование оплачено. При отмене будет запрошен mock-возврат, затем бронирование отменится. Продолжить?';
+
+  @override
+  String get bookingCancelledRefundRequested =>
+      'Бронирование отменено, возврат запрошен';
+
+  @override
+  String bookingCancelFailed(String error) {
+    return 'Не удалось отменить бронирование: $error';
+  }
+
+  @override
+  String priceRangePerPerson(int min, int max) {
+    return '$min–$max ₸ / чел.';
+  }
+
+  @override
+  String priceQuotePerPerson(int amount) {
+    return '$amount ₸ / чел. ориентир';
+  }
+
+  @override
+  String stablePricePerPerson(int amount) {
+    return '$amount ₸ / чел.';
+  }
+
+  @override
+  String get finalPriceLocksShort => 'фиксируется позже';
+
+  @override
+  String get fixedSplitPriceDisclosure =>
+      'Для fixed-split финальная цена на человека зависит от участников и фиксируется при заполнении сессии или в момент блокировки.';
+
+  @override
+  String get promoSectionTitle => 'Доступные акции';
+
+  @override
+  String get promoEnterCode => 'Есть промокод?';
+
+  @override
+  String get promoCodeHint => 'Введите код';
+
+  @override
+  String get promoApply => 'Применить';
+
+  @override
+  String get promoRemove => 'Убрать акцию';
+
+  @override
+  String get promoCodeInvalid => 'Неверный промокод';
+
+  @override
+  String get promoConditionsNotMet =>
+      'Бронирование не соответствует условиям акции';
+
+  @override
+  String get promoVenuesTitle => 'Площадки с акциями';
+
+  @override
+  String get promoVenuesBannerTitle => 'Специальные предложения';
+
+  @override
+  String get promoVenuesBannerSubtitle =>
+      'Площадки с активными скидками и акциями';
+
+  @override
+  String get promoVenuesEmpty => 'Нет активных акций';
+
+  @override
+  String get promoVenuesEmptySubtitle =>
+      'Сейчас нет площадок с активными акциями. Загляните позже!';
+
+  @override
+  String get subtotal => 'Подытог';
+
+  @override
+  String get placeFacilityTitle => 'Разместить площадку';
+
+  @override
+  String get placeFacilitySubtitle =>
+      'Разместите свою спортивную площадку на ZhamSpace и привлекайте тысячи активных игроков в вашем городе.';
+
+  @override
+  String get facilityNameLabel => 'Название площадки';
+
+  @override
+  String get placeFacilityFullNameHint => 'Введите ваше полное имя';
+
+  @override
+  String get placeFacilityPhoneHint => '+7 (700) 000-00-00';
+
+  @override
+  String get placeFacilityNameHint => 'например, Arena Sport Club';
+
+  @override
+  String get placeFacilityContactButton => 'Связаться с нами';
+
+  @override
+  String get placeFacilitySuccessTitle => 'Заявка отправлена!';
+
+  @override
+  String get placeFacilitySuccessMessage =>
+      'Спасибо! Мы свяжемся с вами в ближайшее время для обсуждения размещения вашей площадки.';
+
+  @override
+  String get placeFacilityFullNameRequired => 'Введите ваше полное имя';
+
+  @override
+  String get placeFacilityPhoneRequired => 'Введите номер телефона';
+
+  @override
+  String get placeFacilityPhoneInvalid => 'Введите корректный номер телефона';
+
+  @override
+  String get placeFacilityNameRequired => 'Введите название площадки';
+
+  @override
+  String get placeFacilityCommentLabel => 'Комментарий';
+
+  @override
+  String get placeFacilityCommentHint =>
+      'Добавьте детали о площадке, адресе или удобном времени связи';
+
+  @override
+  String get placeFacilityDocumentLabel => 'Документ';
+
+  @override
+  String get placeFacilityDocumentHint => 'Прикрепите PDF или изображение';
+
+  @override
+  String get placeFacilityDocumentAction => 'Выбрать';
+
+  @override
+  String get placeFacilityDocumentRequired => 'Прикрепите PDF или изображение';
+
+  @override
+  String get placeFacilitySubmitError =>
+      'Не удалось отправить заявку. Попробуйте еще раз.';
+
+  @override
+  String get placeFacilityMyRequestsTitle => 'Мои заявки';
+
+  @override
+  String get placeFacilityMyRequestsEmpty => 'Заявок пока нет';
+
+  @override
+  String get placeFacilityLoadRequestsError =>
+      'Не удалось загрузить ваши заявки.';
+
+  @override
+  String get placeFacilitySentAt => 'Отправлена';
+
+  @override
+  String get placeFacilityUpdatedAt => 'Обновлена';
+
+  @override
+  String get venueRequestStatusCreated => 'Создана';
+
+  @override
+  String get venueRequestStatusAwaiting => 'Ожидает';
+
+  @override
+  String get venueRequestStatusReviewing => 'На рассмотрении';
+
+  @override
+  String get venueRequestStatusApproved => 'Одобрена';
+
+  @override
+  String get venueRequestStatusCancelled => 'Отклонена';
+
+  @override
+  String get venueRequestStatusApprovedMessage =>
+      'Ваша заявка одобрена. В ближайшее время ваша площадка будет размещена.';
+
+  @override
+  String get venueRequestStatusCreatedMessage =>
+      'Площадка по этой заявке успешно создана. Управляйте объектами в платформе владельца.';
+
+  @override
+  String get venueRequestStatusRejectedMessage =>
+      'Ваша заявка отклонена. Свяжитесь со службой поддержки для получения дополнительной информации.';
+
+  @override
+  String get guideTitle => 'Гид';
+
+  @override
+  String get guideBannerTitle => 'Как работает ZhamSpace';
+
+  @override
+  String get guideBannerSubtitle =>
+      'Всё, что нужно для поиска, бронирования и игры';
+
+  @override
+  String get guideSectionGettingStarted => 'Начало работы';
+
+  @override
+  String get guideSectionGettingStartedSubtitle =>
+      'Просматривайте площадки и находите спорт рядом с вами';
+
+  @override
+  String get guideSectionBooking => 'Бронирование';
+
+  @override
+  String get guideSectionBookingSubtitle =>
+      'Выберите дату, время и подтвердите бронь';
+
+  @override
+  String get guideSectionSessions => 'Сессии';
+
+  @override
+  String get guideSectionSessionsSubtitle =>
+      'Находите открытые игры и присоединяйтесь к игрокам';
+
+  @override
+  String get guideSectionPayments => 'Оплата и брони';
+
+  @override
+  String get guideSectionPaymentsSubtitle =>
+      'Оплачивайте безопасно и управляйте бронированиями';
+
+  @override
+  String get guideSectionProfile => 'Профиль и избранное';
+
+  @override
+  String get guideSectionProfileSubtitle =>
+      'Сохраняйте площадки, настройки и режимы';
+
+  @override
+  String get guideSectionOwners => 'Для владельцев';
+
+  @override
+  String get guideSectionOwnersSubtitle =>
+      'Разместите площадку и управляйте бронями';
+
+  @override
+  String get guideSectionSupport => 'Помощь и поддержка';
+
+  @override
+  String get guideSectionSupportSubtitle =>
+      'Ответы на вопросы и связь с командой';
+
+  @override
+  String get guideContentGettingStarted =>
+      'Откройте вкладку Главная, чтобы изучить спортивные площадки рядом с вами. Используйте поиск, чтобы найти активности, парки или клубы по названию. Фильтруйте по категориям — футбол, баскетбол, теннис и другие.\n\nНажмите на карточку площадки, чтобы увидеть фото, описание, доступные объекты, цены и контакты. Добавляйте площадки в избранное для быстрого доступа.';
+
+  @override
+  String get guideContentBooking =>
+      'На странице площадки выберите объект и нажмите Забронировать. Выберите дату и доступный временной слот в календаре. Проверьте итоговую цену и перейдите к оплате.\n\nДля бронирования необходимо войти в аккаунт. После оплаты бронь появится в разделе Мои брони, где можно просмотреть детали или отменить.';
+
+  @override
+  String get guideContentSessions =>
+      'Перейдите на вкладку Сессии, чтобы найти групповые активности от площадок или игроков. Фильтруйте по виду спорта, уровню или дате.\n\nНажмите на сессию, чтобы увидеть детали — организатора, участников, цену за человека и свободные места. Войдите и нажмите Присоединиться. Вы можете покинуть сессию до начала на странице деталей.';
+
+  @override
+  String get guideContentPayments =>
+      'ZhamSpace поддерживает оплату картой и локальные способы — Kaspi и Halyk Bank. Сохранённые карты хранятся локально на устройстве для быстрой оплаты.\n\nПосле бронирования отслеживайте статус в Мои брони — подтверждено, завершено или отменено. Оплаченные брони можно отменить с запросом возврата. Удержание брони истекает, если оплата не завершена вовремя.';
+
+  @override
+  String get guideContentProfile =>
+      'Вкладка Профиль содержит личные данные, язык и тему. Переключайтесь между светлой, тёмной темой или системной. Выбирайте английский, русский или казахский.\n\nСохраняйте избранные площадки с любой карточки. Владельцы могут переключиться в режим владельца из профиля для управления площадками, бронями и аналитикой.';
+
+  @override
+  String get guideContentOwners =>
+      'Хотите разместить площадку? Нажмите Разместить площадку на главной и отправьте контактные данные. Наша команда свяжется с вами для подключения.\n\nВ режиме владельца используйте Owner Hub для управления площадками, расписанием, входящими заявками и аналитикой доходов.';
+
+  @override
+  String get guideContentSupport =>
+      'Нужна помощь? Изучите этот гид для ответов на частые вопросы о бронировании, оплате и сессиях.\n\nДля других вопросов используйте Разместить площадку или напишите владельцу площадки через чат на странице деталей.';
 }

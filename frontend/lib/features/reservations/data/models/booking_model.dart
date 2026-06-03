@@ -3,11 +3,14 @@ import '../../../../core/utils/booking_datetime.dart';
 /// Booking model matching Swagger bookingBookingMain / bookingBookingCreateReq.
 /// All booking API requests require Bearer token.
 class BookingModel {
+  final String itemType;
   final String id;
   final String venueId;
   final String? resourceId;
   final String? sessionId;
   final String? userId;
+  final String? name;
+  final String? participantStatus;
   final String status;
   final String? paymentStatus;
   final String priceTotal; // API uses string (int64)
@@ -25,11 +28,14 @@ class BookingModel {
   final DateTime? completedAt;
 
   const BookingModel({
+    this.itemType = 'booking',
     required this.id,
     required this.venueId,
     this.resourceId,
     this.sessionId,
     this.userId,
+    this.name,
+    this.participantStatus,
     required this.status,
     this.paymentStatus,
     required this.priceTotal,
@@ -49,11 +55,14 @@ class BookingModel {
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
+      itemType: json['item_type'] as String? ?? 'booking',
       id: json['id'] as String? ?? '',
       venueId: json['venue_id'] as String? ?? '',
       resourceId: json['resource_id'] as String?,
       sessionId: json['session_id'] as String?,
       userId: json['user_id'] as String?,
+      name: json['name'] as String?,
+      participantStatus: json['participant_status'] as String?,
       status: json['status'] as String? ?? 'unknown',
       paymentStatus: json['payment_status'] as String?,
       priceTotal: json['price_total']?.toString() ?? '0',
@@ -78,8 +87,7 @@ class BookingModel {
   int get priceTotalInt => int.tryParse(priceTotal) ?? 0;
 
   /// Start instant in booking [timezone] (wall clock at venue).
-  DateTime? get startAtForDisplay =>
-      toBookingLocal(startAt, timezone);
+  DateTime? get startAtForDisplay => toBookingLocal(startAt, timezone);
 
   /// End instant in booking [timezone].
   DateTime? get endAtForDisplay => toBookingLocal(endAt, timezone);
@@ -108,14 +116,15 @@ class BookingModel {
     return endAt!.difference(startAt!).inHours;
   }
 
-  bool get isPaymentPending =>
-      paymentStatus?.toLowerCase() == 'pending';
+  bool get isPaymentPending => paymentStatus?.toLowerCase() == 'pending';
 
   /// Pending or failed payment: user can open checkout from booking details.
   bool get needsPaymentCompletion {
     final p = paymentStatus?.toLowerCase();
     return p == 'pending' || p == 'failed';
   }
+
+  bool get isSession => itemType.toLowerCase() == 'session';
 }
 
 /// Request body for POST /bookings (Booking_Create).
@@ -124,6 +133,7 @@ class BookingCreateRequest {
   final String? resourceId;
   final DateTime startAt;
   final DateTime endAt;
+
   /// IANA name; required by POST /bookings.
   final String timezone;
   final String? sessionId;

@@ -37,6 +37,8 @@ class VenueModel {
   final String name;
   final String description;
   final String category;
+  /// Sport type keys from API `sports` (e.g. football, ice_hockey).
+  final List<String> sports;
   final String address;
   /// Street line from API (`address_line1`); used for map/directions links.
   final String addressLine1;
@@ -62,6 +64,7 @@ class VenueModel {
     required this.name,
     required this.description,
     required this.category,
+    this.sports = const [],
     required this.address,
     this.addressLine1 = '',
     required this.latitude,
@@ -85,6 +88,7 @@ class VenueModel {
     String? name,
     String? description,
     String? category,
+    List<String>? sports,
     String? address,
     String? addressLine1,
     double? latitude,
@@ -107,6 +111,7 @@ class VenueModel {
       name: name ?? this.name,
       description: description ?? this.description,
       category: category ?? this.category,
+      sports: sports ?? this.sports,
       address: address ?? this.address,
       addressLine1: addressLine1 ?? this.addressLine1,
       latitude: latitude ?? this.latitude,
@@ -132,6 +137,7 @@ class VenueModel {
       name: json['name'] as String,
       description: json['description'] as String,
       category: json['category'] as String,
+      sports: List<String>.from((json['sports'] as List?) ?? const []),
       address: json['address'] as String,
       addressLine1: (json['addressLine1'] as String?)?.trim() ?? '',
       latitude: (json['latitude'] as num).toDouble(),
@@ -196,6 +202,7 @@ class VenueModel {
       name: (json['name'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       category: sports.isNotEmpty ? sports.first : 'other',
+      sports: sports,
       address: fullAddress,
       addressLine1: addressLine1.trim(),
       latitude: (location?['lat'] as num?)?.toDouble() ?? 0.0,
@@ -225,6 +232,7 @@ class VenueModel {
       'name': name,
       'description': description,
       'category': category,
+      'sports': sports,
       'address': address,
       'addressLine1': addressLine1,
       'latitude': latitude,

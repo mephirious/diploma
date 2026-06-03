@@ -57,3 +57,35 @@ class ChatMessage {
     this.isMe = false,
   });
 }
+
+class ChatUserSearchResult {
+  final String id;
+  final String username;
+  final String firstName;
+  final String lastName;
+
+  const ChatUserSearchResult({
+    required this.id,
+    required this.username,
+    required this.firstName,
+    required this.lastName,
+  });
+
+  String get displayName {
+    final first = firstName.trim();
+    final last = lastName.trim();
+    if (first.isNotEmpty && last.isNotEmpty) return '$first $last';
+    if (first.isNotEmpty) return first;
+    if (last.isNotEmpty) return last;
+    return username;
+  }
+
+  factory ChatUserSearchResult.fromJson(Map<String, dynamic> json) {
+    return ChatUserSearchResult(
+      id: (json['id'] ?? '').toString(),
+      username: (json['username'] ?? '').toString(),
+      firstName: (json['first_name'] ?? json['firstName'] ?? '').toString(),
+      lastName: (json['last_name'] ?? json['lastName'] ?? '').toString(),
+    );
+  }
+}

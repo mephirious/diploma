@@ -8,12 +8,16 @@ class ApiEndpoints {
 
   // Venues (venue_v1/audit.proto style: /venues, /venues/{id}, /venues/{venue_id}/resources, etc.)
   static const String venues = '/venue/v1/venues';
+  static const String news = '/venue/v1/news';
+
+  static String newsById(String id) => '$news/$id';
 
   /// GET /venue/v1/venues/{venue_id}/resources
   static String venueResources(String venueId) => '$venues/$venueId/resources';
 
   /// GET /venue/v1/venues/{venue_id}/schedule-result
-  static String venueScheduleResult(String venueId) => '$venues/$venueId/schedule-result';
+  static String venueScheduleResult(String venueId) =>
+      '$venues/$venueId/schedule-result';
 
   /// POST /venue/v1/venues/{venue_id}/favorite
   /// DELETE /venue/v1/venues/{venue_id}/favorite
@@ -23,6 +27,12 @@ class ApiEndpoints {
   static const String resources = '/venue/v1/resources';
 
   static String resourceById(String id) => '$resources/$id';
+
+  /// GET /venue/v1/venues/with-promos — venues that have at least one active promo.
+  static const String venuesWithPromos = '$venues/with-promos';
+
+  /// GET /venue/v1/venues/{venue_id}/promos
+  static String venuePromos(String venueId) => '$venues/$venueId/promos';
 
   // Reservations
   static const String reservations = '/reservations';

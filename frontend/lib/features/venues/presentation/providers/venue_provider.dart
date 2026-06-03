@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/venue_model.dart';
 import '../../data/models/resource_model.dart';
 import '../../data/models/venue_schedule_result_model.dart';
+import '../../data/models/promo_model.dart';
 import '../../data/repositories/venue_repository.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -40,6 +41,25 @@ final venueScheduleResultProvider =
     FutureProvider.autoDispose.family<VenueScheduleResultModel, String>((ref, venueId) async {
   final repository = ref.watch(venueRepositoryProvider);
   return await repository.getScheduleResult(venueId);
+});
+
+/// All active promos for a venue (GET /venues/{id}/promos?status=active).
+final venuePromosProvider =
+    FutureProvider.autoDispose.family<List<PromoModel>, String>((ref, venueId) async {
+  final repository = ref.watch(venueRepositoryProvider);
+  return await repository.getPromos(venueId);
+});
+
+/// Active promos scoped to a specific resource.
+/// Family key is "$venueId|$resourceId".
+final resourcePromosProvider =
+    FutureProvider.autoDispose.family<List<PromoModel>, String>((ref, key) async {
+  final parts = key.split('|');
+  if (parts.length < 2) return [];
+  final venueId = parts[0];
+  final resourceId = parts[1];
+  final repository = ref.watch(venueRepositoryProvider);
+  return await repository.getPromos(venueId, resourceId: resourceId);
 });
 
 class PaginatedVenuesState {

@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../constants/app_constants.dart';
+import 'dio_setup.dart';
 import 'network_exceptions.dart';
 
 final dioClientProvider = Provider<DioClient>((ref) => DioClient());
@@ -12,7 +14,8 @@ class DioClient {
   late final Dio _dio;
 
   DioClient() {
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000';
+    final baseUrl =
+        dotenv.env['API_BASE_URL'] ?? dotenv.env['BASE_URL'] ?? AppConstants.apiBaseUrl;
 
     _dio = Dio(
       BaseOptions(
@@ -22,6 +25,7 @@ class DioClient {
         responseType: ResponseType.json,
       ),
     );
+    configureDioHttpClient(_dio);
 
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -83,6 +87,9 @@ class DioClient {
 
           log(
             '✕ REQUEST ERROR [$method] $uri\n'
+            'Type: ${e.type}\n'
+            'Message: ${e.message}\n'
+            'Cause: ${e.error}\n'
             'Status: $statusCode\n'
             'Request headers: $headers\n'
             'Request data: ${stringify(e.requestOptions.data)}\n'

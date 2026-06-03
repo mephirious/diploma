@@ -1,5 +1,6 @@
 import 'resource_model.dart';
 import 'pricing_rule_model.dart';
+import 'promo_model.dart';
 
 /// Backend: venueVenueScheduleResultRep — schedule result for a venue (resources + schedules + pricing + blackouts).
 class VenueScheduleResultModel {
@@ -79,7 +80,11 @@ class BlackoutModel {
       status == null || status!.toLowerCase() == 'active';
 }
 
-/// One resource with its schedules, pricing rules, and blackouts.
+/// One resource with its schedules, pricing rules, blackouts, and (optionally) promos.
+///
+/// The `promos` field is NOT populated by the schedule-result API; it is
+/// injected separately by the UI layer (venue_detail_page / booking_page)
+/// via the [venuePromosProvider].
 class ScheduleResultGroup {
   final String? resourceId;
   final ResourceModel? resource;
@@ -87,13 +92,30 @@ class ScheduleResultGroup {
   final List<PricingRuleModel> pricing;
   final List<BlackoutModel> blackouts;
 
+  /// Active promos that apply to this resource.
+  /// Populated by the UI after a separate promo API call.
+  final List<PromoModel> promos;
+
   const ScheduleResultGroup({
     this.resourceId,
     this.resource,
     this.schedules = const [],
     this.pricing = const [],
     this.blackouts = const [],
+    this.promos = const [],
   });
+
+  /// Returns a copy of this group with [promos] replaced.
+  ScheduleResultGroup withPromos(List<PromoModel> promos) {
+    return ScheduleResultGroup(
+      resourceId: resourceId,
+      resource: resource,
+      schedules: schedules,
+      pricing: pricing,
+      blackouts: blackouts,
+      promos: promos,
+    );
+  }
 
   factory ScheduleResultGroup.fromJson(Map<String, dynamic> json) {
     final resourceJson = json['resource'] as Map<String, dynamic>?;

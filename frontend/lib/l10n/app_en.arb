@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "appTitle": "ZhamSpace",
-  
   "home": "Home",
   "explore": "Explore",
   "favorites": "Favorites",
@@ -11,7 +10,6 @@
   "chats": "Chats",
   "facilitiesTab": "Facilities",
   "bookingsTab": "Bookings",
-  
   "searchFacilities": "Search for activities, parks, or clubs",
   "allCategories": "All Categories",
   "football": "Football",
@@ -22,12 +20,27 @@
   "volleyball": "Volleyball",
   "badminton": "Badminton",
   "tabletennis": "Table Tennis",
-  
+  "ice_hockey": "Ice hockey",
+  "judo": "Judo",
+  "chess": "Chess",
+  "boxing": "Boxing",
+  "mma": "MMA",
+  "athletics": "Athletics",
+  "handball": "Handball",
+  "futsal": "Futsal",
+  "golf": "Golf",
+  "climbing": "Climbing",
+  "yoga": "Yoga",
+  "pilates": "Pilates",
+  "crossfit": "CrossFit",
+  "cycling": "Cycling",
+  "running": "Running",
+  "esports": "Esports",
+  "other": "Other",
   "popularVenues": "Popular Venues",
   "nearYou": "Near You",
   "topRated": "Top Rated",
   "seeAll": "See All",
-  
   "perHour": "per hour",
   "rating": "Rating",
   "reviews": "{count} reviews",
@@ -38,7 +51,6 @@
       }
     }
   },
-  
   "bookNow": "Book Now",
   "viewDetails": "View Details",
   "openNow": "Open Now",
@@ -60,7 +72,6 @@
       }
     }
   },
-  
   "about": "About",
   "venueDescriptionTab": "Description",
   "venueContactInfoTab": "Contact info",
@@ -69,13 +80,11 @@
   "availability": "Availability",
   "location": "Location",
   "reviewsTitle": "Reviews",
-  
   "selectDate": "Select Date",
   "selectTime": "Select Time",
   "duration": "Duration",
   "hours": "hours",
   "hour": "hour",
-  
   "available": "Available",
   "booked": "Booked",
   "unavailable": "Unavailable",
@@ -100,7 +109,6 @@
       }
     }
   },
-  
   "bookingDetails": "Booking Details",
   "bookingNotFound": "Booking not found",
   "facility": "Facility",
@@ -108,7 +116,6 @@
   "time": "Time",
   "totalPrice": "Total Price",
   "proceedToPayment": "Proceed to Payment",
-  
   "payment": "Payment",
   "paymentMethod": "Payment Method",
   "creditCard": "Credit Card",
@@ -130,23 +137,19 @@
   "addNewCard": "Add New Card",
   "otherBankCards": "Bank Card",
   "selectCard": "Select a card",
-  
   "bookingConfirmed": "Booking Confirmed!",
   "bookingSuccess": "Your booking has been confirmed. Check your email for details.",
   "viewBooking": "View Booking",
   "backToHome": "Back to Home",
-  
   "upcomingBookings": "Upcoming",
   "pastBookings": "Past",
   "noBookings": "No bookings yet",
   "startBooking": "Start exploring and book your first facility!",
-  
   "cancelBooking": "Cancel Booking",
   "confirmCancel": "Are you sure you want to cancel this booking?",
   "yes": "Yes",
   "no": "No",
   "bookingCancelled": "Booking cancelled successfully",
-  
   "myProfile": "My Profile",
   "editProfile": "Edit Profile",
   "settings": "Settings",
@@ -155,26 +158,21 @@
   "lightMode": "Light Mode",
   "darkMode": "Dark Mode",
   "systemDefault": "System Default",
-  
   "english": "English",
   "russian": "Русский",
   "kazakh": "Қазақша",
-  
   "myFavorites": "My Favorites",
   "noFavorites": "No favorites yet",
   "addFavorites": "Add facilities to your favorites to see them here",
   "myBookings": "My Bookings",
-  
   "personalInfo": "Personal Information",
   "fullName": "Full Name",
   "email": "Email",
   "phone": "Phone Number",
   "save": "Save",
   "cancel": "Cancel",
-  
   "logout": "Logout",
   "confirmLogout": "Are you sure you want to logout?",
-  
   "login": "Login",
   "register": "Register",
   "password": "Password",
@@ -185,29 +183,23 @@
   "signUp": "Sign Up",
   "signIn": "Sign In",
   "authRequiredHint": "You need an account to access this feature.",
-  
   "notifications": "Notifications",
   "notificationsEnabled": "Push Notifications",
   "emailNotifications": "Email Notifications",
-  
   "helpSupport": "Help & Support",
   "termsConditions": "Terms & Conditions",
   "privacyPolicy": "Privacy Policy",
   "aboutUs": "About Us",
-  
   "version": "Version",
-  
   "filterByPrice": "Filter by Price",
   "priceRange": "Price Range",
   "applyFilters": "Apply Filters",
   "clearFilters": "Clear Filters",
-  
   "sortBy": "Sort By",
   "priceLowest": "Price: Low to High",
   "priceHighest": "Price: High to Low",
   "ratingHighest": "Highest Rated",
   "nearest": "Nearest to Me",
-  
   "openingHours": "Opening Hours",
   "amenities": "Amenities",
   "parking": "Parking",
@@ -216,11 +208,9 @@
   "equipment": "Equipment Rental",
   "wifi": "Free WiFi",
   "cafeteria": "Cafeteria",
-  
   "getDirections": "Get Directions",
   "call": "Call",
   "share": "Share",
-
   "now": "Now",
   "today": "Today",
   "pickDate": "Date",
@@ -254,6 +244,12 @@
   "pricePerPerson": "Price per person",
   "spotsAvailable": "Spots Available",
   "joinedSuccessfully": "You have joined the session!",
+  "joinedLabel": "Joined",
+  "sessionFull": "Session full",
+  "sessionLocked": "Registration closed",
+  "joinLoginRequired": "Sign in to join sessions",
+  "leftSessionSuccessfully": "You have left the session",
+  "leaveSessionConfirm": "Are you sure you want to leave this session?",
   "leaveSession": "Leave Session",
   "noSessions": "No sessions available",
   "findSessions": "Check back later for open sessions near you",
@@ -269,7 +265,6 @@
       }
     }
   },
-
   "allChats": "All",
   "venueChats": "Venues",
   "sessionGroups": "Sessions",
@@ -298,25 +293,21 @@
       }
     }
   },
-
   "reserveOrBook": "Reserve or Book",
   "newFacilities": "New Facilities",
   "news": "News",
   "promo": "Promo",
   "placeYourFacility": "Place Your Facility",
   "guide": "Guide",
-
   "price": "Price",
   "distance": "Distance",
   "book": "Book",
   "confirmed": "Confirmed",
   "completed": "Completed",
   "cancelled": "Cancelled",
-
   "manageTab": "Manage",
   "dashboardTab": "Dashboard",
   "analyticsTab": "Revenue",
-
   "ownerHubTitle": "Owner Hub",
   "ownerHubSubtitle": "Manage your facilities, bookings, and growth",
   "ownerFacilityHint": "Keep your schedule current and your templates polished to maximize occupancy.",
@@ -329,13 +320,11 @@
   "statusSuspended": "Suspended",
   "profileCompletion": "Profile completion",
   "occupancyRate": "Occupancy rate",
-
   "bookingsDashboard": "Bookings Dashboard",
   "incomingRequests": "Incoming",
   "upcomingSessionsTitle": "Upcoming",
   "pastSessionsTitle": "Past",
   "cancellationsTitle": "Cancellations",
-
   "revenueAnalytics": "Revenue & Analytics",
   "daily": "Daily",
   "weekly": "Weekly",
@@ -343,19 +332,16 @@
   "payouts": "Payouts",
   "occupancyByFacility": "Occupancy by Facility",
   "popularSlotsHeatmap": "Popular Time Slots Heatmap",
-
   "bookingChats": "Bookers",
   "ownerPublicProfile": "Public Owner Profile",
   "hostReviews": "Host reviews",
   "responseRate": "Response rate",
   "memberSince": "Member since",
-
   "roleTestSwitch": "Role test switch",
   "roleCustomer": "Customer",
   "roleFacilityOwner": "Facility owner",
   "switchToOwnerPrompt": "Switch to Facility Owner mode and preview owner-only screens?",
   "switchToCustomerPrompt": "Switch back to Customer mode and restore marketplace user screens?",
-
   "retry": "Retry",
   "reservationsAuthDescription": "Login or register to manage your bookings.",
   "bookingFallbackTitle": "Booking",
@@ -411,9 +397,137 @@
   "cancelReasonHoldExpired": "Reservation hold expired",
   "cancelReasonAdminCancelled": "Cancelled by the venue",
   "cancelReasonRefunded": "Cancelled due to refund",
+  "cancelReasonMinimumNotMet": "Not enough participants joined",
+  "cancelReasonOwnerCancelled": "Cancelled by the session organizer",
+  "cancelReasonSessionExpired": "Session ended without starting",
+  "cancelReasonHoldCreationFailed": "Could not reserve the time slot",
   "paymentStatusPaid": "Paid",
   "paymentStatusPending": "Pending",
   "paymentStatusHold": "On hold",
   "paymentStatusFailed": "Failed",
-  "paymentStatusRefunded": "Refunded"
+  "paymentStatusRefunded": "Refunded",
+  "savedCardLocalOnlyNotice": "Saved cards are stored only on this device for mock checkout. No card token is sent to the bank.",
+  "cardNumberInvalid": "Enter a valid card number.",
+  "cardExpiryInvalid": "Enter a valid future expiry date.",
+  "cardCvvInvalid": "Enter a valid CVV.",
+  "cardDetailsInvalid": "Check the card details and try again.",
+  "slotJustBecameUnavailable": "This slot just became unavailable. Please choose another time.",
+  "holdCountdown": "Expires in {timeLeft}",
+  "@holdCountdown": {
+    "placeholders": {
+      "timeLeft": {
+        "type": "String"
+      }
+    }
+  },
+  "holdExpiredNow": "Hold expired",
+  "confirmCancelPaidRefund": "This booking is paid. Cancelling will request a mock refund and then cancel the booking. Continue?",
+  "bookingCancelledRefundRequested": "Booking cancelled and refund requested",
+  "bookingCancelFailed": "Could not cancel booking: {error}",
+  "@bookingCancelFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "priceRangePerPerson": "{min}–{max} ₸ / person",
+  "@priceRangePerPerson": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "priceQuotePerPerson": "{amount} ₸ / person quote",
+  "@priceQuotePerPerson": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "stablePricePerPerson": "{amount} ₸ / person",
+  "@stablePricePerPerson": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "finalPriceLocksShort": "locks later",
+  "fixedSplitPriceDisclosure": "For fixed-split sessions, the final per-person price is based on participants and locks when the session fills or reaches lock time.",
+  "promoSectionTitle": "Available Promotions",
+  "promoEnterCode": "Have a promo code?",
+  "promoCodeHint": "Enter code",
+  "promoApply": "Apply",
+  "promoRemove": "Remove promo",
+  "promoCodeInvalid": "Invalid promo code",
+  "promoConditionsNotMet": "Booking does not meet promo conditions",
+  "promoVenuesTitle": "Venues with Promos",
+  "promoVenuesBannerTitle": "Special offers",
+  "promoVenuesBannerSubtitle": "Venues with active discounts and promotions",
+  "promoVenuesEmpty": "No active promotions",
+  "promoVenuesEmptySubtitle": "There are no venues with active promotions right now. Check back soon!",
+  "subtotal": "Subtotal",
+  "placeFacilityTitle": "Place Your Facility",
+  "placeFacilitySubtitle": "List your sports facility on ZhamSpace and reach thousands of active players in your city.",
+  "facilityNameLabel": "Facility Name",
+  "placeFacilityFullNameHint": "Enter your full name",
+  "placeFacilityPhoneHint": "+7 (700) 000-00-00",
+  "placeFacilityNameHint": "e.g. Arena Sport Club",
+  "placeFacilityContactButton": "Contact Us",
+  "placeFacilitySuccessTitle": "Request Sent!",
+  "placeFacilitySuccessMessage": "Thanks! We will contact you shortly to discuss listing your facility.",
+  "placeFacilityFullNameRequired": "Please enter your full name",
+  "placeFacilityPhoneRequired": "Please enter your phone number",
+  "placeFacilityPhoneInvalid": "Enter a valid phone number",
+  "placeFacilityNameRequired": "Please enter your facility name",
+  "placeFacilityCommentLabel": "Comment",
+  "placeFacilityCommentHint": "Add details about your facility, location, or preferred contact time",
+  "placeFacilityDocumentLabel": "Document",
+  "placeFacilityDocumentHint": "Attach a PDF or image",
+  "placeFacilityDocumentAction": "Choose",
+  "placeFacilityDocumentRequired": "Please attach a PDF or image",
+  "placeFacilitySubmitError": "Could not send request. Please try again.",
+  "placeFacilityMyRequestsTitle": "My requests",
+  "placeFacilityMyRequestsEmpty": "No requests yet",
+  "placeFacilityLoadRequestsError": "Could not load your requests.",
+  "placeFacilitySentAt": "Sent",
+  "placeFacilityUpdatedAt": "Updated",
+  "venueRequestStatusCreated": "Created",
+  "venueRequestStatusAwaiting": "Awaiting",
+  "venueRequestStatusReviewing": "Reviewing",
+  "venueRequestStatusApproved": "Approved",
+  "venueRequestStatusCancelled": "Cancelled",
+  "venueRequestStatusApprovedMessage": "Your request was approved. In the nearest future your facility will be placed.",
+  "venueRequestStatusCreatedMessage": "Venue on this request was successfully created. Manage your facilities in owner platform.",
+  "venueRequestStatusRejectedMessage": "Your request was declined. Contact support for more information.",
+  "guideTitle": "Guide",
+  "guideBannerTitle": "How ZhamSpace works",
+  "guideBannerSubtitle": "Everything you need to browse, book, and play",
+  "guideSectionGettingStarted": "Getting Started",
+  "guideSectionGettingStartedSubtitle": "Browse venues and discover sports near you",
+  "guideSectionBooking": "Booking a Facility",
+  "guideSectionBookingSubtitle": "Pick a date, time slot, and confirm your reservation",
+  "guideSectionSessions": "Joining Sessions",
+  "guideSectionSessionsSubtitle": "Find open games and join other players",
+  "guideSectionPayments": "Payments & Bookings",
+  "guideSectionPaymentsSubtitle": "Pay securely and manage your reservations",
+  "guideSectionProfile": "Profile & Favorites",
+  "guideSectionProfileSubtitle": "Save venues, update settings, and switch modes",
+  "guideSectionOwners": "For Facility Owners",
+  "guideSectionOwnersSubtitle": "List your venue and manage bookings",
+  "guideSectionSupport": "Help & Support",
+  "guideSectionSupportSubtitle": "Get answers and contact our team",
+  "guideContentGettingStarted": "Open the Home tab to explore sports facilities near you. Use the search bar to find activities, parks, or clubs by name. Filter by category — football, basketball, tennis, and more — to narrow results.\n\nTap any venue card to see photos, description, available facilities, pricing, and contact info. Add venues to your favorites for quick access later.",
+  "guideContentBooking": "From a venue detail page, select a facility and tap Book Now. Choose your date and available time slot on the calendar. Review the total price and proceed to payment.\n\nYou must be logged in to complete a booking. After payment, your reservation appears under My Bookings where you can view details or cancel if needed.",
+  "guideContentSessions": "Go to the Sessions tab to browse open group activities hosted by venues or players. Filter by sport, skill level, or date to find a match.\n\nTap a session to see details — host, participants, price per person, and spots left. Sign in and tap Join Session to reserve your spot. You can leave a session before it starts from the session detail page.",
+  "guideContentPayments": "ZhamSpace supports card payments and local options like Kaspi and Halyk Bank. Saved cards are stored locally on your device for faster checkout.\n\nAfter booking, track status in My Bookings — confirmed, completed, or cancelled. Paid bookings can be cancelled with a refund request. Payment holds expire if not completed in time.",
+  "guideContentProfile": "Your Profile tab shows personal info, language, and theme settings. Switch between light, dark, or system default themes. Choose English, Russian, or Kazakh.\n\nSave favorite venues from any venue card. Facility owners can switch to Owner mode from Profile to manage facilities, view bookings, and track revenue analytics.",
+  "guideContentOwners": "Want to list your facility? Tap Place Your Facility on the Home screen and submit your contact details. Our team will reach out to help you onboard.\n\nIn Owner mode, use the Owner Hub to manage facilities, update schedules, review incoming booking requests, and monitor occupancy and revenue from the Analytics tab.",
+  "guideContentSupport": "Need help? Browse this guide for answers to common questions about booking, payments, and sessions.\n\nFor anything else, use Place Your Facility to reach our team, or message a venue owner directly from a venue's detail page via the chat feature."
 }

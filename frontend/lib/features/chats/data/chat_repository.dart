@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_client.dart';
+import 'models/chat_model.dart';
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return ChatRepository(ref.watch(apiClientProvider));
@@ -85,6 +86,32 @@ class ChatRepository {
       await _api.post(ApiEndpoints.chatMarkRead(conversationId), data: {});
     } on DioException catch (_) {
       // Non-fatal for UI
+    }
+  }
+
+  Future<List<ChatUserSearchResult>> searchUsers(
+    String query, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _api.get(
+        ApiEndpoints.chatUsersSearch,
+        queryParameters: {
+          'query': query,
+          'page': page,
+          'page_size': pageSize,
+        },
+      );
+      final map = _asMap(response.data);
+      final raw = map['users'] ?? map['Users'];
+      if (raw is! List) return const [];
+      return raw
+          .whereType<Map>()
+          .map((e) => ChatUserSearchResult.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } on DioException {
+      return const [];
     }
   }
 

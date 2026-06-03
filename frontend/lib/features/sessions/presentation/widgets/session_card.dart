@@ -1,69 +1,34 @@
 import 'package:flutter/material.dart';
+import '../../../../core/sports/sport_l10n.dart' as sports_l10n;
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/session_model_simple.dart';
+import '../session_price_text.dart';
+import 'session_venue_info_block.dart';
 
 class SessionCard extends StatelessWidget {
   final SessionModelSimple session;
   final VoidCallback onTap;
   final VoidCallback onJoin;
+  final bool actionLoading;
 
   const SessionCard({
     super.key,
     required this.session,
     required this.onTap,
     required this.onJoin,
+    this.actionLoading = false,
   });
-
-  IconData _sportIcon(String sport) {
-    switch (sport) {
-      case 'football':
-        return Icons.sports_soccer;
-      case 'basketball':
-        return Icons.sports_basketball;
-      case 'tennis':
-        return Icons.sports_tennis;
-      case 'volleyball':
-        return Icons.sports_volleyball;
-      case 'swimming':
-        return Icons.pool;
-      case 'gym':
-        return Icons.fitness_center;
-      case 'badminton':
-        return Icons.sports_tennis;
-      case 'tabletennis':
-        return Icons.sports_cricket;
-      default:
-        return Icons.sports;
-    }
-  }
-
-  Color _sportColor(String sport) {
-    switch (sport) {
-      case 'football':
-        return const Color(0xFF4CAF50);
-      case 'basketball':
-        return const Color(0xFFFF9800);
-      case 'tennis':
-        return const Color(0xFFFFC107);
-      case 'volleyball':
-        return const Color(0xFF2196F3);
-      case 'swimming':
-        return const Color(0xFF00BCD4);
-      case 'gym':
-        return const Color(0xFF9C27B0);
-      case 'badminton':
-        return const Color(0xFF8BC34A);
-      default:
-        return AppColors.colorMain;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sportColor = _sportColor(session.sportType);
+    final sportKey = session.sportType;
+    final sportColor = sports_l10n.sportColor(sportKey);
+    final sportName = sports_l10n.sportLabel(l10n, sportKey);
+    final showResourceSubtitle = session.resourceName.trim().isNotEmpty &&
+        session.resourceName.trim() != session.displayTitle;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -79,22 +44,19 @@ class SessionCard extends StatelessWidget {
         onTap: onTap,
         child: Column(
           children: [
-            // Top section with image
             Stack(
               children: [
                 AspectRatio(
                   aspectRatio: 2.2,
-                  child: Image.network(
-                    session.venueImage,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: sportColor.withOpacity(0.2),
-                      child: Icon(_sportIcon(session.sportType),
-                          size: 48, color: sportColor),
-                    ),
-                  ),
+                  child: session.coverImage.isNotEmpty
+                      ? Image.network(
+                          session.coverImage,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _heroPlaceholder(sportColor, sportKey),
+                        )
+                      : _heroPlaceholder(sportColor, sportKey),
                 ),
-                // Gradient overlay
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
@@ -109,7 +71,6 @@ class SessionCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Sport badge
                 Positioned(
                   top: 12,
                   left: 12,
@@ -123,12 +84,11 @@ class SessionCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(_sportIcon(session.sportType),
+                        Icon(sports_l10n.sportIcon(sportKey),
                             size: 14, color: Colors.white),
                         const SizedBox(width: 4),
                         Text(
-                          session.sportType[0].toUpperCase() +
-                              session.sportType.substring(1),
+                          sportName,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -139,7 +99,6 @@ class SessionCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Live badge
                 if (session.isLive)
                   Positioned(
                     top: 12,
@@ -175,62 +134,46 @@ class SessionCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                // Venue name on image
                 Positioned(
                   bottom: 12,
                   left: 12,
                   right: 12,
-                  child: Text(
-                    session.venueName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Details section
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Address & Distance
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 14,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      Text(
+                        session.displayTitle,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          session.venueAddress,
+                      if (showResourceSubtitle) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          session.resourceName.trim(),
                           style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
                             fontSize: 12,
-                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        l10n.kmAway(session.distance.toStringAsFixed(1)),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.colorMain,
-                        ),
-                      ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // Time slots
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -257,11 +200,8 @@ class SessionCard extends StatelessWidget {
                     }).toList(),
                   ),
                   const SizedBox(height: 14),
-
-                  // Bottom row: Players, Price, Join button
                   Row(
                     children: [
-                      // Player avatars stack
                       SizedBox(
                         width: 56,
                         height: 24,
@@ -304,37 +244,77 @@ class SessionCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      // Price
-                      Text(
-                        '${session.pricePerPlayer.toInt()} ₸',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.colorMain,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              sessionPriceLabel(l10n, session),
+                              textAlign: TextAlign.end,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.colorMain,
+                              ),
+                            ),
+                            if (session.pricingModel == 'fixed_split')
+                              Text(
+                                l10n.finalPriceLocksShort,
+                                textAlign: TextAlign.end,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 12),
-                      // Join button
                       SizedBox(
                         height: 34,
                         child: ElevatedButton(
-                          onPressed: session.isFull ? null : onJoin,
+                          onPressed:
+                              session.canJoin && !actionLoading ? onJoin : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.colorMain,
+                            backgroundColor: session.isJoined
+                                ? AppColors.colorSuccess
+                                : AppColors.colorMain,
                             foregroundColor: Colors.white,
+                            disabledBackgroundColor:
+                                isDark ? Colors.white12 : Colors.grey[300],
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             elevation: 0,
                           ),
-                          child: Text(
-                            l10n.joinSession,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          child: actionLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  session.isJoined
+                                      ? l10n.joinedLabel
+                                      : (session.isFull
+                                          ? l10n.sessionFull
+                                          : l10n.joinSession),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -342,8 +322,26 @@ class SessionCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (session.hasVenueInfo)
+              SessionVenueInfoBlock(
+                venueName: session.venueName,
+                venueAddress: session.venueAddress,
+                distance: session.distance,
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              )
+            else
+              const SizedBox(height: 14),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _heroPlaceholder(Color sportColor, String sportKey) {
+    return ColoredBox(
+      color: sportColor.withOpacity(0.2),
+      child: Center(
+        child: Icon(sports_l10n.sportIcon(sportKey), size: 48, color: sportColor),
       ),
     );
   }

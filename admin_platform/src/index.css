@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg-light text-text-light antialiased;
+  font-family: 'Roboto', 'Inter', system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+  font-feature-settings: 'cv01', 'cv02';
+}
+
+.dark body {
+  @apply bg-bg-dark text-text-dark;
+}
+
+/* Nice scrollbars in light/dark */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.3) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.3);
+  border-radius: 999px;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3);
+}
+
+/* Focus ring using brand token */
+:focus-visible {
+  outline: none;
+}
+
+.focus-ring {
+  @apply focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2
+    focus-visible:ring-offset-bg-light dark:focus-visible:ring-offset-bg-dark;
+}

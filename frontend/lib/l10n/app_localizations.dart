@@ -220,6 +220,108 @@ abstract class AppLocalizations {
   /// **'Table Tennis'**
   String get tabletennis;
 
+  /// No description provided for @ice_hockey.
+  ///
+  /// In en, this message translates to:
+  /// **'Ice hockey'**
+  String get ice_hockey;
+
+  /// No description provided for @judo.
+  ///
+  /// In en, this message translates to:
+  /// **'Judo'**
+  String get judo;
+
+  /// No description provided for @chess.
+  ///
+  /// In en, this message translates to:
+  /// **'Chess'**
+  String get chess;
+
+  /// No description provided for @boxing.
+  ///
+  /// In en, this message translates to:
+  /// **'Boxing'**
+  String get boxing;
+
+  /// No description provided for @mma.
+  ///
+  /// In en, this message translates to:
+  /// **'MMA'**
+  String get mma;
+
+  /// No description provided for @athletics.
+  ///
+  /// In en, this message translates to:
+  /// **'Athletics'**
+  String get athletics;
+
+  /// No description provided for @handball.
+  ///
+  /// In en, this message translates to:
+  /// **'Handball'**
+  String get handball;
+
+  /// No description provided for @futsal.
+  ///
+  /// In en, this message translates to:
+  /// **'Futsal'**
+  String get futsal;
+
+  /// No description provided for @golf.
+  ///
+  /// In en, this message translates to:
+  /// **'Golf'**
+  String get golf;
+
+  /// No description provided for @climbing.
+  ///
+  /// In en, this message translates to:
+  /// **'Climbing'**
+  String get climbing;
+
+  /// No description provided for @yoga.
+  ///
+  /// In en, this message translates to:
+  /// **'Yoga'**
+  String get yoga;
+
+  /// No description provided for @pilates.
+  ///
+  /// In en, this message translates to:
+  /// **'Pilates'**
+  String get pilates;
+
+  /// No description provided for @crossfit.
+  ///
+  /// In en, this message translates to:
+  /// **'CrossFit'**
+  String get crossfit;
+
+  /// No description provided for @cycling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycling'**
+  String get cycling;
+
+  /// No description provided for @running.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get running;
+
+  /// No description provided for @esports.
+  ///
+  /// In en, this message translates to:
+  /// **'Esports'**
+  String get esports;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
   /// No description provided for @popularVenues.
   ///
   /// In en, this message translates to:
@@ -1192,6 +1294,42 @@ abstract class AppLocalizations {
   /// **'You have joined the session!'**
   String get joinedSuccessfully;
 
+  /// No description provided for @joinedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get joinedLabel;
+
+  /// No description provided for @sessionFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Session full'**
+  String get sessionFull;
+
+  /// No description provided for @sessionLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration closed'**
+  String get sessionLocked;
+
+  /// No description provided for @joinLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to join sessions'**
+  String get joinLoginRequired;
+
+  /// No description provided for @leftSessionSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'You have left the session'**
+  String get leftSessionSuccessfully;
+
+  /// No description provided for @leaveSessionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave this session?'**
+  String get leaveSessionConfirm;
+
   /// No description provided for @leaveSession.
   ///
   /// In en, this message translates to:
@@ -1804,6 +1942,30 @@ abstract class AppLocalizations {
   /// **'Cancelled due to refund'**
   String get cancelReasonRefunded;
 
+  /// No description provided for @cancelReasonMinimumNotMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough participants joined'**
+  String get cancelReasonMinimumNotMet;
+
+  /// No description provided for @cancelReasonOwnerCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled by the session organizer'**
+  String get cancelReasonOwnerCancelled;
+
+  /// No description provided for @cancelReasonSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended without starting'**
+  String get cancelReasonSessionExpired;
+
+  /// No description provided for @cancelReasonHoldCreationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reserve the time slot'**
+  String get cancelReasonHoldCreationFailed;
+
   /// No description provided for @paymentStatusPaid.
   ///
   /// In en, this message translates to:
@@ -1833,6 +1995,522 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refunded'**
   String get paymentStatusRefunded;
+
+  /// No description provided for @savedCardLocalOnlyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved cards are stored only on this device for mock checkout. No card token is sent to the bank.'**
+  String get savedCardLocalOnlyNotice;
+
+  /// No description provided for @cardNumberInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid card number.'**
+  String get cardNumberInvalid;
+
+  /// No description provided for @cardExpiryInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid future expiry date.'**
+  String get cardExpiryInvalid;
+
+  /// No description provided for @cardCvvInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid CVV.'**
+  String get cardCvvInvalid;
+
+  /// No description provided for @cardDetailsInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the card details and try again.'**
+  String get cardDetailsInvalid;
+
+  /// No description provided for @slotJustBecameUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This slot just became unavailable. Please choose another time.'**
+  String get slotJustBecameUnavailable;
+
+  /// No description provided for @holdCountdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in {timeLeft}'**
+  String holdCountdown(String timeLeft);
+
+  /// No description provided for @holdExpiredNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold expired'**
+  String get holdExpiredNow;
+
+  /// No description provided for @confirmCancelPaidRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking is paid. Cancelling will request a mock refund and then cancel the booking. Continue?'**
+  String get confirmCancelPaidRefund;
+
+  /// No description provided for @bookingCancelledRefundRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking cancelled and refund requested'**
+  String get bookingCancelledRefundRequested;
+
+  /// No description provided for @bookingCancelFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not cancel booking: {error}'**
+  String bookingCancelFailed(String error);
+
+  /// No description provided for @priceRangePerPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'{min}–{max} ₸ / person'**
+  String priceRangePerPerson(int min, int max);
+
+  /// No description provided for @priceQuotePerPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} ₸ / person quote'**
+  String priceQuotePerPerson(int amount);
+
+  /// No description provided for @stablePricePerPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} ₸ / person'**
+  String stablePricePerPerson(int amount);
+
+  /// No description provided for @finalPriceLocksShort.
+  ///
+  /// In en, this message translates to:
+  /// **'locks later'**
+  String get finalPriceLocksShort;
+
+  /// No description provided for @fixedSplitPriceDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'For fixed-split sessions, the final per-person price is based on participants and locks when the session fills or reaches lock time.'**
+  String get fixedSplitPriceDisclosure;
+
+  /// No description provided for @promoSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Promotions'**
+  String get promoSectionTitle;
+
+  /// No description provided for @promoEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a promo code?'**
+  String get promoEnterCode;
+
+  /// No description provided for @promoCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code'**
+  String get promoCodeHint;
+
+  /// No description provided for @promoApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get promoApply;
+
+  /// No description provided for @promoRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove promo'**
+  String get promoRemove;
+
+  /// No description provided for @promoCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid promo code'**
+  String get promoCodeInvalid;
+
+  /// No description provided for @promoConditionsNotMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking does not meet promo conditions'**
+  String get promoConditionsNotMet;
+
+  /// No description provided for @promoVenuesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Venues with Promos'**
+  String get promoVenuesTitle;
+
+  /// No description provided for @promoVenuesBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Special offers'**
+  String get promoVenuesBannerTitle;
+
+  /// No description provided for @promoVenuesBannerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Venues with active discounts and promotions'**
+  String get promoVenuesBannerSubtitle;
+
+  /// No description provided for @promoVenuesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active promotions'**
+  String get promoVenuesEmpty;
+
+  /// No description provided for @promoVenuesEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no venues with active promotions right now. Check back soon!'**
+  String get promoVenuesEmptySubtitle;
+
+  /// No description provided for @subtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get subtotal;
+
+  /// No description provided for @placeFacilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Place Your Facility'**
+  String get placeFacilityTitle;
+
+  /// No description provided for @placeFacilitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'List your sports facility on ZhamSpace and reach thousands of active players in your city.'**
+  String get placeFacilitySubtitle;
+
+  /// No description provided for @facilityNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Facility Name'**
+  String get facilityNameLabel;
+
+  /// No description provided for @placeFacilityFullNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get placeFacilityFullNameHint;
+
+  /// No description provided for @placeFacilityPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'+7 (700) 000-00-00'**
+  String get placeFacilityPhoneHint;
+
+  /// No description provided for @placeFacilityNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Arena Sport Club'**
+  String get placeFacilityNameHint;
+
+  /// No description provided for @placeFacilityContactButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get placeFacilityContactButton;
+
+  /// No description provided for @placeFacilitySuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Sent!'**
+  String get placeFacilitySuccessTitle;
+
+  /// No description provided for @placeFacilitySuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks! We will contact you shortly to discuss listing your facility.'**
+  String get placeFacilitySuccessMessage;
+
+  /// No description provided for @placeFacilityFullNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your full name'**
+  String get placeFacilityFullNameRequired;
+
+  /// No description provided for @placeFacilityPhoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your phone number'**
+  String get placeFacilityPhoneRequired;
+
+  /// No description provided for @placeFacilityPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid phone number'**
+  String get placeFacilityPhoneInvalid;
+
+  /// No description provided for @placeFacilityNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your facility name'**
+  String get placeFacilityNameRequired;
+
+  /// No description provided for @placeFacilityCommentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get placeFacilityCommentLabel;
+
+  /// No description provided for @placeFacilityCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add details about your facility, location, or preferred contact time'**
+  String get placeFacilityCommentHint;
+
+  /// No description provided for @placeFacilityDocumentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get placeFacilityDocumentLabel;
+
+  /// No description provided for @placeFacilityDocumentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a PDF or image'**
+  String get placeFacilityDocumentHint;
+
+  /// No description provided for @placeFacilityDocumentAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose'**
+  String get placeFacilityDocumentAction;
+
+  /// No description provided for @placeFacilityDocumentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please attach a PDF or image'**
+  String get placeFacilityDocumentRequired;
+
+  /// No description provided for @placeFacilitySubmitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send request. Please try again.'**
+  String get placeFacilitySubmitError;
+
+  /// No description provided for @placeFacilityMyRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get placeFacilityMyRequestsTitle;
+
+  /// No description provided for @placeFacilityMyRequestsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get placeFacilityMyRequestsEmpty;
+
+  /// No description provided for @placeFacilityLoadRequestsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your requests.'**
+  String get placeFacilityLoadRequestsError;
+
+  /// No description provided for @placeFacilitySentAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get placeFacilitySentAt;
+
+  /// No description provided for @placeFacilityUpdatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get placeFacilityUpdatedAt;
+
+  /// No description provided for @venueRequestStatusCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get venueRequestStatusCreated;
+
+  /// No description provided for @venueRequestStatusAwaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting'**
+  String get venueRequestStatusAwaiting;
+
+  /// No description provided for @venueRequestStatusReviewing.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewing'**
+  String get venueRequestStatusReviewing;
+
+  /// No description provided for @venueRequestStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get venueRequestStatusApproved;
+
+  /// No description provided for @venueRequestStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get venueRequestStatusCancelled;
+
+  /// No description provided for @venueRequestStatusApprovedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request was approved. In the nearest future your facility will be placed.'**
+  String get venueRequestStatusApprovedMessage;
+
+  /// No description provided for @venueRequestStatusCreatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Venue on this request was successfully created. Manage your facilities in owner platform.'**
+  String get venueRequestStatusCreatedMessage;
+
+  /// No description provided for @venueRequestStatusRejectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request was declined. Contact support for more information.'**
+  String get venueRequestStatusRejectedMessage;
+
+  /// No description provided for @guideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide'**
+  String get guideTitle;
+
+  /// No description provided for @guideBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How ZhamSpace works'**
+  String get guideBannerTitle;
+
+  /// No description provided for @guideBannerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you need to browse, book, and play'**
+  String get guideBannerSubtitle;
+
+  /// No description provided for @guideSectionGettingStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting Started'**
+  String get guideSectionGettingStarted;
+
+  /// No description provided for @guideSectionGettingStartedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse venues and discover sports near you'**
+  String get guideSectionGettingStartedSubtitle;
+
+  /// No description provided for @guideSectionBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking a Facility'**
+  String get guideSectionBooking;
+
+  /// No description provided for @guideSectionBookingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a date, time slot, and confirm your reservation'**
+  String get guideSectionBookingSubtitle;
+
+  /// No description provided for @guideSectionSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Joining Sessions'**
+  String get guideSectionSessions;
+
+  /// No description provided for @guideSectionSessionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find open games and join other players'**
+  String get guideSectionSessionsSubtitle;
+
+  /// No description provided for @guideSectionPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments & Bookings'**
+  String get guideSectionPayments;
+
+  /// No description provided for @guideSectionPaymentsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay securely and manage your reservations'**
+  String get guideSectionPaymentsSubtitle;
+
+  /// No description provided for @guideSectionProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile & Favorites'**
+  String get guideSectionProfile;
+
+  /// No description provided for @guideSectionProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save venues, update settings, and switch modes'**
+  String get guideSectionProfileSubtitle;
+
+  /// No description provided for @guideSectionOwners.
+  ///
+  /// In en, this message translates to:
+  /// **'For Facility Owners'**
+  String get guideSectionOwners;
+
+  /// No description provided for @guideSectionOwnersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'List your venue and manage bookings'**
+  String get guideSectionOwnersSubtitle;
+
+  /// No description provided for @guideSectionSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get guideSectionSupport;
+
+  /// No description provided for @guideSectionSupportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get answers and contact our team'**
+  String get guideSectionSupportSubtitle;
+
+  /// No description provided for @guideContentGettingStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Home tab to explore sports facilities near you. Use the search bar to find activities, parks, or clubs by name. Filter by category — football, basketball, tennis, and more — to narrow results.\n\nTap any venue card to see photos, description, available facilities, pricing, and contact info. Add venues to your favorites for quick access later.'**
+  String get guideContentGettingStarted;
+
+  /// No description provided for @guideContentBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'From a venue detail page, select a facility and tap Book Now. Choose your date and available time slot on the calendar. Review the total price and proceed to payment.\n\nYou must be logged in to complete a booking. After payment, your reservation appears under My Bookings where you can view details or cancel if needed.'**
+  String get guideContentBooking;
+
+  /// No description provided for @guideContentSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the Sessions tab to browse open group activities hosted by venues or players. Filter by sport, skill level, or date to find a match.\n\nTap a session to see details — host, participants, price per person, and spots left. Sign in and tap Join Session to reserve your spot. You can leave a session before it starts from the session detail page.'**
+  String get guideContentSessions;
+
+  /// No description provided for @guideContentPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'ZhamSpace supports card payments and local options like Kaspi and Halyk Bank. Saved cards are stored locally on your device for faster checkout.\n\nAfter booking, track status in My Bookings — confirmed, completed, or cancelled. Paid bookings can be cancelled with a refund request. Payment holds expire if not completed in time.'**
+  String get guideContentPayments;
+
+  /// No description provided for @guideContentProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Profile tab shows personal info, language, and theme settings. Switch between light, dark, or system default themes. Choose English, Russian, or Kazakh.\n\nSave favorite venues from any venue card. Facility owners can switch to Owner mode from Profile to manage facilities, view bookings, and track revenue analytics.'**
+  String get guideContentProfile;
+
+  /// No description provided for @guideContentOwners.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to list your facility? Tap Place Your Facility on the Home screen and submit your contact details. Our team will reach out to help you onboard.\n\nIn Owner mode, use the Owner Hub to manage facilities, update schedules, review incoming booking requests, and monitor occupancy and revenue from the Analytics tab.'**
+  String get guideContentOwners;
+
+  /// No description provided for @guideContentSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Need help? Browse this guide for answers to common questions about booking, payments, and sessions.\n\nFor anything else, use Place Your Facility to reach our team, or message a venue owner directly from a venue\'s detail page via the chat feature.'**
+  String get guideContentSupport;
 }
 
 class _AppLocalizationsDelegate

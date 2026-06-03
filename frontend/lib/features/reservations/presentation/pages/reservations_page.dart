@@ -12,8 +12,10 @@ import '../../../../core/widgets/page_title_header.dart';
 import '../../../../core/widgets/auth_required_screen.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../sessions/presentation/pages/sessions_list_page.dart';
 import '../../../venues/presentation/providers/venue_provider.dart';
 import '../../data/models/booking_model.dart';
+import '../../data/repositories/booking_repository.dart';
 import '../providers/reservations_provider.dart';
 import '../booking_labels.dart';
 
@@ -37,92 +39,96 @@ class ReservationsPage extends ConsumerWidget {
       length: 2,
       child: _ReservationsTabLoadSync(
         child: Scaffold(
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PageTitleHeader(title: l10n.reservations),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    if (!isDark)
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                  ],
-                ),
-                child: TabBar(
-                  onTap: (index) {
-                    ref.read(selectedReservationTabProvider.notifier).state =
-                        index;
-                    if (index == 0) {
-                      unawaited(ref
-                          .read(upcomingBookingsPagedProvider.notifier)
-                          .ensureVisible());
-                    } else {
-                      unawaited(
-                        ref.read(pastBookingsPagedProvider.notifier).ensureVisible(),
-                      );
-                    }
-                  },
-                  indicator: BoxDecoration(
-                    color: AppColors.colorMain,
-                    borderRadius: BorderRadius.circular(16),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PageTitleHeader(title: l10n.reservations),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
-                      BoxShadow(
-                        color: AppColors.colorMain.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
+                      if (!isDark)
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
                     ],
                   ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicatorPadding: EdgeInsets.zero,
-                  dividerColor: Colors.transparent,
-                  labelColor: Colors.white,
-                  unselectedLabelColor:
-                      isDark ? Colors.white60 : Colors.grey.shade700,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    letterSpacing: 0.2,
+                  child: TabBar(
+                    onTap: (index) {
+                      ref.read(selectedReservationTabProvider.notifier).state =
+                          index;
+                      if (index == 0) {
+                        unawaited(
+                          ref
+                              .read(upcomingBookingsPagedProvider.notifier)
+                              .ensureVisible(),
+                        );
+                      } else {
+                        unawaited(
+                          ref
+                              .read(pastBookingsPagedProvider.notifier)
+                              .ensureVisible(),
+                        );
+                      }
+                    },
+                    indicator: BoxDecoration(
+                      color: AppColors.colorMain,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.colorMain.withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicatorPadding: EdgeInsets.zero,
+                    dividerColor: Colors.transparent,
+                    labelColor: Colors.white,
+                    unselectedLabelColor:
+                        isDark ? Colors.white60 : Colors.grey.shade700,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      letterSpacing: 0.2,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    ),
+                    labelPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 4,
+                    ),
+                    tabs: [
+                      Tab(text: l10n.upcomingBookings),
+                      Tab(text: l10n.pastBookings),
+                    ],
                   ),
-                  unselectedLabelStyle: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.grey.shade600,
-                  ),
-                  labelPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 4,
-                  ),
-                  tabs: [
-                    Tab(text: l10n.upcomingBookings),
-                    Tab(text: l10n.pastBookings),
+                ),
+              ),
+              const Expanded(
+                child: TabBarView(
+                  children: [
+                    _PaginatedBookingsTabPane(upcoming: true),
+                    _PaginatedBookingsTabPane(upcoming: false),
                   ],
                 ),
               ),
-            ),
-            const Expanded(
-              child: TabBarView(
-                children: [
-                  _PaginatedBookingsTabPane(upcoming: true),
-                  _PaginatedBookingsTabPane(upcoming: false),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -139,7 +145,8 @@ class _ReservationsTabLoadSync extends ConsumerStatefulWidget {
       _ReservationsTabLoadSyncState();
 }
 
-class _ReservationsTabLoadSyncState extends ConsumerState<_ReservationsTabLoadSync> {
+class _ReservationsTabLoadSyncState
+    extends ConsumerState<_ReservationsTabLoadSync> {
   TabController? _tabController;
 
   @override
@@ -185,7 +192,8 @@ class _PaginatedBookingsTabPane extends ConsumerStatefulWidget {
       _PaginatedBookingsTabPaneState();
 }
 
-class _PaginatedBookingsTabPaneState extends ConsumerState<_PaginatedBookingsTabPane>
+class _PaginatedBookingsTabPaneState
+    extends ConsumerState<_PaginatedBookingsTabPane>
     with AutomaticKeepAliveClientMixin {
   static const _prefetchMaxCards = 5;
   static const _prefetchTimeout = Duration(seconds: 6);
@@ -228,15 +236,14 @@ class _PaginatedBookingsTabPaneState extends ConsumerState<_PaginatedBookingsTab
               .timeout(_perImageTimeout);
           url = res?.images.isNotEmpty == true ? res!.images.first : null;
         }
-        if (url == null && b.venueId.isNotEmpty) {
+        if (url == null && !b.isSession && b.venueId.isNotEmpty) {
           final venue = await ref
               .read(venueByIdProvider(b.venueId).future)
               .timeout(_perImageTimeout);
           url = venue?.images.isNotEmpty == true ? venue!.images.first : null;
         }
         if (url != null && ctx.mounted) {
-          await precacheImage(NetworkImage(url), ctx)
-              .timeout(_perImageTimeout);
+          await precacheImage(NetworkImage(url), ctx).timeout(_perImageTimeout);
         }
       } catch (_) {
         // Skip failed thumbnails; list still renders with placeholders.
@@ -292,6 +299,15 @@ class _PaginatedBookingsTabPaneState extends ConsumerState<_PaginatedBookingsTab
       ? r.watch(upcomingBookingsPagedProvider)
       : r.watch(pastBookingsPagedProvider);
 
+  Widget _withFilter(Widget child) {
+    return Column(
+      children: [
+        _ReservationTypeFilterRow(upcoming: widget.upcoming),
+        Expanded(child: child),
+      ],
+    );
+  }
+
   Future<void> _retry() async {
     if (widget.upcoming) {
       await ref.read(upcomingBookingsPagedProvider.notifier).reset();
@@ -324,44 +340,94 @@ class _PaginatedBookingsTabPaneState extends ConsumerState<_PaginatedBookingsTab
         }
       },
     );
+    ref.listen<ReservationListType>(
+      widget.upcoming
+          ? upcomingReservationTypeProvider
+          : pastReservationTypeProvider,
+      (_, __) {
+        setState(() {
+          _prefetchDoneForBatch = false;
+          _prefetchRunning = false;
+        });
+        if (widget.upcoming) {
+          unawaited(ref.read(upcomingBookingsPagedProvider.notifier).reset());
+        } else {
+          unawaited(ref.read(pastBookingsPagedProvider.notifier).reset());
+        }
+      },
+    );
 
-    if (state.items.isNotEmpty &&
-        !_prefetchDoneForBatch &&
-        !_prefetchRunning) {
+    if (state.items.isNotEmpty && !_prefetchDoneForBatch && !_prefetchRunning) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _schedulePrefetch(state.items);
       });
     }
 
     if (state.loadingInitial && state.items.isEmpty) {
-      return _ThreeBookingCardSkeletons(
-        key: const ValueKey('bookings_skeleton_initial'),
-        isDark: isDark,
+      return _withFilter(
+        _ThreeBookingCardSkeletons(
+          key: const ValueKey('bookings_skeleton_initial'),
+          isDark: isDark,
+        ),
       );
     }
 
-    if (state.error != null &&
-        state.error!.isNotEmpty &&
-        state.items.isEmpty) {
+    if (state.error != null && state.error!.isNotEmpty && state.items.isEmpty) {
       final errRaw = state.error!;
-      final errText = errRaw == 'not_logged_in'
-          ? l10n.notLoggedInError
-          : errRaw;
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+      final errText =
+          errRaw == 'not_logged_in' ? l10n.notLoggedInError : errRaw;
+      return _withFilter(
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  errText,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: _retry,
+                  child: Text(l10n.retry),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (state.items.isEmpty && !state.loadingInitial) {
+      return _withFilter(
+        Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                errText,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 72,
+                color: isDark ? Colors.grey[600] : Colors.grey[400],
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _retry,
-                child: Text(l10n.retry),
+              Text(
+                l10n.noBookings,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  l10n.startBooking,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                ),
               ),
             ],
           ),
@@ -369,88 +435,185 @@ class _PaginatedBookingsTabPaneState extends ConsumerState<_PaginatedBookingsTab
       );
     }
 
-    if (state.items.isEmpty && !state.loadingInitial) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.calendar_today_outlined,
-              size: 72,
-              color: isDark ? Colors.grey[600] : Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.noBookings,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                l10n.startBooking,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     final showThumbnailSkeleton =
         state.items.isNotEmpty && !_prefetchDoneForBatch;
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOut,
-      switchOutCurve: Curves.easeIn,
-      child: showThumbnailSkeleton
-          ? _ThreeBookingCardSkeletons(
-              key: ValueKey(
-                'bookings_skeleton_${widget.upcoming ? 'up' : 'past'}',
-              ),
-              isDark: isDark,
-            )
-          : RefreshIndicator(
-              key: ValueKey(
-                'bookings_list_${widget.upcoming ? 'up' : 'past'}',
-              ),
-              onRefresh: _retry,
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-                itemCount: state.items.length + (state.loadingMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index >= state.items.length) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  final booking = state.items[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _BookingBriefCard(
-                      booking: booking,
-                      isDark: isDark,
-                      l10n: l10n,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) =>
-                              BookingDetailPage(bookingId: booking.id),
+    return _withFilter(
+      AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: showThumbnailSkeleton
+            ? _ThreeBookingCardSkeletons(
+                key: ValueKey(
+                  'bookings_skeleton_${widget.upcoming ? 'up' : 'past'}',
+                ),
+                isDark: isDark,
+              )
+            : RefreshIndicator(
+                key: ValueKey(
+                  'bookings_list_${widget.upcoming ? 'up' : 'past'}',
+                ),
+                onRefresh: _retry,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+                  itemCount: state.items.length + (state.loadingMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index >= state.items.length) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final booking = state.items[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _BookingBriefCard(
+                        booking: booking,
+                        isDark: isDark,
+                        l10n: l10n,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => booking.isSession
+                                ? SessionDetailPage(
+                                    sessionId: booking.sessionId ?? booking.id,
+                                  )
+                                : BookingDetailPage(bookingId: booking.id),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
+      ),
+    );
+  }
+}
+
+class _ReservationTypeFilterRow extends ConsumerWidget {
+  final bool upcoming;
+
+  const _ReservationTypeFilterRow({required this.upcoming});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = upcoming
+        ? upcomingReservationTypeProvider
+        : pastReservationTypeProvider;
+    final selected = ref.watch(provider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          _ReservationTypeChip(
+            label: 'All',
+            icon: Icons.view_agenda_outlined,
+            selected: selected == ReservationListType.all,
+            isDark: isDark,
+            onTap: () => _setType(ref, ReservationListType.all),
+          ),
+          const SizedBox(width: 8),
+          _ReservationTypeChip(
+            label: 'Bookings',
+            icon: Icons.event_available_outlined,
+            selected: selected == ReservationListType.bookings,
+            isDark: isDark,
+            onTap: () => _setType(ref, ReservationListType.bookings),
+          ),
+          const SizedBox(width: 8),
+          _ReservationTypeChip(
+            label: 'Sessions',
+            icon: Icons.groups_2_outlined,
+            selected: selected == ReservationListType.sessions,
+            isDark: isDark,
+            onTap: () => _setType(ref, ReservationListType.sessions),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _setType(WidgetRef ref, ReservationListType type) {
+    final provider = upcoming
+        ? upcomingReservationTypeProvider
+        : pastReservationTypeProvider;
+    if (ref.read(provider) == type) return;
+    ref.read(provider.notifier).state = type;
+  }
+}
+
+class _ReservationTypeChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ReservationTypeChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          height: 40,
+          decoration: BoxDecoration(
+            color: selected
+                ? AppColors.colorMain
+                : (isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? AppColors.colorMain
+                  : (isDark
+                      ? Colors.white.withValues(alpha: 0.10)
+                      : Colors.black.withValues(alpha: 0.06)),
             ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 17,
+                color: selected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.grey.shade700),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: selected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.grey.shade700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -484,10 +647,10 @@ class _ThreeBookingCardSkeletons extends StatelessWidget {
                 height: 108,
                 child: Row(
                   children: [
-                    ShimmerBox(
+                    const ShimmerBox(
                       width: 100,
                       height: 108,
-                      borderRadius: const BorderRadius.horizontal(
+                      borderRadius: BorderRadius.horizontal(
                         left: Radius.circular(19),
                       ),
                     ),
@@ -552,15 +715,37 @@ class _BookingBriefCard extends ConsumerWidget {
     final resourceAsync = ref.watch(resourceByIdProvider(rid));
     final venueAsync = ref.watch(venueByIdProvider(booking.venueId));
     final resource = resourceAsync.valueOrNull;
-    final title = resource?.displayName ??
-        venueAsync.valueOrNull?.name ??
-        l10n.venueIdFallback(booking.venueId);
+    final venue = venueAsync.valueOrNull;
+    final String title;
+    if (booking.isSession) {
+      if (booking.name?.trim().isNotEmpty ?? false) {
+        title = booking.name!.trim();
+      } else if (resource != null) {
+        title = resource.displayName;
+      } else {
+        title = l10n.bookingFallbackTitle;
+      }
+    } else {
+      title = resource?.displayName ??
+          venue?.name ??
+          l10n.venueIdFallback(booking.venueId);
+    }
+    final resourceSubtitle = booking.isSession &&
+            resource != null &&
+            resource.displayName.trim().isNotEmpty &&
+            resource.displayName.trim() != title
+        ? resource.displayName.trim()
+        : null;
     String? imageUrl;
     if (resource?.images.isNotEmpty == true) {
       imageUrl = resource!.images.first;
-    } else if (venueAsync.valueOrNull?.images.isNotEmpty == true) {
-      imageUrl = venueAsync.valueOrNull!.images.first;
+    } else if (!booking.isSession && venue?.images.isNotEmpty == true) {
+      imageUrl = venue!.images.first;
     }
+    final venueName = venue?.name.trim() ?? '';
+    final venueAddress = venue?.address.trim() ?? '';
+    final showVenueBlock = booking.isSession &&
+        (venueName.isNotEmpty || venueAddress.isNotEmpty);
 
     final surface = isDark ? const Color(0xFF161B22) : Colors.white;
     final border = isDark
@@ -598,23 +783,63 @@ class _BookingBriefCard extends ConsumerWidget {
             ),
             Expanded(
               child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (booking.isSession) ...[
+                          Container(
+                            margin: const EdgeInsets.only(right: 6, top: 1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.colorInfo.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Session',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
                         Expanded(
-                          child: Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w800),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.w800),
+                              ),
+                              if (resourceSubtitle != null) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  resourceSubtitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -647,12 +872,44 @@ class _BookingBriefCard extends ConsumerWidget {
                         color: isDark ? Colors.white54 : Colors.grey.shade600,
                       ),
                     ),
+                    if (showVenueBlock) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.storefront_outlined,
+                            size: 13,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              [
+                                if (venueName.isNotEmpty) venueName,
+                                if (venueAddress.isNotEmpty) venueAddress,
+                              ].join(' · '),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Text(
                           '${booking.priceTotalInt} ₸',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 15,
                             color: AppColors.colorMain,
@@ -663,9 +920,12 @@ class _BookingBriefCard extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: AppColors.colorMain.withValues(alpha: 0.12),
+                              color:
+                                  AppColors.colorMain.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -700,8 +960,11 @@ class _BookingBriefCard extends ConsumerWidget {
   Widget _thumbPlaceholder() {
     return ColoredBox(
       color: isDark ? const Color(0xFF21262D) : const Color(0xFFE8ECF0),
-      child: Icon(Icons.sports_soccer_rounded,
-          color: AppColors.colorMain.withValues(alpha: 0.45), size: 36),
+      child: Icon(
+        Icons.sports_soccer_rounded,
+        color: AppColors.colorMain.withValues(alpha: 0.45),
+        size: 36,
+      ),
     );
   }
 }

@@ -69,6 +69,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabletennis => 'Table Tennis';
 
   @override
+  String get ice_hockey => 'Ice hockey';
+
+  @override
+  String get judo => 'Judo';
+
+  @override
+  String get chess => 'Chess';
+
+  @override
+  String get boxing => 'Boxing';
+
+  @override
+  String get mma => 'MMA';
+
+  @override
+  String get athletics => 'Athletics';
+
+  @override
+  String get handball => 'Handball';
+
+  @override
+  String get futsal => 'Futsal';
+
+  @override
+  String get golf => 'Golf';
+
+  @override
+  String get climbing => 'Climbing';
+
+  @override
+  String get yoga => 'Yoga';
+
+  @override
+  String get pilates => 'Pilates';
+
+  @override
+  String get crossfit => 'CrossFit';
+
+  @override
+  String get cycling => 'Cycling';
+
+  @override
+  String get running => 'Running';
+
+  @override
+  String get esports => 'Esports';
+
+  @override
+  String get other => 'Other';
+
+  @override
   String get popularVenues => 'Popular Venues';
 
   @override
@@ -571,6 +622,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinedSuccessfully => 'You have joined the session!';
 
   @override
+  String get joinedLabel => 'Joined';
+
+  @override
+  String get sessionFull => 'Session full';
+
+  @override
+  String get sessionLocked => 'Registration closed';
+
+  @override
+  String get joinLoginRequired => 'Sign in to join sessions';
+
+  @override
+  String get leftSessionSuccessfully => 'You have left the session';
+
+  @override
+  String get leaveSessionConfirm =>
+      'Are you sure you want to leave this session?';
+
+  @override
   String get leaveSession => 'Leave Session';
 
   @override
@@ -894,6 +964,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelReasonRefunded => 'Cancelled due to refund';
 
   @override
+  String get cancelReasonMinimumNotMet => 'Not enough participants joined';
+
+  @override
+  String get cancelReasonOwnerCancelled => 'Cancelled by the session organizer';
+
+  @override
+  String get cancelReasonSessionExpired => 'Session ended without starting';
+
+  @override
+  String get cancelReasonHoldCreationFailed =>
+      'Could not reserve the time slot';
+
+  @override
   String get paymentStatusPaid => 'Paid';
 
   @override
@@ -907,4 +990,300 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentStatusRefunded => 'Refunded';
+
+  @override
+  String get savedCardLocalOnlyNotice =>
+      'Saved cards are stored only on this device for mock checkout. No card token is sent to the bank.';
+
+  @override
+  String get cardNumberInvalid => 'Enter a valid card number.';
+
+  @override
+  String get cardExpiryInvalid => 'Enter a valid future expiry date.';
+
+  @override
+  String get cardCvvInvalid => 'Enter a valid CVV.';
+
+  @override
+  String get cardDetailsInvalid => 'Check the card details and try again.';
+
+  @override
+  String get slotJustBecameUnavailable =>
+      'This slot just became unavailable. Please choose another time.';
+
+  @override
+  String holdCountdown(String timeLeft) {
+    return 'Expires in $timeLeft';
+  }
+
+  @override
+  String get holdExpiredNow => 'Hold expired';
+
+  @override
+  String get confirmCancelPaidRefund =>
+      'This booking is paid. Cancelling will request a mock refund and then cancel the booking. Continue?';
+
+  @override
+  String get bookingCancelledRefundRequested =>
+      'Booking cancelled and refund requested';
+
+  @override
+  String bookingCancelFailed(String error) {
+    return 'Could not cancel booking: $error';
+  }
+
+  @override
+  String priceRangePerPerson(int min, int max) {
+    return '$min–$max ₸ / person';
+  }
+
+  @override
+  String priceQuotePerPerson(int amount) {
+    return '$amount ₸ / person quote';
+  }
+
+  @override
+  String stablePricePerPerson(int amount) {
+    return '$amount ₸ / person';
+  }
+
+  @override
+  String get finalPriceLocksShort => 'locks later';
+
+  @override
+  String get fixedSplitPriceDisclosure =>
+      'For fixed-split sessions, the final per-person price is based on participants and locks when the session fills or reaches lock time.';
+
+  @override
+  String get promoSectionTitle => 'Available Promotions';
+
+  @override
+  String get promoEnterCode => 'Have a promo code?';
+
+  @override
+  String get promoCodeHint => 'Enter code';
+
+  @override
+  String get promoApply => 'Apply';
+
+  @override
+  String get promoRemove => 'Remove promo';
+
+  @override
+  String get promoCodeInvalid => 'Invalid promo code';
+
+  @override
+  String get promoConditionsNotMet => 'Booking does not meet promo conditions';
+
+  @override
+  String get promoVenuesTitle => 'Venues with Promos';
+
+  @override
+  String get promoVenuesBannerTitle => 'Special offers';
+
+  @override
+  String get promoVenuesBannerSubtitle =>
+      'Venues with active discounts and promotions';
+
+  @override
+  String get promoVenuesEmpty => 'No active promotions';
+
+  @override
+  String get promoVenuesEmptySubtitle =>
+      'There are no venues with active promotions right now. Check back soon!';
+
+  @override
+  String get subtotal => 'Subtotal';
+
+  @override
+  String get placeFacilityTitle => 'Place Your Facility';
+
+  @override
+  String get placeFacilitySubtitle =>
+      'List your sports facility on ZhamSpace and reach thousands of active players in your city.';
+
+  @override
+  String get facilityNameLabel => 'Facility Name';
+
+  @override
+  String get placeFacilityFullNameHint => 'Enter your full name';
+
+  @override
+  String get placeFacilityPhoneHint => '+7 (700) 000-00-00';
+
+  @override
+  String get placeFacilityNameHint => 'e.g. Arena Sport Club';
+
+  @override
+  String get placeFacilityContactButton => 'Contact Us';
+
+  @override
+  String get placeFacilitySuccessTitle => 'Request Sent!';
+
+  @override
+  String get placeFacilitySuccessMessage =>
+      'Thanks! We will contact you shortly to discuss listing your facility.';
+
+  @override
+  String get placeFacilityFullNameRequired => 'Please enter your full name';
+
+  @override
+  String get placeFacilityPhoneRequired => 'Please enter your phone number';
+
+  @override
+  String get placeFacilityPhoneInvalid => 'Enter a valid phone number';
+
+  @override
+  String get placeFacilityNameRequired => 'Please enter your facility name';
+
+  @override
+  String get placeFacilityCommentLabel => 'Comment';
+
+  @override
+  String get placeFacilityCommentHint =>
+      'Add details about your facility, location, or preferred contact time';
+
+  @override
+  String get placeFacilityDocumentLabel => 'Document';
+
+  @override
+  String get placeFacilityDocumentHint => 'Attach a PDF or image';
+
+  @override
+  String get placeFacilityDocumentAction => 'Choose';
+
+  @override
+  String get placeFacilityDocumentRequired => 'Please attach a PDF or image';
+
+  @override
+  String get placeFacilitySubmitError =>
+      'Could not send request. Please try again.';
+
+  @override
+  String get placeFacilityMyRequestsTitle => 'My requests';
+
+  @override
+  String get placeFacilityMyRequestsEmpty => 'No requests yet';
+
+  @override
+  String get placeFacilityLoadRequestsError => 'Could not load your requests.';
+
+  @override
+  String get placeFacilitySentAt => 'Sent';
+
+  @override
+  String get placeFacilityUpdatedAt => 'Updated';
+
+  @override
+  String get venueRequestStatusCreated => 'Created';
+
+  @override
+  String get venueRequestStatusAwaiting => 'Awaiting';
+
+  @override
+  String get venueRequestStatusReviewing => 'Reviewing';
+
+  @override
+  String get venueRequestStatusApproved => 'Approved';
+
+  @override
+  String get venueRequestStatusCancelled => 'Cancelled';
+
+  @override
+  String get venueRequestStatusApprovedMessage =>
+      'Your request was approved. In the nearest future your facility will be placed.';
+
+  @override
+  String get venueRequestStatusCreatedMessage =>
+      'Venue on this request was successfully created. Manage your facilities in owner platform.';
+
+  @override
+  String get venueRequestStatusRejectedMessage =>
+      'Your request was declined. Contact support for more information.';
+
+  @override
+  String get guideTitle => 'Guide';
+
+  @override
+  String get guideBannerTitle => 'How ZhamSpace works';
+
+  @override
+  String get guideBannerSubtitle =>
+      'Everything you need to browse, book, and play';
+
+  @override
+  String get guideSectionGettingStarted => 'Getting Started';
+
+  @override
+  String get guideSectionGettingStartedSubtitle =>
+      'Browse venues and discover sports near you';
+
+  @override
+  String get guideSectionBooking => 'Booking a Facility';
+
+  @override
+  String get guideSectionBookingSubtitle =>
+      'Pick a date, time slot, and confirm your reservation';
+
+  @override
+  String get guideSectionSessions => 'Joining Sessions';
+
+  @override
+  String get guideSectionSessionsSubtitle =>
+      'Find open games and join other players';
+
+  @override
+  String get guideSectionPayments => 'Payments & Bookings';
+
+  @override
+  String get guideSectionPaymentsSubtitle =>
+      'Pay securely and manage your reservations';
+
+  @override
+  String get guideSectionProfile => 'Profile & Favorites';
+
+  @override
+  String get guideSectionProfileSubtitle =>
+      'Save venues, update settings, and switch modes';
+
+  @override
+  String get guideSectionOwners => 'For Facility Owners';
+
+  @override
+  String get guideSectionOwnersSubtitle =>
+      'List your venue and manage bookings';
+
+  @override
+  String get guideSectionSupport => 'Help & Support';
+
+  @override
+  String get guideSectionSupportSubtitle => 'Get answers and contact our team';
+
+  @override
+  String get guideContentGettingStarted =>
+      'Open the Home tab to explore sports facilities near you. Use the search bar to find activities, parks, or clubs by name. Filter by category — football, basketball, tennis, and more — to narrow results.\n\nTap any venue card to see photos, description, available facilities, pricing, and contact info. Add venues to your favorites for quick access later.';
+
+  @override
+  String get guideContentBooking =>
+      'From a venue detail page, select a facility and tap Book Now. Choose your date and available time slot on the calendar. Review the total price and proceed to payment.\n\nYou must be logged in to complete a booking. After payment, your reservation appears under My Bookings where you can view details or cancel if needed.';
+
+  @override
+  String get guideContentSessions =>
+      'Go to the Sessions tab to browse open group activities hosted by venues or players. Filter by sport, skill level, or date to find a match.\n\nTap a session to see details — host, participants, price per person, and spots left. Sign in and tap Join Session to reserve your spot. You can leave a session before it starts from the session detail page.';
+
+  @override
+  String get guideContentPayments =>
+      'ZhamSpace supports card payments and local options like Kaspi and Halyk Bank. Saved cards are stored locally on your device for faster checkout.\n\nAfter booking, track status in My Bookings — confirmed, completed, or cancelled. Paid bookings can be cancelled with a refund request. Payment holds expire if not completed in time.';
+
+  @override
+  String get guideContentProfile =>
+      'Your Profile tab shows personal info, language, and theme settings. Switch between light, dark, or system default themes. Choose English, Russian, or Kazakh.\n\nSave favorite venues from any venue card. Facility owners can switch to Owner mode from Profile to manage facilities, view bookings, and track revenue analytics.';
+
+  @override
+  String get guideContentOwners =>
+      'Want to list your facility? Tap Place Your Facility on the Home screen and submit your contact details. Our team will reach out to help you onboard.\n\nIn Owner mode, use the Owner Hub to manage facilities, update schedules, review incoming booking requests, and monitor occupancy and revenue from the Analytics tab.';
+
+  @override
+  String get guideContentSupport =>
+      'Need help? Browse this guide for answers to common questions about booking, payments, and sessions.\n\nFor anything else, use Place Your Facility to reach our team, or message a venue owner directly from a venue\'s detail page via the chat feature.';
 }

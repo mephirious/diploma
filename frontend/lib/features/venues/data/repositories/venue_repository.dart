@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/venue_model.dart';
 import '../models/resource_model.dart';
 import '../models/venue_schedule_result_model.dart';
+import '../models/promo_model.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
@@ -160,9 +161,10 @@ class VenueRepository {
     DateTime? to,
     bool includeInactive = false,
   }) async {
-    final params = <String, dynamic>{
-      'include_inactive': includeInactive,
-    };
+    final params = <String, dynamic>{};
+    if (includeInactive) {
+      params['include_inactive'] = 'true';
+    }
     if (resourceId != null && resourceId.isNotEmpty) params['resource_id'] = resourceId;
     if (from != null) params['from'] = from.toUtc().toIso8601String();
     if (to != null) params['to'] = to.toUtc().toIso8601String();
@@ -175,6 +177,84 @@ class VenueRepository {
       return VenueScheduleResultModel.fromJson(data);
     }
     return VenueScheduleResultModel(venueId: venueId);
+  }
+
+  /// GET /venues/{venue_id}/promos — active promos for a venue, optionally
+  /// filtered by [resourceId].
+  Future<List<PromoModel>> getPromos(
+    String venueId, {
+    String? resourceId,
+    String status = 'active',
+    int pageSize = 100,
+  }) async {
+    final params = <String, dynamic>{
+      'list_params.page': '0',
+      'list_params.page_size': pageSize.toString(),
+      'status': status,
+    };
+    if (resourceId != null && resourceId.isNotEmpty) {
+      params['resource_id'] = resourceId;
+    }
+
+    final data = await _dioClient.get(
+      ApiEndpoints.venuePromos(venueId),
+      queryParameters: params,
+    );
+
+    if (data is! Map<String, dynamic>) return [];
+    final results = data['results'] as List<dynamic>? ?? [];
+    return results
+        .map((e) => PromoModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// GET /venues/with-promos — venues that have at least one currently active promo.
+  Future<PaginatedVenuesResponse> getVenuesWithPromos({
+    int page = 0,
+    int pageSize = 40,
+  }) async {
+    final params = <String, dynamic>{
+      'list_params.page': page.toString(),
+      'list_params.page_size': pageSize.toString(),
+    };
+
+    final data = await _dioClient.get(
+      ApiEndpoints.venuesWithPromos,
+      queryParameters: params,
+    );
+
+    final List<dynamic> results;
+    int respPage = page;
+    int respPageSize = pageSize;
+    int totalCount = 0;
+
+    if (data is Map<String, dynamic>) {
+      results = (data['results'] as List<dynamic>?) ?? [];
+      final pagination = data['pagination_info'] as Map<String, dynamic>?;
+      if (pagination != null) {
+        respPage = int.tryParse(pagination['page']?.toString() ?? '') ?? page;
+        respPageSize =
+            int.tryParse(pagination['page_size']?.toString() ?? '') ?? pageSize;
+        totalCount =
+            int.tryParse(pagination['total_count']?.toString() ?? '') ?? 0;
+      }
+    } else if (data is List) {
+      results = data;
+      totalCount = results.length;
+    } else {
+      results = [];
+    }
+
+    final venues = results
+        .map((e) => VenueModel.fromApiJson(e as Map<String, dynamic>))
+        .toList();
+
+    return PaginatedVenuesResponse(
+      venues: venues,
+      page: respPage,
+      pageSize: respPageSize,
+      totalCount: totalCount,
+    );
   }
 
   /// Add a venue to the authenticated user's favorites.

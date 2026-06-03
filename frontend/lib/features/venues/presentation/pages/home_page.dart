@@ -3,13 +3,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/sports/sport_l10n.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/main_scaffold.dart';
 import '../../../../core/widgets/page_title_header.dart';
+import '../../../news/presentation/pages/news_list_page.dart';
 import '../providers/venue_provider.dart' as async_providers;
 import '../widgets/venue_card.dart';
 import 'venue_detail_page.dart';
+import 'promo_venues_page.dart';
+import 'place_facility_page.dart';
+import '../../../guide/presentation/pages/guide_page.dart';
 
 // Local UI state for category & search, now independent from mock data.
 final selectedCategoryProvider = StateProvider<String>((ref) => 'all');
@@ -27,6 +32,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _contentAboveSearchKey = GlobalKey();
   late final TextEditingController _searchController;
+
   /// Scroll offset (px) so the hero block is scrolled away and the search bar is pinned.
   double? _pinnedSearchScrollOffset;
   double? _lastTopPaddingForPinOffset;
@@ -57,7 +63,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   Future<void> _reloadVenuesAndScroll() async {
     _scrollToSearchBarPinned();
     final cat = ref.read(selectedCategoryProvider);
-    await ref.read(async_providers.paginatedVenuesProvider.notifier).loadFirstPage(
+    await ref
+        .read(async_providers.paginatedVenuesProvider.notifier)
+        .loadFirstPage(
           sport: cat == 'all' ? null : cat,
           search: ref.read(searchQueryProvider),
         );
@@ -76,8 +84,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       final delta = (clamped - current).abs();
       if (delta < 2.0) return;
       // Ease-out: faster when far (longer duration), gentle finish; short when already close.
-      final ms =
-          (260 + math.sqrt(delta) * 14).round().clamp(260, 1100);
+      final ms = (260 + math.sqrt(delta) * 14).round().clamp(260, 1100);
       _scrollController.animateTo(
         clamped,
         duration: Duration(milliseconds: ms),
@@ -137,32 +144,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     final paginatedState = ref.watch(async_providers.paginatedVenuesProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
 
+    final locale = Localizations.localeOf(context).toString();
+    final sportCategories = sortedSportCategories(l10n, locale);
     final categories = [
       {'key': 'all', 'label': l10n.allCategories, 'icon': Icons.apps},
-      {'key': 'football', 'label': l10n.football, 'icon': Icons.sports_soccer},
-      {
-        'key': 'basketball',
-        'label': l10n.basketball,
-        'icon': Icons.sports_basketball
-      },
-      {'key': 'tennis', 'label': l10n.tennis, 'icon': Icons.sports_tennis},
-      {'key': 'swimming', 'label': l10n.swimming, 'icon': Icons.pool},
-      {'key': 'gym', 'label': l10n.gym, 'icon': Icons.fitness_center},
-      {
-        'key': 'volleyball',
-        'label': l10n.volleyball,
-        'icon': Icons.sports_volleyball
-      },
-      {
-        'key': 'badminton',
-        'label': l10n.badminton,
-        'icon': Icons.sports_tennis
-      },
-      {
-        'key': 'tabletennis',
-        'label': l10n.tabletennis,
-        'icon': Icons.sports_cricket
-      },
+      ...sportCategories.map(
+        (c) => {'key': c.key, 'label': c.label, 'icon': c.icon},
+      ),
     ];
 
     return Scaffold(
@@ -182,270 +170,267 @@ class _HomePageState extends ConsumerState<HomePage> {
             return false;
           },
           child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // ── Above search: title + quick access (used to scroll offset for pinned bar) ──
-            SliverToBoxAdapter(
-              child: Column(
-                key: _contentAboveSearchKey,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const MarketplaceTitleHeader(title: 'ZhamSpace'),
-                  _QuickAccessSection(
-                    isDark: isDark,
-                    l10n: l10n,
-                    onTabSelected: (index) =>
-                        ref.read(selectedIndexProvider.notifier).state = index,
-                  ),
-                ],
+            controller: _scrollController,
+            slivers: [
+              // ── Above search: title + quick access (used to scroll offset for pinned bar) ──
+              SliverToBoxAdapter(
+                child: Column(
+                  key: _contentAboveSearchKey,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const MarketplaceTitleHeader(title: 'ZhamSpace'),
+                    _QuickAccessSection(
+                      isDark: isDark,
+                      l10n: l10n,
+                      onTabSelected: (index) => ref
+                          .read(selectedIndexProvider.notifier)
+                          .state = index,
+                      onReserveTap: () => unawaited(_reloadVenuesAndScroll()),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // ── Sticky Search Bar (scrolls with content, then pins at top) ──
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _StickySearchBarDelegate(
-                topPadding: MediaQuery.of(context).padding.top,
-                isDark: isDark,
-                l10n: l10n,
-                searchController: _searchController,
-                onSearchSubmitted: (value) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  ref.read(searchQueryProvider.notifier).state = value.trim();
-                  unawaited(_reloadVenuesAndScroll());
-                },
-                onClearSearch: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  _searchController.clear();
-                  ref.read(searchQueryProvider.notifier).state = '';
-                  unawaited(_reloadVenuesAndScroll());
-                },
-              ),
-            ),
-
-            // ── Category Chips ──
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 52,
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, i) {
-                    final cat = categories[i];
-                    final key = cat['key'] as String;
-                    final sel = selectedCategory == key;
-                    return FilterChip(
-                      selected: sel,
-                      showCheckmark: false,
-                      avatar: Icon(cat['icon'] as IconData,
-                          size: 16,
-                          color: sel ? Colors.white : AppColors.colorMain),
-                      label: Text(cat['label'] as String),
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: sel
-                            ? Colors.white
-                            : (isDark ? Colors.white70 : Colors.grey[800]),
-                      ),
-                      backgroundColor: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.grey[100],
-                      selectedColor: AppColors.colorMain,
-                      side: BorderSide.none,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      onSelected: (selected) {
-                        if (!selected) return;
-                        ref.read(selectedCategoryProvider.notifier).state = key;
-                        unawaited(_reloadVenuesAndScroll());
-                      },
-                    );
+              // ── Sticky Search Bar (scrolls with content, then pins at top) ──
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickySearchBarDelegate(
+                  topPadding: MediaQuery.of(context).padding.top,
+                  isDark: isDark,
+                  l10n: l10n,
+                  searchController: _searchController,
+                  onSearchSubmitted: (value) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    ref.read(searchQueryProvider.notifier).state = value.trim();
+                    unawaited(_reloadVenuesAndScroll());
+                  },
+                  onClearSearch: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    _searchController.clear();
+                    ref.read(searchQueryProvider.notifier).state = '';
+                    unawaited(_reloadVenuesAndScroll());
                   },
                 ),
               ),
-            ),
 
-            // ── Refresh in progress (keeps list slivers mounted so scroll does not jump) ──
-            if (paginatedState.isRefreshing)
+              // ── Category Chips ──
               SliverToBoxAdapter(
-                child: LinearProgressIndicator(
-                  minHeight: 3,
-                  backgroundColor: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.grey.shade200,
-                  color: AppColors.colorMain,
+                child: SizedBox(
+                  height: 52,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, i) {
+                      final cat = categories[i];
+                      final key = cat['key'] as String;
+                      final sel = selectedCategory == key;
+                      return FilterChip(
+                        selected: sel,
+                        showCheckmark: false,
+                        avatar: Icon(cat['icon'] as IconData,
+                            size: 16,
+                            color: sel ? Colors.white : AppColors.colorMain),
+                        label: Text(cat['label'] as String),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: sel
+                              ? Colors.white
+                              : (isDark ? Colors.white70 : Colors.grey[800]),
+                        ),
+                        backgroundColor: isDark
+                            ? Colors.white.withOpacity(0.08)
+                            : Colors.grey[100],
+                        selectedColor: AppColors.colorMain,
+                        side: BorderSide.none,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        onSelected: (selected) {
+                          if (!selected) return;
+                          ref.read(selectedCategoryProvider.notifier).state =
+                              key;
+                          unawaited(_reloadVenuesAndScroll());
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
 
-            // ── Dynamic content from API (`/venues`) with pagination ──
-            if (paginatedState.isLoadingInitial &&
-                paginatedState.items.isEmpty)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 80),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              )
-            else if (paginatedState.error != null &&
-                paginatedState.items.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 40, color: Colors.redAccent),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Failed to load venues',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        paginatedState.error!,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              color: isDark
-                                  ? Colors.grey[500]
-                                  : Colors.grey[600],
-                            ),
-                      ),
-                    ],
+              // ── Refresh in progress (keeps list slivers mounted so scroll does not jump) ──
+              if (paginatedState.isRefreshing)
+                SliverToBoxAdapter(
+                  child: LinearProgressIndicator(
+                    minHeight: 3,
+                    backgroundColor: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.grey.shade200,
+                    color: AppColors.colorMain,
                   ),
                 ),
-              )
-            else
-              Builder(
-                builder: (context) {
-                  final venues = paginatedState.items;
-                  // Keeps scroll extent ≥ ~1 viewport so scroll-to-pinned search works with few results.
-                  final bottomScrollSpace = MediaQuery.sizeOf(context).height;
 
-                  return SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      // ── Popular Section (carousel) — disabled for now ──
-                      // final popularVenues = [...venues]..sort(
-                      //   (a, b) => b.rating.compareTo(a.rating),
-                      // );
-                      // final topPopular = popularVenues.take(4).toList();
-                      // ... Padding popularVenues header + horizontal ListView ...
-
-                      // ── Near you (main list) ──
-                      Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                        child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(l10n.nearYou,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                        fontWeight:
-                                            FontWeight.w800)),
-                            TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                l10n.seeAll,
-                                style: const TextStyle(
-                                  color: AppColors.colorMain,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
+              // ── Dynamic content from API (`/venues`) with pagination ──
+              if (paginatedState.isLoadingInitial &&
+                  paginatedState.items.isEmpty)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 80),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                )
+              else if (paginatedState.error != null &&
+                  paginatedState.items.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 40, color: Colors.redAccent),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Failed to load venues',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Text(
+                          paginatedState.error!,
+                          textAlign: TextAlign.center,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isDark
+                                        ? Colors.grey[500]
+                                        : Colors.grey[600],
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Builder(
+                  builder: (context) {
+                    final venues = paginatedState.items;
+                    // Keeps scroll extent ≥ ~1 viewport so scroll-to-pinned search works with few results.
+                    final bottomScrollSpace = MediaQuery.sizeOf(context).height;
 
-                      // ── All Venues List ──
-                      if (venues.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Center(
-                            child: Column(
+                    return SliverList(
+                      delegate: SliverChildListDelegate(
+                        [
+                          // ── Popular Section (carousel) — disabled for now ──
+                          // final popularVenues = [...venues]..sort(
+                          //   (a, b) => b.rating.compareTo(a.rating),
+                          // );
+                          // final topPopular = popularVenues.take(4).toList();
+                          // ... Padding popularVenues header + horizontal ListView ...
+
+                          // ── Near you (main list) ──
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 48,
-                                  color: isDark
-                                      ? Colors.grey[700]
-                                      : Colors.grey[300],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  l10n.noFavorites,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                        color: isDark
-                                            ? Colors.grey[500]
-                                            : Colors.grey[500],
-                                      ),
+                                Text(l10n.nearYou,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.w800)),
+                                TextButton(
+                                  onPressed: () {},
+                                  child: Text(
+                                    l10n.seeAll,
+                                    style: const TextStyle(
+                                      color: AppColors.colorMain,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        )
-                      else
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              20, 8, 20, 100),
-                          child: Column(
-                            children: [
-                              for (final venue in venues)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      bottom: 14),
-                                  child: VenueCard(
-                                    venue: venue,
-                                    onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            VenueDetailPage(
-                                          venueId: venue.id,
+
+                          // ── All Venues List ──
+                          if (venues.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(40),
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 48,
+                                      color: isDark
+                                          ? Colors.grey[700]
+                                          : Colors.grey[300],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      l10n.noFavorites,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: isDark
+                                                ? Colors.grey[500]
+                                                : Colors.grey[500],
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                              child: Column(
+                                children: [
+                                  for (final venue in venues)
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 14),
+                                      child: VenueCard(
+                                        venue: venue,
+                                        onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => VenueDetailPage(
+                                              venueId: venue.id,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              if (paginatedState.isLoadingMore)
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 16),
-                                  child: Center(
-                                    child:
-                                        CircularProgressIndicator(),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      SizedBox(height: bottomScrollSpace),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
+                                  if (paginatedState.isLoadingMore)
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          SizedBox(height: bottomScrollSpace),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       ),
-    ),);
+    );
   }
 }
 
@@ -454,11 +439,13 @@ class _QuickAccessSection extends StatelessWidget {
   final bool isDark;
   final AppLocalizations l10n;
   final void Function(int) onTabSelected;
+  final VoidCallback onReserveTap;
 
   const _QuickAccessSection({
     required this.isDark,
     required this.l10n,
     required this.onTabSelected,
+    required this.onReserveTap,
   });
 
   @override
@@ -472,107 +459,115 @@ class _QuickAccessSection extends StatelessWidget {
     return Container(
       color: screenBg,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 16),
+        padding: const EdgeInsets.fromLTRB(
+          horizontalPadding,
+          0,
+          horizontalPadding,
+          16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          // Custom layout: left 65% (2 rows) | right 35% (full height)
-          SizedBox(
-            height: totalHeight,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            // Custom layout: left 65% (2 rows) | right 35% (full height)
+            SizedBox(
+              height: totalHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Left column: 65%, two stacked cards
+                  Expanded(
+                    flex: 60,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: _QuickCard(
+                            label: l10n.reserveOrBook,
+                            icon: Icons.event_available_rounded,
+                            onTap: onReserveTap,
+                            isDark: isDark,
+                          ),
+                        ),
+                        const SizedBox(height: spacing),
+                        Expanded(
+                          child: _QuickCard(
+                            label: l10n.newFacilities,
+                            icon: Icons.add_business_rounded,
+                            onTap: () {},
+                            isDark: isDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: spacing),
+                  // Right column: 35%, single full-height card
+                  Expanded(
+                    flex: 40,
+                    child: _QuickCard(
+                      label: l10n.sessions,
+                      icon: Icons.groups_rounded,
+                      onTap: () => onTabSelected(2),
+                      isDark: isDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // 4 small icon items in a row
+            Row(
               children: [
-                // Left column: 65%, two stacked cards
                 Expanded(
-                  flex: 60,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: _QuickCard(
-                          label: l10n.reserveOrBook,
-                          icon: Icons.event_available_rounded,
-                          onTap: () {},
-                          isDark: isDark,
-                        ),
-                      ),
-                      const SizedBox(height: spacing),
-                      Expanded(
-                        child: _QuickCard(
-                          label: l10n.newFacilities,
-                          icon: Icons.add_business_rounded,
-                          onTap: () {},
-                          isDark: isDark,
-                        ),
-                      ),
-                    ],
+                  child: _QuickIconItem(
+                    label: l10n.news,
+                    icon: Icons.campaign_rounded,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const NewsListPage()),
+                    ),
+                    isDark: isDark,
                   ),
                 ),
-                const SizedBox(width: spacing),
-                // Right column: 35%, single full-height card
                 Expanded(
-                  flex: 40,
-                  child: _QuickCard(
-                    label: l10n.sessions,
-                    icon: Icons.groups_rounded,
-                    onTap: () => onTabSelected(2),
+                  child: _QuickIconItem(
+                    label: l10n.promo,
+                    icon: Icons.local_offer_rounded,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const PromoVenuesPage()),
+                    ),
+                    isDark: isDark,
+                  ),
+                ),
+                Expanded(
+                  child: _QuickIconItem(
+                    label: l10n.placeYourFacility,
+                    icon: Icons.store_rounded,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PlaceFacilityPage(),
+                      ),
+                    ),
+                    isDark: isDark,
+                  ),
+                ),
+                Expanded(
+                  child: _QuickIconItem(
+                    label: l10n.guide,
+                    icon: Icons.help_outline_rounded,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const GuidePage()),
+                    ),
                     isDark: isDark,
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
-          // 4 small icon items in a row
-          Row(
-            children: [
-              Expanded(
-                child: _QuickIconItem(
-                  label: l10n.news,
-                  icon: Icons.campaign_rounded,
-                  onTap: () => _showPlaceholder(context, l10n.news),
-                  isDark: isDark,
-                ),
-              ),
-              Expanded(
-                child: _QuickIconItem(
-                  label: l10n.promo,
-                  icon: Icons.local_offer_rounded,
-                  onTap: () => _showPlaceholder(context, l10n.promo),
-                  isDark: isDark,
-                ),
-              ),
-              Expanded(
-                child: _QuickIconItem(
-                  label: l10n.placeYourFacility,
-                  icon: Icons.store_rounded,
-                  onTap: () => _showPlaceholder(context, l10n.placeYourFacility),
-                  isDark: isDark,
-                ),
-              ),
-              Expanded(
-                child: _QuickIconItem(
-                  label: l10n.guide,
-                  icon: Icons.help_outline_rounded,
-                  onTap: () => _showPlaceholder(context, l10n.guide),
-                  isDark: isDark,
-                ),
-              ),
-            ],
-          ),
           ],
         ),
       ),
     );
   }
 
-  void _showPlaceholder(BuildContext context, String label) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(label),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 }
 
 class _QuickCard extends StatelessWidget {
@@ -591,9 +586,7 @@ class _QuickCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = isDark ?? Theme.of(context).brightness == Brightness.dark;
-    final bgColor = dark
-        ? AppColors.darkSurface
-        : const Color(0xFFF5F7FA);
+    final bgColor = dark ? AppColors.darkSurface : const Color(0xFFF5F7FA);
     final textColor = dark ? Colors.white : Colors.grey.shade800;
     const iconColor = AppColors.colorMain;
 
@@ -631,7 +624,8 @@ class _QuickCard extends StatelessWidget {
                 ),
                 // ── Foreground content ──
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -671,9 +665,7 @@ class _QuickIconItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = isDark ?? Theme.of(context).brightness == Brightness.dark;
-    final bgColor = dark
-        ? AppColors.darkSurface
-        : const Color(0xFFF5F7FA);
+    final bgColor = dark ? AppColors.darkSurface : const Color(0xFFF5F7FA);
     final textColor = dark ? Colors.white70 : Colors.grey.shade700;
 
     return Material(
@@ -769,74 +761,72 @@ class _StickySearchBarDelegate extends SliverPersistentHeaderDelegate {
             right: _horizontalPadding,
             bottom: _verticalPadding,
           ),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F1923) : Colors.white,
-          boxShadow: [
-            if (overlapsContent)
-              BoxShadow(
-                color: Colors.black.withOpacity(shadowOpacity),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-          ],
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.grey[100],
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.search,
-                  color: isDark ? Colors.grey[400] : Colors.grey[500],
-                  size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: searchController,
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    hintText: l10n.searchFacilities,
-                    hintStyle: TextStyle(
-                        color: isDark ? Colors.grey[500] : Colors.grey[400],
-                        fontSize: 14),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    fillColor: Colors.transparent,
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onSubmitted: onSearchSubmitted,
+            color: isDark ? const Color(0xFF0F1923) : Colors.white,
+            boxShadow: [
+              if (overlapsContent)
+                BoxShadow(
+                  color: Colors.black.withOpacity(shadowOpacity),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: searchController,
-                builder: (context, value, _) {
-                  if (value.text.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return IconButton(
-                    onPressed: onClearSearch,
-                    tooltip: 'Clear',
-                    padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
-                    icon: Icon(
-                      Icons.close,
-                      size: 20,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                  );
-                },
-              ),
             ],
           ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search,
+                    color: isDark ? Colors.grey[400] : Colors.grey[500],
+                    size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      hintText: l10n.searchFacilities,
+                      hintStyle: TextStyle(
+                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                          fontSize: 14),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      fillColor: Colors.transparent,
+                      filled: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onSubmitted: onSearchSubmitted,
+                  ),
+                ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: searchController,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return IconButton(
+                      onPressed: onClearSearch,
+                      tooltip: 'Clear',
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 36, minHeight: 36),
+                      icon: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
       ),
     );
   }

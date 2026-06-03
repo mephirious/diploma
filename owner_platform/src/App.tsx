@@ -8,6 +8,7 @@ import { FacilityDetailPage } from '@/pages/FacilityDetailPage';
 import { ResourceDetailPage } from '@/pages/ResourceDetailPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { BookingsPage } from '@/pages/BookingsPage';
+import { SessionsPage } from '@/pages/SessionsPage';
 import { RevenuePage } from '@/pages/RevenuePage';
 import { ChatsPage } from '@/pages/ChatsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -42,6 +43,7 @@ export function App() {
               element={<ResourceDetailPage />}
             />
             <Route path="/bookings" element={<BookingsPage />} />
+            <Route path="/sessions" element={<SessionsPage />} />
             <Route path="/analytics" element={<RevenuePage />} />
             <Route path="/settings" element={<ComingSoonPage titleKey="nav.settings" />} />
             <Route path="/chats" element={<ChatsPage />} />

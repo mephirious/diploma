@@ -9,6 +9,12 @@ import '../../data/repositories/booking_repository.dart';
 const int _kBookingsPageSize = 30;
 const String _kBookingsSort = '-end_at';
 
+final upcomingReservationTypeProvider =
+    StateProvider<ReservationListType>((ref) => ReservationListType.all);
+
+final pastReservationTypeProvider =
+    StateProvider<ReservationListType>((ref) => ReservationListType.all);
+
 /// Current instant in UTC for booking list `from` / `to` filters (not start-of-day).
 DateTime utcNowForBookingListFilter() => DateTime.now().toUtc();
 
@@ -142,6 +148,7 @@ class UpcomingBookingsPagedNotifier extends Notifier<PaginatedBookingsState> {
     final boundary = utcNowForBookingListFilter();
     try {
       final repo = ref.read(bookingRepositoryProvider);
+      final type = ref.read(upcomingReservationTypeProvider);
       final result = await repo.listBookingsPaged(
         userId: userId,
         page: page,
@@ -149,11 +156,14 @@ class UpcomingBookingsPagedNotifier extends Notifier<PaginatedBookingsState> {
         listSort: _kBookingsSort,
         from: boundary,
         to: null,
+        type: type,
+        useReservationsEndpoint: true,
       );
 
-      final merged = append ? [...state.items, ...result.results] : result.results;
-      final stop = result.results.isEmpty ||
-          result.results.length < _kBookingsPageSize;
+      final merged =
+          append ? [...state.items, ...result.results] : result.results;
+      final stop =
+          result.results.isEmpty || result.results.length < _kBookingsPageSize;
       state = PaginatedBookingsState(
         items: merged,
         nextPageToFetch: page + 1,
@@ -226,6 +236,7 @@ class PastBookingsPagedNotifier extends Notifier<PaginatedBookingsState> {
     final boundary = utcNowForBookingListFilter();
     try {
       final repo = ref.read(bookingRepositoryProvider);
+      final type = ref.read(pastReservationTypeProvider);
       final result = await repo.listBookingsPaged(
         userId: userId,
         page: page,
@@ -233,11 +244,14 @@ class PastBookingsPagedNotifier extends Notifier<PaginatedBookingsState> {
         listSort: _kBookingsSort,
         from: null,
         to: boundary,
+        type: type,
+        useReservationsEndpoint: true,
       );
 
-      final merged = append ? [...state.items, ...result.results] : result.results;
-      final stop = result.results.isEmpty ||
-          result.results.length < _kBookingsPageSize;
+      final merged =
+          append ? [...state.items, ...result.results] : result.results;
+      final stop =
+          result.results.isEmpty || result.results.length < _kBookingsPageSize;
       state = PaginatedBookingsState(
         items: merged,
         nextPageToFetch: page + 1,

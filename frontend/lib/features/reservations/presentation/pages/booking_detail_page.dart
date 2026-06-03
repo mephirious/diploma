@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' show min;
 
 import 'package:flutter/material.dart';
@@ -10,11 +11,16 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/booking_model.dart';
+import '../../data/repositories/booking_repository.dart';
 import '../providers/reservations_provider.dart';
 import '../booking_labels.dart';
+import '../hold_countdown.dart';
 import '../../../venues/data/models/venue_model.dart';
 import '../../../venues/presentation/pages/booking_page.dart';
 import '../../../venues/presentation/providers/venue_provider.dart';
+import '../../../sessions/presentation/widgets/session_venue_info_block.dart';
+import '../../../payments/data/models/payment_intent_model.dart';
+import '../../../payments/data/repositories/payment_repository.dart';
 
 class BookingDetailPage extends ConsumerStatefulWidget {
   final String bookingId;
@@ -138,8 +144,7 @@ class _BookingDetailPageState extends ConsumerState<BookingDetailPage> {
               booking: booking,
               isDark: isDark,
               l10n: l10n,
-              onCancel: () =>
-                  _showCancelDialog(context, ref, booking.id, l10n),
+              onCancel: () => _showCancelDialog(context, ref, booking, l10n),
               onPay: (b, v) => _openPayment(context, b, v),
             ),
           );
@@ -151,9 +156,13 @@ class _BookingDetailPageState extends ConsumerState<BookingDetailPage> {
   void _showCancelDialog(
     BuildContext context,
     WidgetRef ref,
-    String id,
+    BookingModel booking,
     AppLocalizations l10n,
   ) {
+    final isPaid = booking.paymentStatus?.toLowerCase() == 'paid';
+    final canRefund = isPaid &&
+        booking.paymentIntentId != null &&
+        booking.paymentIntentId!.isNotEmpty;
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -173,7 +182,8 @@ class _BookingDetailPageState extends ConsumerState<BookingDetailPage> {
             Text(l10n.cancelBooking),
           ],
         ),
-        content: Text(l10n.confirmCancel),
+        content:
+            Text(canRefund ? l10n.confirmCancelPaidRefund : l10n.confirmCancel),
         actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         actions: [
           TextButton(
@@ -183,18 +193,52 @@ class _BookingDetailPageState extends ConsumerState<BookingDetailPage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(cancelBookingProvider(id).future);
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.bookingCancelled),
-                    backgroundColor: AppColors.colorSuccess,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                );
+              try {
+                if (canRefund) {
+                  await ref.read(paymentRepositoryProvider).refundPayment(
+                        booking.paymentIntentId!,
+                        PaymentRefundRequest(
+                          reason: 'user_cancelled',
+                          idempotencyKey: 'refund_${booking.id}',
+                        ),
+                      );
+                }
+                await ref.read(bookingRepositoryProvider).cancelBooking(
+                      booking.id,
+                      BookingCancelRequest(
+                        reason: 'user_cancelled',
+                        refundRequested: canRefund,
+                        idempotencyKey: 'cancel_${booking.id}',
+                      ),
+                    );
+                await ref.read(upcomingBookingsPagedProvider.notifier).reset();
+                await ref.read(pastBookingsPagedProvider.notifier).reset();
+                ref.invalidate(bookingByIdProvider(booking.id));
+                ref.invalidate(venueScheduleResultProvider(booking.venueId));
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(canRefund
+                          ? l10n.bookingCancelledRefundRequested
+                          : l10n.bookingCancelled),
+                      backgroundColor: AppColors.colorSuccess,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.bookingCancelFailed('$e')),
+                      backgroundColor: AppColors.colorError,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(
@@ -373,12 +417,24 @@ class _BookingDetailScrollView extends ConsumerWidget {
     final resource = resourceAsync.valueOrNull;
     final venue = venueAsync.valueOrNull;
 
-    final heroName = resource?.displayName ??
-        venue?.name ??
-        l10n.bookingFallbackTitle;
-    final imageUrl = resource?.images.isNotEmpty == true
-        ? resource!.images.first
-        : (venue?.images.isNotEmpty == true ? venue!.images.first : null);
+    final heroName = booking.isSession
+        ? ((booking.name?.trim().isNotEmpty ?? false)
+            ? booking.name!.trim()
+            : resource?.displayName ?? l10n.bookingFallbackTitle)
+        : resource?.displayName ??
+            venue?.name ??
+            l10n.bookingFallbackTitle;
+    final imageUrl = booking.isSession
+        ? (resource?.images.isNotEmpty == true ? resource!.images.first : null)
+        : (resource?.images.isNotEmpty == true
+            ? resource!.images.first
+            : (venue?.images.isNotEmpty == true ? venue!.images.first : null));
+    final resourceSubtitle = booking.isSession &&
+            resource != null &&
+            resource.displayName.trim().isNotEmpty &&
+            resource.displayName.trim() != heroName
+        ? resource.displayName.trim()
+        : null;
 
     final sub =
         isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
@@ -458,6 +514,22 @@ class _BookingDetailScrollView extends ConsumerWidget {
                           ],
                         ),
                       ),
+                      if (resourceSubtitle != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          resourceSubtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            shadows: const [
+                              Shadow(blurRadius: 12, color: Colors.black54),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 10),
                       _StatusChip(status: booking.status, l10n: l10n),
                     ],
@@ -488,7 +560,19 @@ class _BookingDetailScrollView extends ConsumerWidget {
                     // ── Quick summary row ────────────────────────────
                     _QuickSummaryRow(booking: booking, l10n: l10n, sub: sub),
 
-                    if (venue != null &&
+                    if (booking.isSession &&
+                        venue != null &&
+                        (venue.name.trim().isNotEmpty ||
+                            venue.address.trim().isNotEmpty)) ...[
+                      const SizedBox(height: 24),
+                      _SectionHeader(title: l10n.location, sub: sub),
+                      const SizedBox(height: 12),
+                      SessionVenueInfoBlock(
+                        venueName: venue.name,
+                        venueAddress: venue.address,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ] else if (venue != null &&
                         (venue.address.trim().isNotEmpty ||
                             _venueHasAnyContact(venue))) ...[
                       const SizedBox(height: 24),
@@ -585,19 +669,20 @@ class _BookingDetailScrollView extends ConsumerWidget {
                                   l10n, booking.paymentStatus!),
                               primary: primary,
                               sub: sub,
-                              trailing: _PaymentDot(
-                                  status: booking.paymentStatus!),
+                              trailing:
+                                  _PaymentDot(status: booking.paymentStatus!),
                             ),
                           ],
                           if (booking.holdExpiresAt != null) ...[
                             _ThinDivider(isDark: isDark),
-                            _DetailRow(
-                              icon: Icons.timer_outlined,
-                              label: l10n.holdExpiresLabel,
-                              value: DateFormat('MMM d, HH:mm')
-                                  .format(booking.holdExpiresAt!.toLocal()),
+                            _HoldCountdownRow(
+                              bookingId: booking.id,
+                              holdExpiresAt: booking.holdExpiresAt!,
+                              isActive: booking.status == 'created' &&
+                                  booking.needsPaymentCompletion,
                               primary: primary,
                               sub: sub,
+                              l10n: l10n,
                             ),
                           ],
                           if (booking.needsPaymentCompletion) ...[
@@ -609,13 +694,14 @@ class _BookingDetailScrollView extends ConsumerWidget {
                                 onPressed: venue != null
                                     ? () => onPay(booking, venue!)
                                     : null,
-                                icon: const Icon(Icons.payment_rounded, size: 20),
+                                icon:
+                                    const Icon(Icons.payment_rounded, size: 20),
                                 label: Text(l10n.payNowLabel),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.colorMain,
                                   foregroundColor: Colors.white,
-                                  disabledBackgroundColor:
-                                      AppColors.colorMain.withValues(alpha: 0.4),
+                                  disabledBackgroundColor: AppColors.colorMain
+                                      .withValues(alpha: 0.4),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
                                   ),
@@ -750,7 +836,6 @@ class _BookingDetailScrollView extends ConsumerWidget {
     if (c != null && c.isNotEmpty) return c;
     return '₸';
   }
-
 }
 
 // ---------------------------------------------------------------------------
@@ -891,25 +976,25 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final (Color bg, Color fg) = switch (status.toLowerCase()) {
       'confirmed' || 'active' => (
-        const Color(0xFF16A34A),
-        Colors.white,
-      ),
+          const Color(0xFF16A34A),
+          Colors.white,
+        ),
       'created' || 'pending' || 'hold' => (
-        const Color(0xFFF59E0B),
-        const Color(0xFF1C1917),
-      ),
+          const Color(0xFFF59E0B),
+          const Color(0xFF1C1917),
+        ),
       'cancelled' => (
-        AppColors.colorError,
-        Colors.white,
-      ),
+          AppColors.colorError,
+          Colors.white,
+        ),
       'completed' => (
-        const Color(0xFF6366F1),
-        Colors.white,
-      ),
+          const Color(0xFF6366F1),
+          Colors.white,
+        ),
       _ => (
-        Colors.white.withValues(alpha: 0.25),
-        Colors.white,
-      ),
+          Colors.white.withValues(alpha: 0.25),
+          Colors.white,
+        ),
     };
 
     return Container(
@@ -1033,6 +1118,86 @@ class _InfoCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Detail row (replaces the old _Tile)
 // ---------------------------------------------------------------------------
+class _HoldCountdownRow extends ConsumerStatefulWidget {
+  final String bookingId;
+  final DateTime holdExpiresAt;
+  final bool isActive;
+  final Color primary;
+  final Color sub;
+  final AppLocalizations l10n;
+
+  const _HoldCountdownRow({
+    required this.bookingId,
+    required this.holdExpiresAt,
+    required this.isActive,
+    required this.primary,
+    required this.sub,
+    required this.l10n,
+  });
+
+  @override
+  ConsumerState<_HoldCountdownRow> createState() => _HoldCountdownRowState();
+}
+
+class _HoldCountdownRowState extends ConsumerState<_HoldCountdownRow> {
+  Timer? _timer;
+  Duration _remaining = Duration.zero;
+  bool _refreshedAfterExpiry = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  @override
+  void didUpdateWidget(covariant _HoldCountdownRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.holdExpiresAt != widget.holdExpiresAt) {
+      _refreshedAfterExpiry = false;
+      _tick();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _tick() {
+    final next = widget.holdExpiresAt.toLocal().difference(DateTime.now());
+    if (!mounted) return;
+    setState(() {
+      _remaining = next.isNegative ? Duration.zero : next;
+    });
+    if (widget.isActive && next <= Duration.zero && !_refreshedAfterExpiry) {
+      _refreshedAfterExpiry = true;
+      ref.invalidate(bookingByIdProvider(widget.bookingId));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final urgent = widget.isActive && _remaining <= const Duration(minutes: 5);
+    final expired = widget.isActive && _remaining == Duration.zero;
+    final value = widget.isActive
+        ? (expired
+            ? widget.l10n.holdExpiredNow
+            : widget.l10n.holdCountdown(formatHoldCountdown(_remaining)))
+        : DateFormat('MMM d, HH:mm').format(widget.holdExpiresAt.toLocal());
+    return _DetailRow(
+      icon: Icons.timer_outlined,
+      label: widget.l10n.holdExpiresLabel,
+      value: value,
+      primary: urgent ? AppColors.colorError : widget.primary,
+      sub: urgent ? AppColors.colorError : widget.sub,
+      valueBold: urgent,
+    );
+  }
+}
+
 class _DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1202,7 +1367,8 @@ void _showVenueContactsSidePanel(
           child: Material(
             elevation: 24,
             color: isDark ? AppColors.darkSurface : Colors.white,
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(22)),
+            borderRadius:
+                const BorderRadius.horizontal(left: Radius.circular(22)),
             child: SizedBox(
               width: min(w * 0.92, 420),
               height: h,
@@ -1335,7 +1501,8 @@ class _VenueContactsSlideBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary =
         isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final sub = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final sub =
+        isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
     final items = venue.contacts
         .where((c) => c.hasPhone || c.hasEmail || c.hasLink)
         .toList();
@@ -1422,12 +1589,15 @@ class _VenueContactTile extends StatelessWidget {
       return _ContactCard(
         icon: Icons.phone_in_talk_rounded,
         iconBg: const Color(0xFF0D9488),
-        title: contact.label.isNotEmpty ? contact.label : l10n.contactTypePhoneDefault,
+        title: contact.label.isNotEmpty
+            ? contact.label
+            : l10n.contactTypePhoneDefault,
         subtitle: contact.phone!,
         primary: primary,
         sub: sub,
         onTap: () async {
-          final uri = Uri.parse('tel:${_normalizePhoneForDial(contact.phone!)}');
+          final uri =
+              Uri.parse('tel:${_normalizePhoneForDial(contact.phone!)}');
           if (await canLaunchUrl(uri)) await launchUrl(uri);
         },
       );
@@ -1436,7 +1606,9 @@ class _VenueContactTile extends StatelessWidget {
       return _ContactCard(
         icon: Icons.email_rounded,
         iconBg: const Color(0xFF2563EB),
-        title: contact.label.isNotEmpty ? contact.label : l10n.contactTypeEmailDefault,
+        title: contact.label.isNotEmpty
+            ? contact.label
+            : l10n.contactTypeEmailDefault,
         subtitle: contact.email!,
         primary: primary,
         sub: sub,
@@ -1452,7 +1624,9 @@ class _VenueContactTile extends StatelessWidget {
       return _ContactCard(
         icon: Icons.language_rounded,
         iconBg: const Color(0xFF7C3AED),
-        title: contact.label.isNotEmpty ? contact.label : l10n.contactTypeWebsiteDefault,
+        title: contact.label.isNotEmpty
+            ? contact.label
+            : l10n.contactTypeWebsiteDefault,
         subtitle: display,
         primary: primary,
         sub: sub,

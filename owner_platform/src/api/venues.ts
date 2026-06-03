@@ -27,6 +27,13 @@ export interface VenueCreatePayload {
   location?: { lat: number; lng: number };
 }
 
+export type VenueContactPayload = {
+  description: string;
+  phone?: string;
+  email?: string;
+  link?: string;
+};
+
 export type ResourceCreatePayload = Partial<{
   venue_id: string;
   name: string;
@@ -100,6 +107,15 @@ export const venueApi = {
     api.put(`/venue/v1/venues/${id}`, data).then((r) => r.data),
 
   delete: (id: string) => api.delete(`/venue/v1/venues/${id}`),
+
+  contacts: {
+    create: (venueId: string, contact: VenueContactPayload) =>
+      api.post(`/venue/v1/venues/${venueId}/contacts`, contact).then((r) => r.data),
+    update: (venueId: string, index: number, contact: VenueContactPayload) =>
+      api.put(`/venue/v1/venues/${venueId}/contacts/${index}`, contact).then((r) => r.data),
+    delete: (venueId: string, index: number) =>
+      api.delete(`/venue/v1/venues/${venueId}/contacts/${index}`).then((r) => r.data),
+  },
 
   resources: {
     list: (venueId: string) =>

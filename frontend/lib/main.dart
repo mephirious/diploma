@@ -16,9 +16,10 @@ void main() async {
 
   try {
     await dotenv.load(fileName: '.env');
+    debugPrint('API_BASE_URL=${dotenv.env['API_BASE_URL']}');
+    debugPrint('CHAT_WS_URL=${dotenv.env['CHAT_WS_URL']}');
   } catch (e) {
-    // .env file is optional for MVP with mock data
-    debugPrint('No .env file found, using defaults');
+    debugPrint('Failed to load .env: $e');
   }
 
   runApp(

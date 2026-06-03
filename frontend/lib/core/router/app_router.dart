@@ -6,6 +6,8 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/venues/presentation/pages/venues_list_page.dart';
 import '../../features/venues/presentation/pages/venue_detail_page.dart';
+import '../../features/news/presentation/pages/news_detail_page.dart';
+import '../../features/news/presentation/pages/news_list_page.dart';
 import '../../features/sessions/presentation/pages/sessions_list_page.dart';
 import '../../features/reservations/presentation/pages/reservations_list_page.dart';
 import '../../features/reservations/presentation/pages/booking_detail_page.dart';
@@ -52,6 +54,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return VenueDetailPage(venueId: id);
+        },
+      ),
+      GoRoute(
+        path: '/news',
+        builder: (context, state) => const NewsListPage(),
+      ),
+      GoRoute(
+        path: '/news/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return NewsDetailPage(newsId: id);
         },
       ),
       GoRoute(

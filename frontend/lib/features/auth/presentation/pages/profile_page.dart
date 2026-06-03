@@ -220,17 +220,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                     subtitle: user?.email ?? '',
                                     isDark: isDark,
                                   ),
-                                  Divider(
-                                      height: 1,
-                                      color:
-                                          isDark ? Colors.grey[800] : Colors.grey[200]),
-                                  _profileListTile(
-                                    context,
-                                    icon: Icons.phone_outlined,
-                                    title: l10n.phone,
-                                    subtitle: user?.phone ?? '',
-                                    isDark: isDark,
-                                  ),
+                                  if (user?.phone?.isNotEmpty == true) ...[
+                                    Divider(
+                                        height: 1,
+                                        color: isDark
+                                            ? Colors.grey[800]
+                                            : Colors.grey[200]),
+                                    _profileListTile(
+                                      context,
+                                      icon: Icons.phone_outlined,
+                                      title: l10n.phone,
+                                      subtitle: user!.phone!,
+                                      isDark: isDark,
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),

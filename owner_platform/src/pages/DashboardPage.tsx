@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import {
   BookOpenCheck,
   Wallet,
   Building2,
   ChevronRight,
-  Plus,
   CalendarClock,
   BadgePercent,
   CheckCircle2,
+  RotateCcw,
 } from 'lucide-react';
 
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
@@ -30,12 +30,13 @@ import { useMyVenues } from '@/hooks/useVenues';
 import { useGuestDirectory } from '@/hooks/useBookings';
 import { useOwnerDashboard } from '@/hooks/useOwnerDashboard';
 import type { ApiBooking } from '@/types/booking';
+import { venueApi } from '@/api/venues';
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation();
   const user = useAuth((s) => s.user);
   const { data: venueData } = useMyVenues();
-  const venues = venueData?.results ?? [];
+  const venues = (venueData?.results ?? []) as { id: string; name?: string; images?: string[]; city?: string; country?: string; status?: 'active' | 'draft' | 'suspended' | 'inactive' | 'maintenance' }[];
   const venueIds = useMemo(() => venues.map((v: { id: string }) => v.id).filter(Boolean), [venues]);
 
   const venueNameById = useMemo(() => {
@@ -45,6 +46,26 @@ export function DashboardPage() {
     }
     return m;
   }, [venues]);
+
+  const resourceQueries = useQueries({
+    queries: venueIds.map((venueId) => ({
+      queryKey: ['venues', venueId, 'resources'],
+      queryFn: () => venueApi.resources.list(venueId),
+      enabled: !!venueId,
+      staleTime: 120_000,
+    })),
+  });
+
+  const resourceNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const q of resourceQueries) {
+      const data = q.data as { results?: { id: string; name?: string }[] } | undefined;
+      for (const r of data?.results ?? []) {
+        m.set(r.id, r.name ?? r.id);
+      }
+    }
+    return m;
+  }, [resourceQueries]);
 
   const { data: dash, isLoading: dashLoading } = useOwnerDashboard(7);
 
@@ -56,6 +77,7 @@ export function DashboardPage() {
     return daily.map((d) => ({
       label: formatShortDayFromIsoDate(d.day, i18n.language),
       revenue: d.owner_net_minor,
+      refunds: d.owner_refund_minor ?? 0,
       bookings: d.payment_count,
     }));
   }, [rev?.daily, i18n.language]);
@@ -91,14 +113,14 @@ export function DashboardPage() {
         subtitle={t('dashboard.subtitle')}
         actions={
           <Link to="/facilities">
-            <Button leftIcon={<Plus size={16} />}>
-              {t('dashboard.actionAddFacility')}
+            <Button leftIcon={<Building2 size={16} />}>
+              {t('dashboard.actionManageVenues')}
             </Button>
           </Link>
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           icon={<BookOpenCheck size={20} />}
           label={t('dashboard.statBookingsToday')}
@@ -116,6 +138,16 @@ export function DashboardPage() {
           }
           delta={dash?.revenue_today_delta}
           accent="success"
+        />
+        <StatCard
+          icon={<RotateCcw size={20} />}
+          label={t('dashboard.statRefundsToday')}
+          value={
+            dashLoading
+              ? '—'
+              : formatPrice(rev?.today.owner_refund_minor ?? 0, currency)
+          }
+          accent="danger"
         />
         <StatCard
           icon={<CheckCircle2 size={20} />}
@@ -170,8 +202,8 @@ export function DashboardPage() {
           </CardHeader>
           <CardBody className="space-y-3">
             <QuickAction
-              icon={<Plus size={18} />}
-              label={t('dashboard.actionAddFacility')}
+              icon={<Building2 size={18} />}
+              label={t('dashboard.actionManageVenues')}
               to="/facilities"
               tone="brand"
             />
@@ -219,6 +251,7 @@ export function DashboardPage() {
                     key={b.id}
                     booking={b}
                     venueName={venueNameById.get(b.venue_id) ?? b.venue_id}
+                    resourceName={resourceNameById.get(b.resource_id) ?? b.resource_id}
                     guestLabel={guestById[b.user_id]?.displayName ?? '—'}
                   />
                 ))}
@@ -289,10 +322,12 @@ export function DashboardPage() {
 function BookingRow({
   booking,
   venueName,
+  resourceName,
   guestLabel,
 }: {
   booking: ApiBooking;
   venueName: string;
+  resourceName: string;
   guestLabel: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -313,9 +348,6 @@ function BookingRow({
           ? 'danger'
           : 'neutral';
 
-  const resourceShort =
-    booking.resource_id.length > 10 ? `${booking.resource_id.slice(0, 8)}…` : booking.resource_id;
-
   return (
     <div className="flex items-center gap-3 py-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">
@@ -332,7 +364,7 @@ function BookingRow({
           </span>
         </div>
         <div className="mt-0.5 truncate text-xs text-muted-light dark:text-muted-dark">
-          {venueName} · {resourceShort}
+          {venueName} · {resourceName}
         </div>
       </div>
       <div className="hidden sm:block text-right">

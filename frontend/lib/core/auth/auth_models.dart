@@ -33,7 +33,7 @@ class AuthUser {
     required this.exp,
   });
 
-  bool get isOwner => roles.contains('core:admin');
+  bool get isOwner => roles.contains('owner') || roles.contains('core:admin');
   bool get isAuthenticated => exp > DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
   String get fullName {
@@ -95,7 +95,7 @@ class AuthUser {
     }
 
     final realmAccess = payload['realm_access'];
-    final rolesRaw = realmAccess is Map ? realmAccess['roles'] : null;
+    final rolesRaw = realmAccess is Map ? realmAccess['roles'] : payload['roles'];
     final roles = rolesRaw is List
         ? rolesRaw.map((e) => e.toString()).toList(growable: false)
         : const <String>[];

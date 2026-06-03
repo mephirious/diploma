@@ -1,7 +1,6 @@
 {
   "@@locale": "kk",
   "appTitle": "ZhamSpace",
-  
   "home": "Басты бет",
   "explore": "Шолу",
   "favorites": "Таңдаулылар",
@@ -11,7 +10,6 @@
   "chats": "Чаттар",
   "facilitiesTab": "Алаңдар",
   "bookingsTab": "Брондар",
-  
   "searchFacilities": "Спорт залдарды, парктарды іздеу",
   "allCategories": "Барлық санаттар",
   "football": "Футбол",
@@ -22,16 +20,30 @@
   "volleyball": "Волейбол",
   "badminton": "Бадминтон",
   "tabletennis": "Үстел теннисі",
-  
+  "ice_hockey": "Хоккей",
+  "judo": "Дзюдо",
+  "chess": "Шахмат",
+  "boxing": "Бокс",
+  "mma": "ММА",
+  "athletics": "Жеңіл атлетика",
+  "handball": "Гандбол",
+  "futsal": "Футзал",
+  "golf": "Гольф",
+  "climbing": "Тауға өрмелу",
+  "yoga": "Йога",
+  "pilates": "Пилатес",
+  "crossfit": "Кроссфит",
+  "cycling": "Велоспорт",
+  "running": "Жүгіру",
+  "esports": "Киберспорт",
+  "other": "Өзге",
   "popularVenues": "Танымал алаңдар",
   "nearYou": "Сізге жақын",
   "topRated": "Ең жақсылар",
   "seeAll": "Барлығын көру",
-  
   "perHour": "сағатына",
   "rating": "Рейтинг",
   "reviews": "{count} пікір",
-  
   "bookNow": "Брондау",
   "viewDetails": "Толығырақ",
   "openNow": "Ашық",
@@ -39,7 +51,6 @@
   "availableToday": "Бүгін қолжетімді",
   "fromPrice": "{price}₸-ден",
   "kmAway": "{km} км",
-  
   "about": "Сипаттама",
   "venueDescriptionTab": "Сипаттама",
   "venueContactInfoTab": "Байланыс",
@@ -48,13 +59,11 @@
   "availability": "Қолжетімділік",
   "location": "Орналасқан жері",
   "reviewsTitle": "Пікірлер",
-  
   "selectDate": "Күнді таңдаңыз",
   "selectTime": "Уақытты таңдаңыз",
   "duration": "Ұзақтығы",
   "hours": "сағат",
   "hour": "сағат",
-  
   "available": "Қолжетімді",
   "booked": "Брондалған",
   "unavailable": "Қолжетімсіз",
@@ -79,7 +88,6 @@
       }
     }
   },
-  
   "bookingDetails": "Брондау мәліметтері",
   "bookingNotFound": "Брон табылмады",
   "facility": "Алаң",
@@ -87,7 +95,6 @@
   "time": "Уақыты",
   "totalPrice": "Жалпы құны",
   "proceedToPayment": "Төлемге өту",
-  
   "payment": "Төлем",
   "paymentMethod": "Төлем әдісі",
   "creditCard": "Несие картасы",
@@ -109,23 +116,19 @@
   "addNewCard": "Жаңа карта қосу",
   "otherBankCards": "Банк картасы",
   "selectCard": "Картаны таңдаңыз",
-  
   "bookingConfirmed": "Брондау расталды!",
   "bookingSuccess": "Сіздің брондауыңыз расталды. Толық ақпаратты email-ден қараңыз.",
   "viewBooking": "Брондауды көру",
   "backToHome": "Басты бетке",
-  
   "upcomingBookings": "Келешектегі",
   "pastBookings": "Өткен",
   "noBookings": "Брондау жоқ",
   "startBooking": "Зерттеуді бастаңыз және алғашқы алаңыңызды брондаңыз!",
-  
   "cancelBooking": "Брондауды болдырмау",
   "confirmCancel": "Бұл брондауды болдырмағыңыз келетініне сенімдісіз бе?",
   "yes": "Иә",
   "no": "Жоқ",
   "bookingCancelled": "Брондау сәтті болдырылды",
-  
   "myProfile": "Менің профилім",
   "editProfile": "Профильді өңдеу",
   "settings": "Баптаулар",
@@ -134,26 +137,21 @@
   "lightMode": "Ашық тақырып",
   "darkMode": "Қараңғы тақырып",
   "systemDefault": "Жүйелік",
-  
   "english": "English",
   "russian": "Русский",
   "kazakh": "Қазақша",
-  
   "myFavorites": "Менің таңдаулыларым",
   "noFavorites": "Таңдаулылар жоқ",
   "addFavorites": "Алаңдарды таңдаулыларға қосыңыз, оларды мұнда көру үшін",
   "myBookings": "Менің брондарым",
-  
   "personalInfo": "Жеке ақпарат",
   "fullName": "Толық аты-жөні",
   "email": "Email",
   "phone": "Телефон номері",
   "save": "Сақтау",
   "cancel": "Болдырмау",
-  
   "logout": "Шығу",
   "confirmLogout": "Шығуға сенімдісіз бе?",
-  
   "login": "Кіру",
   "register": "Тіркелу",
   "password": "Құпия сөз",
@@ -164,29 +162,23 @@
   "signUp": "Тіркелу",
   "signIn": "Кіру",
   "authRequiredHint": "Осы мүмкіндікті пайдалану үшін тіркеліңіз немесе кіріңіз.",
-  
   "notifications": "Хабарландырулар",
   "notificationsEnabled": "Push-хабарландырулар",
   "emailNotifications": "Email хабарландырулар",
-  
   "helpSupport": "Көмек және қолдау",
   "termsConditions": "Пайдалану шарттары",
   "privacyPolicy": "Құпиялылық саясаты",
   "aboutUs": "Біз туралы",
-  
   "version": "Нұсқа",
-  
   "filterByPrice": "Бағасы бойынша сүзгі",
   "priceRange": "Баға диапазоны",
   "applyFilters": "Сүзгілерді қолдану",
   "clearFilters": "Сүзгілерді тазарту",
-  
   "sortBy": "Сұрыптау",
   "priceLowest": "Баға: өсу бойынша",
   "priceHighest": "Баға: кему бойынша",
   "ratingHighest": "Жоғары рейтингті",
   "nearest": "Маған ең жақын",
-  
   "openingHours": "Жұмыс уақыты",
   "amenities": "Қолайлылықтар",
   "parking": "Паркинг",
@@ -195,11 +187,9 @@
   "equipment": "Жабдықты жалға алу",
   "wifi": "Тегін WiFi",
   "cafeteria": "Кафе",
-  
   "getDirections": "Бағыт алу",
   "call": "Қоңырау шалу",
   "share": "Бөлісу",
-
   "now": "Қазір",
   "today": "Бүгін",
   "pickDate": "Күні",
@@ -219,12 +209,17 @@
   "pricePerPerson": "Адамға баға",
   "spotsAvailable": "Бос орындар",
   "joinedSuccessfully": "Сіз сессияға қосылдыңыз!",
+  "joinedLabel": "Қосылған",
+  "sessionFull": "Орын жоқ",
+  "sessionLocked": "Тіркелу жабық",
+  "joinLoginRequired": "Сессияға қосылу үшін кіріңіз",
+  "leftSessionSuccessfully": "Сіз сессиядан шықтыңыз",
+  "leaveSessionConfirm": "Сессиядан шығыңыз келетініне сенімдісіз бе?",
   "leaveSession": "Сессиядан шығу",
   "noSessions": "Қолжетімді сессиялар жоқ",
   "findSessions": "Жақында ашық сессияларды кейін қараңыз",
   "live": "LIVE",
   "playersCount": "{current}/{max}",
-
   "allChats": "Барлығы",
   "venueChats": "Спорт залдары",
   "sessionGroups": "Сессиялар",
@@ -239,25 +234,21 @@
   "membersCount": "{count} мүше",
   "justNow": "Жаңа ғана",
   "minutesAgo": "{count} мин. бұрын",
-
   "reserveOrBook": "Брондау",
   "newFacilities": "Жаңа алаңдар",
   "news": "Жаңалықтар",
   "promo": "Акциялар",
   "placeYourFacility": "Алаң қосу",
   "guide": "Нұсқаулық",
-
   "price": "Бағасы",
   "distance": "Қашықтық",
   "book": "Брондау",
   "confirmed": "Расталды",
   "completed": "Аяқталды",
   "cancelled": "Болдырмалды",
-
   "manageTab": "Басқару",
   "dashboardTab": "Панель",
   "analyticsTab": "Табыс",
-
   "ownerHubTitle": "Ие кабинеті",
   "ownerHubSubtitle": "Алаңдар, броньдар және өсімді бір жерден басқарыңыз",
   "ownerFacilityHint": "Жүктемені арттыру үшін кестені үнемі жаңартып, сессия шаблондарын толық толтырыңыз.",
@@ -270,13 +261,11 @@
   "statusSuspended": "Тоқтатылған",
   "profileCompletion": "Профиль толықтығы",
   "occupancyRate": "Жүктелу деңгейі",
-
   "bookingsDashboard": "Бронь панелі",
   "incomingRequests": "Кіріс",
   "upcomingSessionsTitle": "Алдағылар",
   "pastSessionsTitle": "Өткендер",
   "cancellationsTitle": "Бас тартулар",
-
   "revenueAnalytics": "Табыс және аналитика",
   "daily": "Күндік",
   "weekly": "Апталық",
@@ -284,19 +273,16 @@
   "payouts": "Төлемдер",
   "occupancyByFacility": "Алаң бойынша жүктелу",
   "popularSlotsHeatmap": "Танымал уақыт слоттарының heatmap-ы",
-
   "bookingChats": "Брондаушылар",
   "ownerPublicProfile": "Иенің ашық профилі",
   "hostReviews": "Хост пікірлері",
   "responseRate": "Жауап беру деңгейі",
   "memberSince": "Мүше болған жыл",
-
   "roleTestSwitch": "Рөлді тест ауыстырғыш",
   "roleCustomer": "Қолданушы",
   "roleFacilityOwner": "Алаң иесі",
   "switchToOwnerPrompt": "Алаң иесі режиміне ауысып, owner-интерфейсті көру керек пе?",
   "switchToCustomerPrompt": "Қолданушы режиміне қайта ауысып, маркетплейс интерфейсіне оралу керек пе?",
-
   "retry": "Қайталау",
   "reservationsAuthDescription": "Броньдарды басқару үшін кіріңіз немесе тіркеліңіз.",
   "bookingFallbackTitle": "Бронь",
@@ -352,9 +338,137 @@
   "cancelReasonHoldExpired": "Бронь ұстау мерзімі аяқталды",
   "cancelReasonAdminCancelled": "Орын иесі бас тартты",
   "cancelReasonRefunded": "Қайтаруға байланысты бас тартылды",
+  "cancelReasonMinimumNotMet": "Қатысушылар саны жеткіліксіз",
+  "cancelReasonOwnerCancelled": "Сессия ұйымдастырушысы бас тартты",
+  "cancelReasonSessionExpired": "Сессия басталмай аяқталды",
+  "cancelReasonHoldCreationFailed": "Уақытты броньдау мүмкін болмады",
   "paymentStatusPaid": "Төленді",
   "paymentStatusPending": "Күтуде",
   "paymentStatusHold": "Ұстауда",
   "paymentStatusFailed": "Сәтсіз",
-  "paymentStatusRefunded": "Қайтарылды"
+  "paymentStatusRefunded": "Қайтарылды",
+  "savedCardLocalOnlyNotice": "Сақталған карталар mock-төлем үшін тек осы құрылғыда сақталады. Банк токені жіберілмейді.",
+  "cardNumberInvalid": "Жарамды карта нөмірін енгізіңіз.",
+  "cardExpiryInvalid": "Болашақ жарамдылық мерзімін енгізіңіз.",
+  "cardCvvInvalid": "Жарамды CVV енгізіңіз.",
+  "cardDetailsInvalid": "Карта деректерін тексеріп, қайталап көріңіз.",
+  "slotJustBecameUnavailable": "Бұл уақыт енді қолжетімсіз. Басқа уақытты таңдаңыз.",
+  "holdCountdown": "{timeLeft} кейін аяқталады",
+  "@holdCountdown": {
+    "placeholders": {
+      "timeLeft": {
+        "type": "String"
+      }
+    }
+  },
+  "holdExpiredNow": "Бронь мерзімі аяқталды",
+  "confirmCancelPaidRefund": "Бұл бронь төленген. Бас тартқанда mock-қайтарым сұралады, содан кейін бронь тоқтатылады. Жалғастыру керек пе?",
+  "bookingCancelledRefundRequested": "Бронь тоқтатылды, қайтарым сұралды",
+  "bookingCancelFailed": "Броньды тоқтату мүмкін болмады: {error}",
+  "@bookingCancelFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "priceRangePerPerson": "{min}–{max} ₸ / адам",
+  "@priceRangePerPerson": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "priceQuotePerPerson": "{amount} ₸ / адам болжам",
+  "@priceQuotePerPerson": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "stablePricePerPerson": "{amount} ₸ / адам",
+  "@stablePricePerPerson": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "finalPriceLocksShort": "кейін бекітіледі",
+  "fixedSplitPriceDisclosure": "Fixed-split сессияларында адамға соңғы баға қатысушыларға байланысты және сессия толғанда немесе lock уақытында бекітіледі.",
+  "promoSectionTitle": "Қолжетімді акциялар",
+  "promoEnterCode": "Промокод бар ма?",
+  "promoCodeHint": "Кодты енгізіңіз",
+  "promoApply": "Қолдану",
+  "promoRemove": "Акцияны алып тастау",
+  "promoCodeInvalid": "Промокод жарамсыз",
+  "promoConditionsNotMet": "Брондау акция шарттарына сай келмейді",
+  "promoVenuesTitle": "Акциялары бар алаңдар",
+  "promoVenuesBannerTitle": "Арнайы ұсыныстар",
+  "promoVenuesBannerSubtitle": "Белсенді жеңілдіктері мен акциялары бар алаңдар",
+  "promoVenuesEmpty": "Белсенді акциялар жоқ",
+  "promoVenuesEmptySubtitle": "Қазір белсенді акциялары бар алаңдар жоқ. Кейінірек тексеріңіз!",
+  "subtotal": "Аралық сома",
+  "placeFacilityTitle": "Орынды орналастыру",
+  "placeFacilitySubtitle": "Спорт орныңызды ZhamSpace-те орналастырып, қалаңыздағы мыңдаған белсенді ойыншыларға жетіңіз.",
+  "facilityNameLabel": "Орын атауы",
+  "placeFacilityFullNameHint": "Толық атыңызды енгізіңіз",
+  "placeFacilityPhoneHint": "+7 (700) 000-00-00",
+  "placeFacilityNameHint": "мысалы, Arena Sport Club",
+  "placeFacilityContactButton": "Байланысу",
+  "placeFacilitySuccessTitle": "Сұраныс жіберілді!",
+  "placeFacilitySuccessMessage": "Рахмет! Орныңызды орналастыру туралы сөйлесу үшін жақын арада сізбен байланысамыз.",
+  "placeFacilityFullNameRequired": "Толық атыңызды енгізіңіз",
+  "placeFacilityPhoneRequired": "Телефон нөмірін енгізіңіз",
+  "placeFacilityPhoneInvalid": "Жарамды телефон нөмірін енгізіңіз",
+  "placeFacilityNameRequired": "Орын атауын енгізіңіз",
+  "placeFacilityCommentLabel": "Пікір",
+  "placeFacilityCommentHint": "Нысан, мекенжай немесе байланысуға ыңғайлы уақыт туралы жазыңыз",
+  "placeFacilityDocumentLabel": "Құжат",
+  "placeFacilityDocumentHint": "PDF немесе сурет тіркеңіз",
+  "placeFacilityDocumentAction": "Таңдау",
+  "placeFacilityDocumentRequired": "PDF немесе сурет тіркеңіз",
+  "placeFacilitySubmitError": "Өтінімді жіберу мүмкін болмады. Қайталап көріңіз.",
+  "placeFacilityMyRequestsTitle": "Менің өтінімдерім",
+  "placeFacilityMyRequestsEmpty": "Әзірге өтінім жоқ",
+  "placeFacilityLoadRequestsError": "Өтінімдеріңізді жүктеу мүмкін болмады.",
+  "placeFacilitySentAt": "Жіберілді",
+  "placeFacilityUpdatedAt": "Жаңартылды",
+  "venueRequestStatusCreated": "Құрылды",
+  "venueRequestStatusAwaiting": "Күтуде",
+  "venueRequestStatusReviewing": "Қаралуда",
+  "venueRequestStatusApproved": "Мақұлданды",
+  "venueRequestStatusCancelled": "Бас тартылды",
+  "venueRequestStatusApprovedMessage": "Сіздің өтініміңіз мақұлданды. Жақын арада сіздің алаңыңыз орналастырылады.",
+  "venueRequestStatusCreatedMessage": "Бұл өтінім бойынша алаң сәтті құрылды. Объектілерді иелер платформасында басқарыңыз.",
+  "venueRequestStatusRejectedMessage": "Сіздің өтініміңіз қабылданбады. Қосымша ақпарат үшін қолдау қызметіне хабарласыңыз.",
+  "guideTitle": "Нұсқаулық",
+  "guideBannerTitle": "ZhamSpace қалай жұмыс істейді",
+  "guideBannerSubtitle": "Іздеу, бронь және ойын үшін қажеттінің бәрі",
+  "guideSectionGettingStarted": "Бастау",
+  "guideSectionGettingStartedSubtitle": "Алаңдарды шолып, жақын спортты табыңыз",
+  "guideSectionBooking": "Бронь жасау",
+  "guideSectionBookingSubtitle": "Күн, уақыт таңдап, броньды растаңыз",
+  "guideSectionSessions": "Сессияларға қосылу",
+  "guideSectionSessionsSubtitle": "Ашық ойындарды табып, ойыншыларға қосылыңыз",
+  "guideSectionPayments": "Төлемдер және броньдар",
+  "guideSectionPaymentsSubtitle": "Қауіпсіз төлеңіз және броньдарды басқарыңыз",
+  "guideSectionProfile": "Профиль және таңдаулылар",
+  "guideSectionProfileSubtitle": "Алаңдарды сақтаңыз, баптаулар мен режимдер",
+  "guideSectionOwners": "Орын иелеріне",
+  "guideSectionOwnersSubtitle": "Орныңызды орналастырып, броньдарды басқарыңыз",
+  "guideSectionSupport": "Көмек және қолдау",
+  "guideSectionSupportSubtitle": "Жауаптар алу және командамен байланысу",
+  "guideContentGettingStarted": "Жақын спорт алаңдарын зерттеу үшін Басты бет вкладкасын ашыңыз. Іздеу жолағын пайдаланып, атау бойынша белсенділіктер, саябақтар немесе клубтарды табыңыз. Футбол, баскетбол, теннис және басқа санаттар бойынша сүзіңіз.\n\nФото, сипаттама, нысандар, баға және байланыс ақпаратын көру үшін алаң карточкасын басыңыз. Жылдам қол жеткізу үшін алаңдарды таңдаулыларға қосыңыз.",
+  "guideContentBooking": "Алаң бетінен нысанды таңдап, Қазір броньдау батырması басыңыз. Күнтізбеден күн мен бос уақытты таңдаңыз. Жалпы бағаны тексеріп, төлемге өтіңіз.\n\nБронь жасау үшін аккаунтқа кіру керек. Төлемнен кейін бронь Менің броньдарым бөлімінде пайда болады, онда детальдарды көруге немесе бас тартуға болады.",
+  "guideContentSessions": "Алаңдар немесе ойыншылар ұйымдастырған топтық белсенділіктерді табу үшін Сессиялар вкладкасына өтіңіз. Спорт, деңгей немесе күн бойынша сүзіңіз.\n\nДетальдарды — ұйымдастырушы, қатысушылар, адамға баға және бос орындарды көру үшін сессияны басыңыз. Кіріп, Сессияға қосылу батырması басыңыз. Басталмай тұрып сессиядан кетуге болады.",
+  "guideContentPayments": "ZhamSpace карта арқылы төлемді және Kaspi, Halyk Bank сияқты жергілікті опцияларды қолдайды. Сақталған карталар жылдам төлем үшін құрылғыда сақталады.\n\nБроньдан кейін Менің броньдарым бөлімінде статусты бақылаңыз — расталған, аяқталған немесе бас тартылған. Төленген броньдарды қайтарым сұраумен бас тартуға болады. Төлем уақытында аяқталмasa, бронь ұстау мерзімі аяқталады.",
+  "guideContentProfile": "Профиль вкладкасында жеке деректер, тіл және тема баптаулары бар. Жарық, қара немесе жүйелік тема арасында ауысыңыз. Ағылшын, орыс немесе қазақ тілін таңдаңыз.\n\nКез келген алаң карточкасынан таңдаулыларға сақтаңыз. Орын иелері профильден ие режиміне ауысып, алаңдарды, броньдарды және аналитиканы басқара алады.",
+  "guideContentOwners": "Орныңызды орналастырғыңыз келе ме? Басты беттен Орынды орналастыру батырması басып, байланыс деректерін жіберіңіз. Біздің команда қосу үшін сізбен байланысады.\n\nИе режимінде Owner Hub арқылы алаңдарды, кестені, кіріс сұраныстарын және кіріс аналитикасын басқарыңыз.",
+  "guideContentSupport": "Көмек керек пе? Бронь, төлем және сессиялар туралы жиі қойылатын сұрақтарға осы нұсқаулықтан жауап табыңыз.\n\nБасқа сұрақтар үшін Орынды орналастыру арқылы командамен байланысыңыз немесе алаң бетіндегі чат арқылы иеге хат жіберіңіз."
 }

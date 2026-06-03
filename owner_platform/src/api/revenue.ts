@@ -9,32 +9,48 @@ export type OwnerRevenueDashboard = {
   range_end: string;
   totals: {
     gross_minor: number;
+    refund_minor: number;
+    owner_refund_minor: number;
+    net_gross_minor: number;
     platform_minor: number;
     owner_net_minor: number;
     succeeded_count: number;
+    refund_count: number;
     failed_count: number;
     expired_count: number;
   };
   today: {
     gross_minor: number;
+    refund_minor: number;
+    owner_refund_minor: number;
+    net_gross_minor: number;
     platform_minor: number;
     owner_net_minor: number;
     succeeded_count: number;
+    refund_count: number;
   };
   daily: Array<{
     day: string;
     gross_minor: number;
+    refund_minor: number;
+    owner_refund_minor: number;
+    net_gross_minor: number;
     owner_net_minor: number;
     platform_minor: number;
     payment_count: number;
+    refund_count: number;
   }>;
   venues: Array<{
     venue_id: string;
     venue_name: string;
     gross_minor: number;
+    refund_minor: number;
+    owner_refund_minor: number;
+    net_gross_minor: number;
     owner_net_minor: number;
     platform_minor: number;
     payment_count: number;
+    refund_count: number;
   }> | null;
   recent: Array<{
     id: string;
@@ -42,9 +58,16 @@ export type OwnerRevenueDashboard = {
     venue_id: string;
     venue_name: string;
     amount_minor: number;
+    refund_minor: number;
+    owner_refund_minor: number;
+    status: string;
     currency: string;
     payment_method: string;
     succeeded_at: string;
+    refund_id?: string;
+    refunded_at?: string;
+    refund_reason?: string;
+    event_at: string;
     platform_minor: number;
     owner_net_minor: number;
   }> | null;

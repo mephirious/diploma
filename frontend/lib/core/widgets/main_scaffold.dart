@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
@@ -12,6 +14,7 @@ import '../../features/owner/presentation/pages/owner_analytics_page.dart';
 import '../../features/owner/presentation/pages/owner_bookings_page.dart';
 import '../../features/owner/presentation/pages/owner_home_page.dart';
 import '../../features/reservations/presentation/providers/reservations_provider.dart';
+import '../../features/sessions/presentation/providers/sessions_provider.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -62,6 +65,11 @@ class MainScaffold extends ConsumerWidget {
           ref.read(selectedIndexProvider.notifier).state = index;
           if (!isOwner && index == 1) {
             resetGuestBookingLists(ref);
+          }
+          if (!isOwner && index == 2) {
+            unawaited(
+              ref.read(sessionsListProvider.notifier).ensureLoaded(),
+            );
           }
         },
         destinations: [

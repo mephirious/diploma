@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_constants.dart';
 import '../storage/secure_storage.dart';
 import '../auth/auth_models.dart';
+import 'dio_setup.dart';
 
 class ApiClient {
   late final Dio _dio;
@@ -28,6 +29,7 @@ class ApiClient {
         },
       ),
     );
+    configureDioHttpClient(_dio);
 
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -90,6 +92,9 @@ class ApiClient {
 
             log(
               '✕ REQUEST ERROR [$method] $uri\n'
+              'Type: ${error.type}\n'
+              'Message: ${error.message}\n'
+              'Cause: ${error.error}\n'
               'Status: $statusCode\n'
               'Request headers: $headers\n'
               'Request data: ${stringify(error.requestOptions.data)}\n'

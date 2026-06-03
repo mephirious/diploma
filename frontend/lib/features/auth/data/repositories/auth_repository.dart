@@ -181,34 +181,31 @@ class AuthRepository {
       return null;
     })();
 
-    final fullName = fullNameFromNames ??
-        (data['full_name'] ??
-                data['fullName'] ??
-                data['username'] ??
-                data['preferred_username'])
-            ?.toString()
-            .trim() ??
+    final username = (data['username'] ?? data['preferred_username'])
+        ?.toString()
+        .trim() ??
         '';
 
-    if (fullName.isEmpty) {
-      // Ensure required `fullName` is never null/empty.
-      final fallback = (data['username'] ??
-              data['preferred_username'] ??
-              data['id'] ??
-              data['user_id'])?.toString();
-      if (fallback == null || fallback.isEmpty) {
-        throw FormatException('Missing user name in profile response');
-      }
+    final fullName = fullNameFromNames ??
+        (data['full_name'] ?? data['fullName'])?.toString().trim() ??
+        username;
+
+    final displayName = fullName.isNotEmpty
+        ? fullName
+        : (username.isNotEmpty
+            ? username
+            : (id.isNotEmpty ? id : null));
+
+    if (displayName == null || displayName.isEmpty) {
+      throw FormatException('Missing user name in profile response');
     }
 
     final phone = data['phone']?.toString();
 
     return UserModel(
-      id: id,
+      id: id.isNotEmpty ? id : displayName,
       email: email,
-      fullName: fullName.isEmpty
-          ? (data['username'] ?? data['preferred_username'] ?? id).toString()
-          : fullName,
+      fullName: displayName,
       phone: phone,
     );
   }

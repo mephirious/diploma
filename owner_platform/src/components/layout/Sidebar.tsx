@@ -8,6 +8,7 @@ import {
   MessageCircle,
   MessageCircleQuestion,
   LogOut,
+  UsersRound,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chat';
 import { useTranslation } from 'react-i18next';
@@ -19,14 +20,18 @@ import { cn } from '@/lib/cn';
 
 type Item = { to: string; labelKey: string; icon: typeof LayoutDashboard; comingSoon?: boolean };
 
-const primaryItems: Item[] = [
+const overviewItems: Item[] = [
   { to: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
-  { to: '/facilities', labelKey: 'nav.facilities', icon: Building2 },
-  { to: '/bookings', labelKey: 'nav.bookings', icon: CalendarClock },
   { to: '/analytics', labelKey: 'nav.analytics', icon: BarChart3 },
 ];
 
-const secondaryItems: Item[] = [
+const venuesItems: Item[] = [
+  { to: '/facilities', labelKey: 'nav.facilities', icon: Building2 },
+  { to: '/bookings', labelKey: 'nav.bookings', icon: CalendarClock },
+  { to: '/sessions', labelKey: 'nav.sessions', icon: UsersRound },
+];
+
+const supportItems: Item[] = [
   { to: '/chats', labelKey: 'nav.chats', icon: MessageCircle },
   { to: '/support', labelKey: 'nav.support', icon: MessageCircleQuestion, comingSoon: true },
 ];
@@ -59,11 +64,11 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-3 space-y-6 overflow-y-auto">
-        <SidebarSection items={primaryItems} />
+        <SidebarSection items={overviewItems} titleKey="nav.groupOverview" />
+        <SidebarSection items={venuesItems} titleKey="nav.groupVenues" />
         <SidebarSection
-          items={secondaryItems}
-          titleKey="common.more"
-          optional
+          items={supportItems}
+          titleKey="nav.groupSupport"
           badgeByPath={{ '/chats': chatUnread }}
         />
       </nav>
@@ -113,22 +118,18 @@ export function Sidebar() {
 function SidebarSection({
   items,
   titleKey,
-  optional,
   badgeByPath,
 }: {
   items: Item[];
-  titleKey?: string;
-  optional?: boolean;
+  titleKey: string;
   badgeByPath?: Record<string, number>;
 }) {
   const { t } = useTranslation();
   return (
     <div>
-      {titleKey ? (
-        <div className="mb-2 px-3 text-[11px] font-bold uppercase tracking-widest text-muted-light/80 dark:text-muted-dark/80">
-          {t(titleKey, { defaultValue: optional ? '' : titleKey })}
-        </div>
-      ) : null}
+      <div className="mb-2 px-3 text-[11px] font-bold uppercase tracking-widest text-muted-light/80 dark:text-muted-dark/80 leading-snug">
+        {t(titleKey)}
+      </div>
       <ul className="space-y-1">
         {items.map((item) => {
           const Icon = item.icon;

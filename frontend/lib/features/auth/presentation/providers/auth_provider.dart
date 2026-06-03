@@ -176,7 +176,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final tokens = await _repository.login(email, password);
       final authUser = AuthUser.fromAccessToken(tokens.accessToken);
-      final user = await _repository.getProfile();
+      UserModel user;
+      try {
+        user = await _repository.getProfile();
+      } catch (_) {
+        if (authUser.sub.isEmpty) rethrow;
+        user = UserModel(
+          id: authUser.sub,
+          email: authUser.email,
+          fullName: authUser.fullName.isNotEmpty
+              ? authUser.fullName
+              : authUser.username,
+        );
+      }
 
       state = state.copyWith(
         status: AuthStatus.authenticated,

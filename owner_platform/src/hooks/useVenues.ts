@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { venueApi, type VenueCreatePayload } from '@/api/venues';
+import { venueApi, type VenueContactPayload, type VenueCreatePayload } from '@/api/venues';
 import { useAuth } from '@/store/auth';
 
 export function useMyVenues() {
@@ -43,6 +43,31 @@ export function useDeleteVenue() {
   return useMutation({
     mutationFn: (id: string) => venueApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['venues', 'my'] }),
+  });
+}
+
+export function useCreateVenueContact(venueId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (contact: VenueContactPayload) => venueApi.contacts.create(venueId, contact),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['venues', venueId] }),
+  });
+}
+
+export function useUpdateVenueContact(venueId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ index, contact }: { index: number; contact: VenueContactPayload }) =>
+      venueApi.contacts.update(venueId, index, contact),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['venues', venueId] }),
+  });
+}
+
+export function useDeleteVenueContact(venueId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (index: number) => venueApi.contacts.delete(venueId, index),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['venues', venueId] }),
   });
 }
 

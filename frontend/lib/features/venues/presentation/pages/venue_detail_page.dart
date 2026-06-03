@@ -3,12 +3,14 @@ import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/sports/sport_l10n.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/open_2gis.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/venue_model.dart';
 import '../../data/models/venue_schedule_result_model.dart';
+import '../../data/models/promo_model.dart';
 import '../providers/venue_provider.dart';
 import 'booking_page.dart';
 import '../../../chats/presentation/pages/chat_detail_page.dart';
@@ -498,19 +500,53 @@ class _VenueDetailPageState extends ConsumerState<VenueDetailPage>
 
   Widget _buildDescriptionTab(
       BuildContext context, VenueModel venue, bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     final text = venue.description.trim();
     final isEmpty = text.isEmpty;
+    final sortedSports = sortSportKeysForDisplay(venue.sports, l10n, locale);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-      child: Text(
-        isEmpty ? 'No description' : text,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              height: 1.6,
-              color: isEmpty
-                  ? (isDark ? Colors.grey[500] : Colors.grey[600])
-                  : null,
-              fontStyle: isEmpty ? FontStyle.italic : FontStyle.normal,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (sortedSports.isNotEmpty) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: sortedSports.map((key) {
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.colorMain.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    sportLabel(l10n, key),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : AppColors.colorMain,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
+            const SizedBox(height: 16),
+          ],
+          Text(
+            isEmpty ? '—' : text,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  height: 1.6,
+                  color: isEmpty
+                      ? (isDark ? Colors.grey[500] : Colors.grey[600])
+                      : null,
+                  fontStyle: isEmpty ? FontStyle.italic : FontStyle.normal,
+                ),
+          ),
+        ],
       ),
     );
   }
@@ -816,11 +852,15 @@ class _FacilityCard extends StatelessWidget {
   final bool isDark;
   final VoidCallback onOpen;
 
+  /// Active promos that apply to this resource — used to show a discount badge.
+  final List<PromoModel> promos;
+
   const _FacilityCard({
     required this.group,
     required this.l10n,
     required this.isDark,
     required this.onOpen,
+    this.promos = const [],
   });
 
   @override
@@ -829,7 +869,7 @@ class _FacilityCard extends StatelessWidget {
     final name = resource?.displayName ?? group.resourceId ?? '—';
     final imageUrl =
         (resource?.images.isNotEmpty == true) ? resource!.images.first : null;
-    final sport = _capitalizeFacilityLabel(resource?.sport);
+    final sport = sportLabel(l10n, resource?.sport ?? 'other');
     final type = _capitalizeFacilityLabel(resource?.type);
     final meta = l10n.facilityMetaSportType(sport, type);
     final minPrice = group.minPriceInt;
@@ -877,7 +917,7 @@ class _FacilityCard extends StatelessWidget {
                   if (!bookable)
                     Positioned(
                       top: 8,
-                      right: 8,
+                      left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -907,6 +947,13 @@ class _FacilityCard extends StatelessWidget {
                           ],
                         ),
                       ),
+                    ),
+                  // Promo badge: top-right, non-code promos only.
+                  if (promos.isNotEmpty)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: _PromoBadge(promo: promos.first),
                     ),
                   Positioned(
                     left: 10,
@@ -1014,6 +1061,51 @@ class _FacilityCard extends StatelessWidget {
         Icons.sports_martial_arts_rounded,
         size: 40,
         color: AppColors.colorMain.withValues(alpha: 0.35),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Promo badge widget shown on facility cards
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PromoBadge extends StatelessWidget {
+  final PromoModel promo;
+  const _PromoBadge({required this.promo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF6B35), Color(0xFFFF3D71)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.local_offer_rounded, color: Colors.white, size: 10),
+          const SizedBox(width: 3),
+          Text(
+            promo.discountLabel,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1315,6 +1407,9 @@ class _VenueResourcesSectionState extends ConsumerState<_VenueResourcesSection>
   @override
   Widget build(BuildContext context) {
     final scheduleAsync = ref.watch(venueScheduleResultProvider(widget.venueId));
+    // Promos loaded in parallel; failures are silently swallowed.
+    final promosAsync = ref.watch(venuePromosProvider(widget.venueId));
+    final allPromos = promosAsync.valueOrNull ?? const <PromoModel>[];
 
     return scheduleAsync.when(
       loading: () => Padding(
@@ -1378,13 +1473,22 @@ class _VenueResourcesSectionState extends ConsumerState<_VenueResourcesSection>
                 itemCount: groups.length,
                 itemBuilder: (context, index) {
                   final g = groups[index];
+                  final rid = g.resource?.id ?? g.resourceId;
+                  // Non-code promos valid today for this resource.
+                  final today = DateTime.now();
+                  final resourcePromos = allPromos.where((p) {
+                    if (!p.isAutoApplied) return false;
+                    if (!p.isActive) return false;
+                    if (!p.isValidForBookingDate(today)) return false;
+                    return p.resourceId == null || p.resourceId == rid;
+                  }).toList();
                   return _FacilityCard(
                     group: g,
                     l10n: widget.l10n,
                     isDark: widget.isDark,
+                    promos: resourcePromos,
                     onOpen: () {
-                      final id = g.resource?.id ?? g.resourceId;
-                      widget.onBookResource(id, g.isBookable);
+                      widget.onBookResource(rid, g.isBookable);
                     },
                   );
                 },
