@@ -49,6 +49,8 @@ const en = {
     logoutConfirmTitle: 'Log out from ZhamSpace?',
     logoutConfirmBody: "You'll be returned to the login screen.",
     logoutSuccess: 'You have been logged out',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
   auth: {
     welcomeBack: 'Welcome back',

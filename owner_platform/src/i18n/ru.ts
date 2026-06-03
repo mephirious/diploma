@@ -51,6 +51,8 @@ const ru: Translations = {
     logoutConfirmTitle: 'Выйти из ZhamSpace?',
     logoutConfirmBody: 'Вы вернётесь на экран входа.',
     logoutSuccess: 'Вы вышли из аккаунта',
+    openMenu: 'Открыть меню',
+    closeMenu: 'Закрыть меню',
   },
   auth: {
     welcomeBack: 'С возвращением',

@@ -9,6 +9,7 @@ import {
   MessageCircleQuestion,
   LogOut,
   UsersRound,
+  X,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chat';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +37,12 @@ const supportItems: Item[] = [
   { to: '/support', labelKey: 'nav.support', icon: MessageCircleQuestion, comingSoon: true },
 ];
 
-export function Sidebar() {
+type SidebarProps = {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+};
+
+export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const logout = useAuth((s) => s.logout);
@@ -51,25 +57,42 @@ export function Sidebar() {
     navigate('/login', { replace: true });
   }
 
-  return (
-    <aside
-      className={cn(
-        'hidden md:flex shrink-0 w-64 flex-col border-r',
-        'border-black/5 dark:border-white/10',
-        'bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-xl',
-      )}
-    >
-      <div className="px-5 pt-5 pb-3">
+  function handleNavClick() {
+    onMobileClose?.();
+  }
+
+  const renderSidebarContent = (showCloseButton: boolean) => (
+    <>
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <Logo />
+        {showCloseButton ? (
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label={t('common.closeMenu')}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-light transition-colors hover:bg-black/[0.04] hover:text-text-light dark:text-muted-dark dark:hover:bg-white/[0.06] dark:hover:text-text-dark"
+          >
+            <X size={18} />
+          </button>
+        ) : null}
       </div>
 
       <nav className="flex-1 px-3 py-3 space-y-6 overflow-y-auto">
-        <SidebarSection items={overviewItems} titleKey="nav.groupOverview" />
-        <SidebarSection items={venuesItems} titleKey="nav.groupVenues" />
+        <SidebarSection
+          items={overviewItems}
+          titleKey="nav.groupOverview"
+          onNavigate={handleNavClick}
+        />
+        <SidebarSection
+          items={venuesItems}
+          titleKey="nav.groupVenues"
+          onNavigate={handleNavClick}
+        />
         <SidebarSection
           items={supportItems}
           titleKey="nav.groupSupport"
           badgeByPath={{ '/chats': chatUnread }}
+          onNavigate={handleNavClick}
         />
       </nav>
 
@@ -100,6 +123,49 @@ export function Sidebar() {
           {t('common.logout')}
         </button>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      <aside
+        className={cn(
+          'hidden md:flex shrink-0 w-64 flex-col border-r',
+          'border-black/5 dark:border-white/10',
+          'bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-xl',
+        )}
+      >
+        {renderSidebarContent(false)}
+      </aside>
+
+      <div
+        className={cn(
+          'fixed inset-0 z-40 md:hidden',
+          mobileOpen ? 'pointer-events-auto' : 'pointer-events-none',
+        )}
+        aria-hidden={!mobileOpen}
+      >
+        <button
+          type="button"
+          aria-label={t('common.closeMenu')}
+          onClick={onMobileClose}
+          className={cn(
+            'absolute inset-0 bg-black/40 transition-opacity duration-300',
+            mobileOpen ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+        <aside
+          className={cn(
+            'absolute inset-y-0 left-0 flex w-[min(18rem,calc(100vw-3rem))] flex-col border-r',
+            'border-black/5 dark:border-white/10',
+            'bg-surface-light dark:bg-surface-dark shadow-card-hover',
+            'transition-transform duration-300 ease-out',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          )}
+        >
+          {renderSidebarContent(true)}
+        </aside>
+      </div>
 
       <ConfirmDialog
         open={confirmOpen}
@@ -111,7 +177,7 @@ export function Sidebar() {
         cancelLabel={t('common.cancel')}
         tone="danger"
       />
-    </aside>
+    </>
   );
 }
 
@@ -119,10 +185,12 @@ function SidebarSection({
   items,
   titleKey,
   badgeByPath,
+  onNavigate,
 }: {
   items: Item[];
   titleKey: string;
   badgeByPath?: Record<string, number>;
+  onNavigate?: () => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -137,6 +205,7 @@ function SidebarSection({
             <li key={item.to}>
               <NavLink
                 to={item.to}
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
                     'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-semibold transition-colors',

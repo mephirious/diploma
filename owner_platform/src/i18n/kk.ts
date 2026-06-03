@@ -51,6 +51,8 @@ const kk: Translations = {
     logoutConfirmTitle: 'ZhamSpace-тен шығасыз ба?',
     logoutConfirmBody: 'Сіз кіру экранына оралатын боласыз.',
     logoutSuccess: 'Сіз жүйеден шықтыңыз',
+    openMenu: 'Менюді ашу',
+    closeMenu: 'Менюді жабу',
   },
   auth: {
     welcomeBack: 'Қайта қош келдіңіз',

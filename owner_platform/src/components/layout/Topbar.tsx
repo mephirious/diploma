@@ -1,12 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, Search } from 'lucide-react';
+import { ChevronRight, Menu, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LanguageMenu } from '@/components/common/LanguageMenu';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
-import { Logo } from '@/components/common/Logo';
 import { cn } from '@/lib/cn';
 
-export function Topbar() {
+type TopbarProps = {
+  onMenuClick?: () => void;
+};
+
+export function Topbar({ onMenuClick }: TopbarProps) {
   const { t } = useTranslation();
   const location = useLocation();
 
@@ -21,9 +24,18 @@ export function Topbar() {
         'px-4 md:px-8 h-16',
       )}
     >
-      <div className="md:hidden">
-        <Logo compact />
-      </div>
+      <button
+        type="button"
+        onClick={onMenuClick}
+        aria-label={t('common.openMenu')}
+        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-text-light transition-colors hover:bg-black/[0.04] dark:text-text-dark dark:hover:bg-white/[0.06] md:hidden"
+      >
+        <Menu size={20} />
+      </button>
+
+      <span className="min-w-0 flex-1 truncate text-sm font-bold md:hidden">
+        {crumbs[crumbs.length - 1]?.label}
+      </span>
 
       <nav className="hidden md:flex items-center gap-1 text-sm text-muted-light dark:text-muted-dark min-w-0">
         {crumbs.map((c, i) => (
@@ -87,6 +99,8 @@ function buildBreadcrumbs(path: string, t: (k: string) => string): Array<{ label
     else if (seg === 'facilities') label = t('nav.facilities');
     else if (seg === 'bookings') label = t('nav.bookings');
     else if (seg === 'analytics') label = t('nav.analytics');
+    else if (seg === 'sessions') label = t('nav.sessions');
+    else if (seg === 'chats') label = t('nav.chats');
     else if (seg === 'settings') label = t('nav.settings');
     else if (seg === 'resources' && i > 0) label = t('facilityDetail.resources');
     else if (seg === 'support') label = t('nav.support');
