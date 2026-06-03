@@ -11,6 +11,7 @@ import { BookingsPage } from '@/pages/BookingsPage';
 import { SessionsPage } from '@/pages/SessionsPage';
 import { RevenuePage } from '@/pages/RevenuePage';
 import { ChatsPage } from '@/pages/ChatsPage';
+import { SupportPage } from '@/pages/SupportPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { useApplyTheme } from '@/store/theme';
 import { useAuth } from '@/store/auth';
@@ -47,7 +48,7 @@ export function App() {
             <Route path="/analytics" element={<RevenuePage />} />
             <Route path="/settings" element={<ComingSoonPage titleKey="nav.settings" />} />
             <Route path="/chats" element={<ChatsPage />} />
-            <Route path="/support" element={<ComingSoonPage titleKey="nav.support" />} />
+            <Route path="/support" element={<SupportPage />} />
           </Route>
         </Route>
 

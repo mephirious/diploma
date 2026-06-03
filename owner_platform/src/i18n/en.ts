@@ -77,6 +77,8 @@ const en = {
       'On the home screen, tap "Place Your Facility" and submit your request.',
     downloadAppStore: 'Download on the App Store',
     downloadGooglePlay: 'Get it on Google Play',
+    demoLogin: 'Login',
+    demoPassword: 'Password',
     /** Login hero — generic product slogans (no user-specific stats). */
     loginHighlightFacilitiesTitle: 'Manage facilities',
     loginHighlightFacilitiesDesc:

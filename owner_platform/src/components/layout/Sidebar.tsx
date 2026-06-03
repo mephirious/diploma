@@ -34,7 +34,7 @@ const venuesItems: Item[] = [
 
 const supportItems: Item[] = [
   { to: '/chats', labelKey: 'nav.chats', icon: MessageCircle },
-  { to: '/support', labelKey: 'nav.support', icon: MessageCircleQuestion, comingSoon: true },
+  { to: '/support', labelKey: 'nav.support', icon: MessageCircleQuestion },
 ];
 
 type SidebarProps = {

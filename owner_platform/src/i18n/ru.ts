@@ -81,6 +81,8 @@ const ru: Translations = {
       'На главном экране нажмите «Разместить площадку» и отправьте заявку.',
     downloadAppStore: 'Скачать в App Store',
     downloadGooglePlay: 'Скачать в Google Play',
+    demoLogin: 'Логин',
+    demoPassword: 'Пароль',
     loginHighlightFacilitiesTitle: 'Управляйте площадками',
     loginHighlightFacilitiesDesc:
       'Корты, поля, дорожки и залы — всё в одном месте для аккуратных карточек и ресурсов.',

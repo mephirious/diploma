@@ -177,6 +177,15 @@ export function LoginPage() {
               <Button type="submit" fullWidth size="lg" loading={loading}>
                 {loading ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
+
+              <div className="rounded-lg border border-dashed border-brand-500/30 bg-brand-500/5 px-3 py-2 text-xs text-brand-700 dark:text-brand-300 space-y-0.5">
+                <div>
+                  <span className="font-semibold">{t('auth.demoLogin')}:</span> Danial
+                </div>
+                <div>
+                  <span className="font-semibold">{t('auth.demoPassword')}:</span> 2006DaniaL
+                </div>
+              </div>
             </form>
 
             <div className="my-6 flex items-center gap-3 text-xs text-muted-light dark:text-muted-dark">

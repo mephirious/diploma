@@ -81,6 +81,8 @@ const kk: Translations = {
       'Басты экранда «Алаң қосу» батырмасын басып, сұраныс жіберіңіз.',
     downloadAppStore: 'App Store-дан жүктеп алу',
     downloadGooglePlay: 'Google Play-ден жүктеп алу',
+    demoLogin: 'Логин',
+    demoPassword: 'Құпиясөз',
     loginHighlightFacilitiesTitle: 'Алаңдарды басқару',
     loginHighlightFacilitiesDesc:
       'Корттар, алаңдар, жолдар — барлық карточка мен ресурстар бір жерден.',
