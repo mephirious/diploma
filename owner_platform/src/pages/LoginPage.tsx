@@ -182,9 +182,6 @@ export function LoginPage() {
                 <div>
                   <span className="font-semibold">{t('auth.demoLogin')}:</span> Danial
                 </div>
-                <div>
-                  <span className="font-semibold">{t('auth.demoPassword')}:</span> 2006DaniaL
-                </div>
               </div>
             </form>
 
